@@ -1,0 +1,387 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Manage Expense Categories</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            flex: 1;
+            margin-top: 40px;
+            max-width: 1100px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .page-header h2 {
+            font-weight: 700;
+            color: #1e3c72;
+            margin: 0;
+        }
+        .page-header p {
+            color: #6c757d;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid #edf2f7;
+            padding: 20px 25px;
+        }
+
+        .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+            color: #1e3c72;
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #495057;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            padding: 10px 15px;
+            height: auto;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus {
+            border-color: #2a5298;
+            box-shadow: 0 0 0 0.2rem rgba(42, 82, 152, 0.15);
+        }
+
+        .table thead th {
+            border-top: none;
+            border-bottom: 2px solid #e9ecef;
+            background-color: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            padding: 15px;
+        }
+
+        .table td {
+            vertical-align: middle;
+            padding: 15px;
+            color: #333;
+            border-top: 1px solid #f1f1f1;
+        }
+
+        .badge-count {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            padding: 5px 10px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background-color: #2a5298;
+            border-color: #2a5298;
+            padding: 10px 20px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #1e3c72;
+            border-color: #1e3c72;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid #e9ecef;
+            background: #fff;
+        }
+        .pill i { margin-right: 6px; }
+        .pill-unres { color: #1565c0; background: #e3f2fd; border-color: #d7ecff; }
+        .pill-res { color: #7c3aed; background: #efe6ff; border-color: #e7dbff; }
+        .pill-transfer { color: #b45309; background: #fff7ed; border-color: #ffedd5; }
+        .pill-system { color: #334155; background: #f1f5f9; border-color: #e2e8f0; }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: auto;
+            color: #adb5bd;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+{% include 'navbar.html' %}
+
+<div class="container">
+
+    <div class="page-header">
+        <div>
+            <h2><i class="fas fa-tags mr-2"></i>Expense Categories</h2>
+            <p>Define expense types and link restricted categories to a specific restricted fund.</p>
+        </div>
+        <a href="{% url 'add_expenses' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left mr-1"></i> Back to Expenses
+        </a>
+    </div>
+
+    {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} shadow-sm border-0 rounded-lg d-flex align-items-center">
+                    <i class="fas fa-info-circle mr-3 fa-lg"></i>
+                    <div>{{ message }}</div>
+                    <button type="button" class="close ml-auto" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="row">
+        <!-- LEFT: ADD FORM -->
+        <div class="col-md-5">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5><i class="fas fa-plus-circle mr-2"></i>Add New Category</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="form-group mb-4">
+                            <label for="{{ form.name.id_for_label }}">Category Name</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="text-danger small mt-1 font-weight-bold">
+                                    {{ form.name.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Short, descriptive name.</small>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label for="{{ form.description.id_for_label }}">Description (Optional)</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-danger small mt-1 font-weight-bold">
+                                    {{ form.description.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- FLAGS -->
+                        <div class="mb-3">
+                            <div class="form-check mb-2">
+                                {{ form.is_transfer }}
+                                <label class="form-check-label" for="{{ form.is_transfer.id_for_label }}">
+                                    Transfer Category (exclude from operating expenses)
+                                </label>
+                            </div>
+                            {% if form.is_transfer.errors %}
+                                <div class="text-danger small mt-1 font-weight-bold">
+                                    {{ form.is_transfer.errors.0 }}
+                                </div>
+                            {% endif %}
+
+                            <div class="form-check mb-2">
+                                {{ form.is_system }}
+                                <label class="form-check-label" for="{{ form.is_system.id_for_label }}">
+                                    System Category (internal/exclude from reports)
+                                </label>
+                            </div>
+                            {% if form.is_system.errors %}
+                                <div class="text-danger small mt-1 font-weight-bold">
+                                    {{ form.is_system.errors.0 }}
+                                </div>
+                            {% endif %}
+
+                            <div class="form-check mb-2">
+                                {{ form.is_restricted }}
+                                <label class="form-check-label" for="{{ form.is_restricted.id_for_label }}">
+                                    Restricted Category (linked to a restricted fund)
+                                </label>
+                            </div>
+                            {% if form.is_restricted.errors %}
+                                <div class="text-danger small mt-1 font-weight-bold">
+                                    {{ form.is_restricted.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Restricted Fund Selector (shown only when restricted is checked) -->
+                        <div class="form-group mb-4" id="restrictedFundWrap">
+                            <label for="{{ form.restricted_fund_key.id_for_label }}">Restricted Fund</label>
+                            {{ form.restricted_fund_key }}
+                            {% if form.restricted_fund_key.errors %}
+                                <div class="text-danger small mt-1 font-weight-bold">
+                                    {{ form.restricted_fund_key.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Required only if Restricted Category is checked.
+                            </small>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block shadow-sm">
+                            <i class="fas fa-save mr-2"></i> Create Category
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: LIST -->
+        <div class="col-md-7">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-list mr-2"></i>Existing Categories</h5>
+                    <span class="badge badge-count">{{ categories.count }} Total</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 28%;">Name</th>
+                                <th style="width: 34%;">Description</th>
+                                <th style="width: 18%;">Type</th>
+                                <th style="width: 20%;">Linked Fund</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category in categories %}
+                            <tr>
+                                <td>
+                                    <span class="font-weight-bold text-dark">{{ category.name }}</span>
+                                </td>
+
+                                <td class="text-muted small">
+                                    {% if category.description %}
+                                        {{ category.description|truncatechars:60 }}
+                                    {% else %}
+                                        <span class="font-italic text-black-50">No description</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if category.is_restricted %}
+                                        <span class="pill pill-res"><i class="fas fa-lock"></i>Restricted</span>
+                                    {% else %}
+                                        <span class="pill pill-unres"><i class="fas fa-unlock"></i>Unrestricted</span>
+                                    {% endif %}
+
+                                    {% if category.is_transfer %}
+                                        <span class="pill pill-transfer mt-2"><i class="fas fa-exchange-alt"></i>Transfer</span>
+                                    {% endif %}
+
+                                    {% if category.is_system %}
+                                        <span class="pill pill-system mt-2"><i class="fas fa-cog"></i>System</span>
+                                    {% endif %}
+                                </td>
+
+                                <td class="text-muted small">
+                                    {% if category.is_restricted %}
+                                        {% if category.restricted_source and category.restricted_category_id %}
+                                            {% if category.restricted_source == "DONATION" %}
+                                                <span class="font-weight-bold">[Donation]</span>
+                                            {% else %}
+                                                <span class="font-weight-bold">[Other Income]</span>
+                                            {% endif %}
+                                            ID: {{ category.restricted_category_id }}
+                                        {% else %}
+                                            <span class="text-danger font-weight-bold">Not linked</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-black-50">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">
+                                    <i class="fas fa-folder-open fa-3x mb-3 text-secondary opacity-50"></i>
+                                    <p>No categories found.</p>
+                                    <p class="small">Use the form on the left to add your first one.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2024 Living Stone Evangelical Free Church Information System</p>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+(function () {
+    function toggleRestrictedFund() {
+        var cb = document.getElementById("{{ form.is_restricted.id_for_label }}");
+        var wrap = document.getElementById("restrictedFundWrap");
+        if (!cb || !wrap) return;
+
+        wrap.style.display = cb.checked ? "block" : "none";
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        toggleRestrictedFund();
+        var cb = document.getElementById("{{ form.is_restricted.id_for_label }}");
+        if (cb) cb.addEventListener("change", toggleRestrictedFund);
+    });
+})();
+</script>
+
+</body>
+</html>

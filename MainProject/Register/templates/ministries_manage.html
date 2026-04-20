@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Manage Budgets | ChurchSys</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; color: #344767; }
+        .page-header { margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 2rem; background-color: #fff; }
+        .card-header { background-color: #fff; border-bottom: 1px solid #f0f2f5; padding: 1.25rem 1.5rem; border-radius: 12px 12px 0 0 !important; font-weight: 600; color: #1e293b; }
+        .form-control, .form-select { border: 1px solid #e2e8f0; padding: 0.6rem 1rem; border-radius: 8px; }
+        .form-control:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .error-text { color: #dc3545; font-size: 0.85rem; margin-top: 0.25rem; }
+        .table thead th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 700; border-bottom: 2px solid #f1f5f9; padding: 1rem; }
+        .table tbody td { vertical-align: middle; padding: 1rem; font-size: 0.95rem; color: #475569; border-bottom: 1px solid #f1f5f9; }
+        .table-hover tbody tr:hover { background-color: #f8fafc; }
+        .badge-status { padding: 0.5em 0.75em; border-radius: 6px; font-weight: 600; font-size: 0.75rem; }
+        .status-active { background-color: #dcfce7; color: #166534; }
+        .status-inactive { background-color: #fee2e2; color: #991b1b; }
+        .btn-icon { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; transition: all 0.2s; }
+        .btn-icon:hover { transform: translateY(-2px); }
+
+        /* New Style for User Avatar in Table */
+        .avatar-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.75rem; }
+    </style>
+</head>
+<body>
+
+{% include 'navbar.html' %}
+
+<div class="container py-4">
+
+    <div class="page-header">
+        <div>
+            <h3 class="fw-bold mb-1">Budget Management</h3>
+            <p class="text-muted mb-0 small">Create and manage church budgets.</p>
+        </div>
+        <div class="btn-group shadow-sm">
+            <a href="{% url 'budgets_manage' %}" class="btn btn-white bg-white text-dark border"><i class="bi bi-calculator me-1"></i> Budgets</a>
+            <a href="{% url 'budget_release' %}" class="btn btn-white bg-white text-dark border"><i class="bi bi-cash-coin me-1"></i> Release Funds</a>
+            <a href="{% url 'budget_expense' %}" class="btn btn-white bg-white text-dark border"><i class="bi bi-receipt me-1"></i> Record Expense</a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm border-0" role="alert">
+                {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill me-2"></i>{% endif %}
+                {% if message.tags == 'error' %}<i class="bi bi-exclamation-triangle-fill me-2"></i>{% endif %}
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row g-4">
+
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    {% if edit_mode %}
+                        <i class="bi bi-pencil-square me-2 text-warning"></i>Edit Budget
+                    {% else %}
+                        <i class="bi bi-plus-circle me-2 text-primary"></i>Add New Budget
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <form method="post" id="ministryForm">
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger p-2 small mb-3">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="id_name" class="form-label small text-muted fw-bold">Budget Name</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="error-text">{{ form.name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_code" class="form-label small text-muted fw-bold">Code / Slug</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted">#</span>
+                                {{ form.code }}
+                            </div>
+                            <div class="form-text small">Unique identifier (e.g., MUSIC, KIDS).</div>
+                            {% if form.code.errors %}
+                                <div class="error-text">{{ form.code.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_assigned_requester" class="form-label small text-muted fw-bold">Assigned Leader</label>
+                            {{ form.assigned_requester }}
+                            <div class="form-text small">User authorized to request funds.</div>
+                            {% if form.assigned_requester.errors %}
+                                <div class="error-text">{{ form.assigned_requester.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_description" class="form-label small text-muted fw-bold">Description</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="error-text">{{ form.description.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                {{ form.is_active }}
+                                <label class="form-check-label" for="id_is_active">Set as Active immediately</label>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="button" onclick="showFormConfirmation()" class="btn {% if edit_mode %}btn-warning text-dark{% else %}btn-primary{% endif %} fw-medium py-2">
+                                {% if edit_mode %}
+                                    <i class="bi bi-check-lg me-1"></i> Update Budget
+                                {% else %}
+                                    <i class="bi bi-save me-1"></i> Save Budget
+                                {% endif %}
+                            </button>
+
+                            {% if edit_mode %}
+                                <a href="{% url 'ministries_manage' %}" class="btn btn-outline-secondary py-2">
+                                    Cancel
+                                </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-list-ul me-2 text-primary"></i>Existing Budgets</span>
+                    <span class="badge bg-light text-dark border">{{ ministries|length }} Total</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Info</th>
+                                <th>Leader</th>
+                                <th>Code</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in ministries %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark">{{ m.name }}</div>
+                                    <div class="small text-muted text-truncate" style="max-width: 200px;">
+                                        {{ m.description|default:"No description provided" }}
+                                    </div>
+                                    <div class="small text-muted mt-1" style="font-size: 0.75rem;">
+                                        Created: {{ m.created_at|date:"M d, Y" }}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if m.assigned_requester %}
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle bg-primary-subtle text-primary me-2">
+                                                {{ m.assigned_requester.first_name|slice:":1" }}{{ m.assigned_requester.last_name|slice:":1" }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium text-dark small">{{ m.assigned_requester.get_full_name|default:m.assigned_requester.username }}</div>
+                                                <div class="text-muted" style="font-size: 0.7rem;">{{ m.assigned_requester.email }}</div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted small fst-italic">Unassigned</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="font-monospace bg-light border px-2 py-1 rounded small">{{ m.code }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge-status {% if m.is_active %}status-active{% else %}status-inactive{% endif %}">
+                                        {% if m.is_active %}
+                                            <i class="bi bi-check-circle-fill me-1"></i> Active
+                                        {% else %}
+                                            <i class="bi bi-x-circle-fill me-1"></i> Inactive
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a href="{% url 'ministry_edit' m.id %}" class="btn-icon btn btn-outline-primary" title="Edit" data-bs-toggle="tooltip">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+
+                                        <form method="post" action="{% url 'ministry_toggle' m.id %}" id="toggleForm_{{ m.id }}">
+                                            {% csrf_token %}
+                                            <button type="button"
+                                                    onclick="triggerRowAction('toggle', '{{ m.id }}', '{{ m.name|escapejs }}', '{{ m.is_active }}')"
+                                                    class="btn-icon btn {% if m.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}"
+                                                    title="{% if m.is_active %}Deactivate{% else %}Activate{% endif %}"
+                                                    data-bs-toggle="tooltip">
+                                                {% if m.is_active %}
+                                                    <i class="bi bi-power"></i>
+                                                {% else %}
+                                                    <i class="bi bi-play-fill"></i>
+                                                {% endif %}
+                                            </button>
+                                        </form>
+
+                                        <form method="post" action="{% url 'ministry_delete' m.id %}" id="deleteForm_{{ m.id }}">
+                                            {% csrf_token %}
+                                            <button type="button"
+                                                    onclick="triggerRowAction('delete', '{{ m.id }}', '{{ m.name|escapejs }}')"
+                                                    class="btn-icon btn btn-outline-danger"
+                                                    title="Delete"
+                                                    data-bs-toggle="tooltip">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <div class="display-1 text-light"><i class="bi bi-inbox"></i></div>
+                                    <p class="mt-3">No budgets found.</p>
+                                    <p class="small">Use the form to create your first budget.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="formConfirmationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Save</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% if edit_mode %}
+                    Are you sure you want to <strong>update</strong> this budget's information?
+                {% else %}
+                    Are you sure you want to <strong>create</strong> this new budget?
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmFormSubmitBtn">
+                    {% if edit_mode %}Yes, Update{% else %}Yes, Save{% endif %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="rowActionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rowActionTitle">Confirm Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="rowActionBody">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmRowActionBtn">Yes, Proceed</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Global Variable to store which form to submit ---
+    let pendingFormId = null;
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Style standard inputs
+        document.querySelectorAll('input[type="text"], textarea, select').forEach(el => el.classList.add('form-control'));
+        // Specifically style Select dropdowns if the class wasn't added by Django widget
+        document.querySelectorAll('select').forEach(el => el.classList.add('form-select'));
+        document.querySelectorAll('input[type="checkbox"]').forEach(el => el.classList.add('form-check-input'));
+
+        // Initialize Tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+    });
+
+    // ==========================================
+    // LOGIC 1: Main Form (Create/Edit)
+    // ==========================================
+    function showFormConfirmation() {
+        var myModal = new bootstrap.Modal(document.getElementById('formConfirmationModal'));
+        myModal.show();
+    }
+
+    document.getElementById('confirmFormSubmitBtn').addEventListener('click', function() {
+        document.getElementById('ministryForm').submit();
+    });
+
+    // ==========================================
+    // LOGIC 2: Row Actions (Delete/Toggle)
+    // ==========================================
+    function triggerRowAction(actionType, id, name, isActive) {
+        if (actionType === 'delete') {
+            pendingFormId = 'deleteForm_' + id;
+        } else {
+            pendingFormId = 'toggleForm_' + id;
+        }
+
+        const modalTitle = document.getElementById('rowActionTitle');
+        const modalBody = document.getElementById('rowActionBody');
+        const confirmBtn = document.getElementById('confirmRowActionBtn');
+
+        if (actionType === 'delete') {
+            modalTitle.innerText = "Delete Budget";
+            modalBody.innerHTML = `Are you sure you want to delete <strong>${name}</strong>?<br><br><span class="text-danger small"><i class="bi bi-exclamation-triangle-fill"></i> Warning: This cannot be undone.</span>`;
+            confirmBtn.className = "btn btn-danger";
+            confirmBtn.innerText = "Yes, Delete";
+        }
+        else if (actionType === 'toggle') {
+            const isCurrentlyActive = (isActive == 'True' || isActive == '1');
+
+            if (isCurrentlyActive) {
+                modalTitle.innerText = "Deactivate Budget";
+                modalBody.innerHTML = `Are you sure you want to deactivate <strong>${name}</strong>?`;
+                confirmBtn.className = "btn btn-warning text-dark";
+                confirmBtn.innerText = "Yes, Deactivate";
+            } else {
+                modalTitle.innerText = "Activate Budget";
+                modalBody.innerHTML = `Are you sure you want to activate <strong>${name}</strong>?`;
+                confirmBtn.className = "btn btn-success";
+                confirmBtn.innerText = "Yes, Activate";
+            }
+        }
+
+        var actionModal = new bootstrap.Modal(document.getElementById('rowActionModal'));
+        actionModal.show();
+    }
+
+    document.getElementById('confirmRowActionBtn').addEventListener('click', function() {
+        if (pendingFormId) {
+            document.getElementById(pendingFormId).submit();
+        }
+    });
+
+</script>
+
+</body>
+</html>

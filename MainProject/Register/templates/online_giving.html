@@ -1,0 +1,185 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Give Online</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap 4.6 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <style>
+    body{background:#0b1220;color:#e6eefc;}
+    .page-wrap{max-width:1100px;margin:24px auto;padding:0 16px;}
+    .card{background:#121a2b;border:1px solid #22304c;border-radius:16px;}
+    .card-header{background:transparent;border-bottom:1px solid #22304c;color:#cfe5ff}
+    label{font-weight:600;color:#d8e8ff}
+    .form-control, .custom-select, textarea{background:#0c1425;color:#e6eefc;border:1px solid #2b3e60;}
+    .form-control:focus{box-shadow:none;border-color:#5aa6ff;}
+    .btn-primary{background:#7dd3fc;border-color:#7dd3fc;color:#05243a;font-weight:700}
+    .btn-outline-light{border-color:#2b3e60;color:#cfe5ff}
+    .text-muted{color:#9fb3c8!important}
+    .badge-soft{background:#0c1425;border:1px solid #2b3e60;color:#b9d7ff}
+    .stepper{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+    .step{display:flex;align-items:center;gap:8px}
+    .dot{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#0c1425;border:1px solid #2b3e60;color:#9fb3c8;font-size:12px}
+    .dot.active{background:#7dd3fc;color:#042234;border-color:#7dd3fc;font-weight:700}
+    .pill{display:flex;gap:12px;align-items:center;background:#0c1425;border:1px solid #2b3e60;border-radius:14px;padding:12px}
+    .pill img{width:48px;height:48px;border-radius:10px;object-fit:cover;background:#fff}
+    .qr{width:100%;max-width:220px;border-radius:12px;display:block}
+    .help small{color:#9fb3c8}
+    .hr-soft{border-top:1px dashed #2b3e60}
+  </style>
+
+</head>
+<body>
+     {% include 'navbar.html' %}
+  <div class="page-wrap">
+
+    <!-- Step indicator -->
+    <div class="stepper">
+
+      <div class="step"><span class="dot active">1</span><span>Select</span></div>
+      <span class="text-muted">—</span>
+      <div class="step"><span class="dot">2</span><span>Checkout</span></div>
+      <span class="text-muted">—</span>
+      <div class="step"><span class="dot">3</span><span>Success</span></div>
+    </div>
+
+    <div class="row">
+      <!-- Left: Form -->
+      <div class="col-lg-7 mb-3">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Give Online</h5>
+          </div>
+          <div class="card-body">
+            {% if messages %}
+              {% for message in messages %}
+                <div class="alert alert-info">{{ message }}</div>
+              {% endfor %}
+            {% endif %}
+
+            <form method="post" novalidate>
+              {% csrf_token %}
+
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="{{ form.giving_type.id_for_label }}">Giving Type</label>
+                  {{ form.giving_type }}
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="{{ form.amount.id_for_label }}">Amount</label>
+                  {{ form.amount }}
+                  <small class="form-text text-muted">PHP</small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-7">
+                  <label for="{{ form.fund.id_for_label }}">Campaign / Fund</label>
+                  {{ form.fund }}
+                  <small class="form-text text-muted">Optional, e.g., Building, Missions.</small>
+                </div>
+                <div class="form-group col-md-5">
+                  <label for="{{ form.recurrence.id_for_label }}">Recurrence</label>
+                  {{ form.recurrence }}
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="{{ form.channel.id_for_label }}">Payment Method</label>
+                {{ form.channel }}
+              </div>
+
+              <div class="form-group mb-2">
+                <label for="{{ form.message.id_for_label }}">Note (optional)</label>
+                {{ form.message }}
+              </div>
+
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="small text-muted">
+                  <span class="badge badge-soft">Tip</span>
+                  Use a saved mobile number or QR for faster checkout.
+                </div>
+                <div class="text-right">
+                  <div class="small text-muted">Est. Fee: <span id="est-fee">₱0.00</span></div>
+                  <div class="small text-muted">You Give: <strong id="est-net">₱0.00</strong></div>
+                </div>
+              </div>
+<form method="post" novalidate>
+    {% csrf_token %}
+    <!-- Form Fields Here -->
+    <button type="submit" class="btn btn-primary btn-block">Continue to Secure Checkout</button>
+</form>
+              <a class="btn btn-outline-light btn-block" href="{% url 'home' %}">Cancel</a>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: GCash / Maya support -->
+      <div class="col-lg-5">
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="pill mb-2">
+              <img src="{% static 'img/gcash.png' %}" alt="GCash">
+              <div>
+                <div class="d-flex align-items-center justify-content-between">
+                  <strong>GCash</strong>
+                  <span class="badge badge-soft">Preferred</span>
+                </div>
+                <div class="help mt-1">
+                  <small>Account Name:</small> <strong>Living Stone EFC</strong><br>
+                  <small>GCash No.:</small> <strong>09XX-XXX-XXXX</strong>
+                </div>
+              </div>
+            </div>
+            <img class="qr" src="{% static 'img/gcash-qr.png' %}" alt="GCash QR">
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <div class="pill mb-2">
+              <img src="{% static 'img/maya.png' %}" alt="Maya">
+              <div>
+                <strong>Maya</strong>
+                <div class="help mt-1">
+                  <small>Account Name:</small> <strong>Living Stone EFC</strong><br>
+                  <small>Maya No.:</small> <strong>09YY-YYY-YYYY</strong>
+                </div>
+              </div>
+            </div>
+            <img class="qr" src="{% static 'img/maya-qr.png' %}" alt="Maya QR">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="hr-soft my-4">
+
+    <div class="small text-muted">
+      By continuing, you agree to the Terms. Payments are secured via your selected gateway (GCash or Maya).
+    </div>
+  </div>
+
+  <!-- Bootstrap JS + jQuery -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Fee preview (adjust formula if you know gateway charges)
+    const amountInput = document.getElementById('id_amount');
+    const estFeeEl = document.getElementById('est-fee');
+    const estNetEl = document.getElementById('est-net');
+    function fmt(v){ return '₱' + (Math.max(0, Number(v)||0)).toFixed(2); }
+    function recalc(){
+      const amt = Number(amountInput && amountInput.value || 0);
+      const fee = 0.00; // set your gateway fee formula
+      const net = amt - fee;
+      if(estFeeEl) estFeeEl.textContent = fmt(fee);
+      if(estNetEl) estNetEl.textContent = fmt(net);
+    }
+    if(amountInput){ amountInput.addEventListener('input', recalc); recalc(); }
+  </script>
+</body>
+</html>

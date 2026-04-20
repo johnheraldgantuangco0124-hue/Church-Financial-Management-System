@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Budget Console</title>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 24px; }
+    nav a { margin-right: 12px; }
+    section { margin-top: 36px; padding-top: 12px; border-top: 1px solid #ddd; }
+    h1 { margin-top: 0; }
+    form { margin: 12px 0 24px; padding: 12px; border: 1px solid #eee; background: #fafafa; }
+    table { border-collapse: collapse; width: 100%; margin: 8px 0 16px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    .caps { text-transform: uppercase; font-weight: 600; font-size: 12px; color: #666; }
+    .muted { color: #666; }
+    .success { color: #087f23; }
+    .error { color: #b00020; }
+    .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:#f0f0f0; font-size:12px; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 16px; }
+    .btn { padding: 6px 12px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
+    .btn-danger { border-color:#c00; color:#c00; }
+    .right { text-align:right; }
+    mark { background: #ffe9a8; }
+  </style>
+</head>
+<body>
+  <h1>Church Budget Console</h1>
+
+  <nav>
+    <a href="#types">Ministry Types</a>
+    <a href="#ministries">Ministries</a>
+    <a href="#allocations">Budget Allocations</a>
+    <a href="#releases">Releases</a>
+    <a href="#expenses">Expenses</a>
+  </nav>
+
+  {% if messages %}
+    <ul>
+      {% for m in messages %}
+        <li class="{{ m.tags }}">{{ m }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <!-- MINISTRY TYPES -->
+  <section id="types">
+    <h2>Ministry Types</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="add_ministry_type">
+      <div class="grid">
+        <div>{{ mt_form.name.label_tag }} {{ mt_form.name }}</div>
+      </div>
+      <button class="btn" type="submit">Add Type</button>
+    </form>
+
+    <table>
+      <thead><tr><th>Name</th><th class="right">Actions</th></tr></thead>
+      <tbody>
+        {% for t in ministry_types %}
+          <tr>
+            <td>{{ t.name }}</td>
+            <td class="right">
+              <form method="post" style="display:inline">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_ministry_type">
+                <input type="hidden" name="pk" value="{{ t.pk }}">
+                <button class="btn btn-danger" type="submit" onclick="return confirm('Delete this type?')">Delete</button>
+              </form>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="2" class="muted">No ministry types yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <!-- MINISTRIES -->
+  <section id="ministries">
+    <h2>Ministries</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="add_ministry">
+      <div class="grid">
+        <div>{{ m_form.name.label_tag }} {{ m_form.name }}</div>
+        <div>{{ m_form.type.label_tag }} {{ m_form.type }}</div>
+      </div>
+      <button class="btn" type="submit">Add Ministry</button>
+    </form>
+
+    <table>
+      <thead><tr><th>Name</th><th>Type</th><th class="right">Actions</th></tr></thead>
+      <tbody>
+        {% for m in ministries %}
+          <tr>
+            <td>{{ m.name }}</td>
+            <td>{{ m.type|default:"—" }}</td>
+            <td class="right">
+              <form method="post" style="display:inline">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_ministry">
+                <input type="hidden" name="pk" value="{{ m.pk }}">
+                <button class="btn btn-danger" type="submit" onclick="return confirm('Delete this ministry?')">Delete</button>
+              </form>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="3" class="muted">No ministries yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ALLOCATIONS -->
+  <section id="allocations">
+    <h2>Budget Allocations</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="add_allocation">
+      <div class="grid">
+        <div>{{ alloc_form.ministry.label_tag }} {{ alloc_form.ministry }}</div>
+        <div>{{ alloc_form.period.label_tag }} {{ alloc_form.period }}</div>
+        <div>{{ alloc_form.amount.label_tag }} {{ alloc_form.amount }}</div>
+        <div>{{ alloc_form.notes.label_tag }} {{ alloc_form.notes }}</div>
+      </div>
+      <button class="btn" type="submit">Save Allocation</button>
+    </form>
+
+    <table>
+      <thead><tr>
+        <th>Period</th><th>Ministry</th><th class="right">Allocated</th>
+        <th class="right">Released</th><th class="right">Remaining</th>
+      </tr></thead>
+      <tbody>
+        {% for a in allocations %}
+          <tr>
+            <td>{{ a.period }}</td>
+            <td>{{ a.ministry }}</td>
+            <td class="right">₱{{ a.amount }}</td>
+            <td class="right">₱{{ a.released_total }}</td>
+            <td class="right">₱{{ a.released_remaining }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="muted">No allocations yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <!-- RELEASES -->
+  <section id="releases">
+    <h2>Releases</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="add_release">
+      <div class="grid">
+        <div>{{ rel_form.allocation.label_tag }} {{ rel_form.allocation }}</div>
+        <div>{{ rel_form.released_on.label_tag }} {{ rel_form.released_on }}</div>
+        <div>{{ rel_form.amount.label_tag }} {{ rel_form.amount }}</div>
+        <div>{{ rel_form.reference.label_tag }} {{ rel_form.reference }}</div>
+      </div>
+      <button class="btn" type="submit">Record Release</button>
+    </form>
+
+    <table>
+      <thead><tr>
+        <th>Date</th><th>Allocation</th><th class="right">Released</th>
+        <th class="right">Expenses</th><th class="right">Unspent / Return</th><th></th>
+      </tr></thead>
+      <tbody>
+        {% for r in releases %}
+          <tr>
+            <td>{{ r.released_on }}</td>
+            <td>{{ r.allocation.ministry }} – {{ r.allocation.period }}</td>
+            <td class="right">₱{{ r.amount }}</td>
+            <td class="right">₱{{ r.expenses_total }}</td>
+            <td class="right"><mark>₱{{ r.remaining }}</mark></td>
+            <td><a class="pill" href="?release_id={{ r.pk }}#expenses">view</a></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="muted">No releases yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <!-- EXPENSES -->
+  <section id="expenses">
+    <h2>Expenses {% if selected_release %}<span class="caps">for</span> {{ selected_release.allocation.ministry }} ({{ selected_release.allocation.period }}) – Released ₱{{ selected_release.amount }}{% endif %}</h2>
+
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="add_expense">
+      <div class="grid">
+        <div>{{ exp_form.release.label_tag }} {{ exp_form.release }}</div>
+        <div>{{ exp_form.spent_on.label_tag }} {{ exp_form.spent_on }}</div>
+        <div>{{ exp_form.description.label_tag }} {{ exp_form.description }}</div>
+        <div>{{ exp_form.amount.label_tag }} {{ exp_form.amount }}</div>
+        <div>{{ exp_form.vendor.label_tag }} {{ exp_form.vendor }}</div>
+        <div>{{ exp_form.voucher_no.label_tag }} {{ exp_form.voucher_no }}</div>
+      </div>
+      {% if exp_form.non_field_errors %}
+        <p class="error">{{ exp_form.non_field_errors }}</p>
+      {% endif %}
+      <button class="btn" type="submit">Save Expense</button>
+    </form>
+
+    {% if selected_release %}
+      <p><b>Total Expenses:</b> ₱{{ selected_release.expenses_total }} &nbsp; | &nbsp;
+         <b>Unspent / Return:</b> <mark>₱{{ selected_release.remaining }}</mark></p>
+
+      <table>
+        <thead><tr><th>Date</th><th>Description</th><th class="right">Amount</th><th>Vendor</th><th>Voucher #</th></tr></thead>
+        <tbody>
+          {% for e in selected_release_expenses %}
+            <tr>
+              <td>{{ e.spent_on }}</td>
+              <td>{{ e.description }}</td>
+              <td class="right">₱{{ e.amount }}</td>
+              <td>{{ e.vendor|default:"—" }}</td>
+              <td>{{ e.voucher_no|default:"—" }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="5" class="muted">No expenses for this release yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">Choose a release in the table above (click <span class="pill">view</span>) to see its expenses and unspent amount here.</p>
+    {% endif %}
+  </section>
+</body>
+</html>

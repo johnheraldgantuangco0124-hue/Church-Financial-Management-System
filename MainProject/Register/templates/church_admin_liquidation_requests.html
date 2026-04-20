@@ -1,0 +1,760 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liquidation Access Requests</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root{
+            --primary:#0d6efd;
+            --primary-dark:#0b5ed7;
+            --primary-soft:#eaf3ff;
+            --secondary:#1e3a8a;
+            --success:#198754;
+            --warning:#f59e0b;
+            --danger:#dc3545;
+            --dark:#0f172a;
+            --muted:#64748b;
+            --border:#dbe4f0;
+            --surface:#ffffff;
+            --bg:#f4f8fc;
+            --shadow:0 18px 45px rgba(15, 23, 42, 0.08);
+            --radius:20px;
+        }
+
+        *{
+            font-family:'Inter', sans-serif;
+        }
+
+        body{
+            background:
+                radial-gradient(circle at top left, rgba(13,110,253,.10), transparent 22%),
+                radial-gradient(circle at top right, rgba(30,58,138,.10), transparent 22%),
+                linear-gradient(180deg, #f8fbff 0%, #eef5fc 100%);
+            color:var(--dark);
+            min-height:100vh;
+        }
+
+        .page-wrap{
+            padding: 2rem 0 3rem;
+        }
+
+        .hero-card{
+            background: linear-gradient(135deg, #0d6efd 0%, #1d4ed8 55%, #1e3a8a 100%);
+            border:none;
+            border-radius:28px;
+            color:#fff;
+            box-shadow:0 25px 60px rgba(13,110,253,.22);
+            overflow:hidden;
+            position:relative;
+        }
+
+        .hero-card::before,
+        .hero-card::after{
+            content:"";
+            position:absolute;
+            border-radius:50%;
+            background:rgba(255,255,255,.12);
+        }
+
+        .hero-card::before{
+            width:240px;
+            height:240px;
+            top:-80px;
+            right:-60px;
+        }
+
+        .hero-card::after{
+            width:180px;
+            height:180px;
+            bottom:-70px;
+            left:-40px;
+        }
+
+        .hero-content{
+            position:relative;
+            z-index:2;
+        }
+
+        .hero-badge{
+            display:inline-flex;
+            align-items:center;
+            gap:.45rem;
+            padding:.45rem .85rem;
+            border-radius:999px;
+            background:rgba(255,255,255,.14);
+            border:1px solid rgba(255,255,255,.22);
+            font-size:.85rem;
+            font-weight:600;
+        }
+
+        .hero-title{
+            font-size:clamp(1.6rem, 2.6vw, 2.45rem);
+            font-weight:800;
+            margin-top:1rem;
+            margin-bottom:.55rem;
+            letter-spacing:-0.03em;
+        }
+
+        .hero-subtitle{
+            color:rgba(255,255,255,.88);
+            max-width:780px;
+            font-size:.98rem;
+            line-height:1.65;
+            margin-bottom:0;
+        }
+
+        .stats-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+            gap:1rem;
+            margin-top:1.5rem;
+        }
+
+        .mini-stat{
+            background:rgba(255,255,255,.12);
+            border:1px solid rgba(255,255,255,.15);
+            border-radius:18px;
+            padding:1rem 1rem .95rem;
+            backdrop-filter:blur(4px);
+        }
+
+        .mini-stat .label{
+            font-size:.82rem;
+            color:rgba(255,255,255,.82);
+            margin-bottom:.35rem;
+        }
+
+        .mini-stat .value{
+            font-size:1.35rem;
+            font-weight:800;
+        }
+
+        .glass-card,
+        .content-card{
+            background:rgba(255,255,255,.88);
+            border:1px solid rgba(219,228,240,.9);
+            border-radius:24px;
+            box-shadow:var(--shadow);
+            backdrop-filter:blur(8px);
+        }
+
+        .section-head{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:1rem;
+            margin-bottom:1.15rem;
+        }
+
+        .section-title{
+            font-size:1.15rem;
+            font-weight:800;
+            color:var(--secondary);
+            margin:0;
+            display:flex;
+            align-items:center;
+            gap:.7rem;
+        }
+
+        .section-title .icon-wrap{
+            width:42px;
+            height:42px;
+            border-radius:14px;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            background:var(--primary-soft);
+            color:var(--primary);
+            font-size:1.05rem;
+        }
+
+        .section-subtext{
+            color:var(--muted);
+            font-size:.92rem;
+            margin:0;
+        }
+
+        .stat-tile{
+            background:linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            border:1px solid var(--border);
+            border-radius:20px;
+            padding:1.1rem 1rem;
+            height:100%;
+        }
+
+        .stat-tile .stat-icon{
+            width:44px;
+            height:44px;
+            border-radius:14px;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            margin-bottom:.8rem;
+            font-size:1.05rem;
+        }
+
+        .icon-blue{ background:#eaf3ff; color:#0d6efd; }
+        .icon-green{ background:#ebfbf3; color:#198754; }
+        .icon-yellow{ background:#fff7e8; color:#d97706; }
+        .icon-red{ background:#ffecef; color:#dc3545; }
+
+        .stat-tile .stat-label{
+            color:var(--muted);
+            font-size:.88rem;
+            margin-bottom:.3rem;
+        }
+
+        .stat-tile .stat-value{
+            font-size:1.45rem;
+            font-weight:800;
+            color:var(--dark);
+            margin:0;
+        }
+
+        .custom-table-wrap{
+            border:1px solid var(--border);
+            border-radius:20px;
+            overflow:hidden;
+            background:#fff;
+        }
+
+        .table{
+            margin-bottom:0;
+        }
+
+        .table thead th{
+            background:linear-gradient(180deg, #eff6ff 0%, #e7f0ff 100%);
+            color:#1e3a8a;
+            font-weight:700;
+            font-size:.9rem;
+            border-bottom:1px solid var(--border);
+            padding:1rem .9rem;
+            white-space:nowrap;
+        }
+
+        .table tbody td{
+            vertical-align:middle;
+            padding:1rem .9rem;
+            border-color:#edf2f7;
+            font-size:.94rem;
+        }
+
+        .table tbody tr:hover{
+            background:#f8fbff;
+        }
+
+        .user-block{
+            display:flex;
+            align-items:flex-start;
+            gap:.85rem;
+        }
+
+        .user-avatar{
+            width:46px;
+            height:46px;
+            border-radius:14px;
+            background:linear-gradient(135deg, #0d6efd, #1e40af);
+            color:#fff;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-weight:800;
+            font-size:1rem;
+            box-shadow:0 10px 22px rgba(13,110,253,.20);
+            flex-shrink:0;
+        }
+
+        .user-name{
+            font-weight:700;
+            color:var(--dark);
+            margin-bottom:.15rem;
+        }
+
+        .user-meta{
+            color:var(--muted);
+            font-size:.85rem;
+            line-height:1.45;
+        }
+
+        .badge-status{
+            padding:.55rem .85rem;
+            border-radius:999px;
+            font-size:.78rem;
+            font-weight:700;
+            letter-spacing:.02em;
+        }
+
+        .bg-pending-soft{
+            background:#fff3cd;
+            color:#8a6500;
+        }
+
+        .bg-approved-soft{
+            background:#d1fae5;
+            color:#065f46;
+        }
+
+        .bg-rejected-soft{
+            background:#ffe1e6;
+            color:#9f1239;
+        }
+
+        .bg-closed-soft{
+            background:#e5e7eb;
+            color:#374151;
+        }
+
+        .remarks-box{
+            background:#f8fbff;
+            border:1px solid var(--border);
+            border-radius:14px;
+            padding:.7rem .85rem;
+            min-height:56px;
+            color:#334155;
+            font-size:.88rem;
+            line-height:1.5;
+        }
+
+        .remarks-box small{
+            color:var(--muted);
+            display:block;
+            margin-top:.35rem;
+        }
+
+        .action-stack{
+            display:flex;
+            flex-direction:column;
+            gap:.75rem;
+            min-width:235px;
+        }
+
+        .action-card{
+            background:#f8fbff;
+            border:1px solid var(--border);
+            border-radius:16px;
+            padding:.85rem;
+        }
+
+        .action-card .action-label{
+            font-size:.82rem;
+            font-weight:700;
+            color:#1e3a8a;
+            margin-bottom:.55rem;
+            display:flex;
+            align-items:center;
+            gap:.4rem;
+        }
+
+        .form-control,
+        .form-select{
+            border-radius:12px;
+            border:1px solid #d7e2f1;
+            min-height:42px;
+            box-shadow:none !important;
+        }
+
+        .form-control:focus,
+        .form-select:focus{
+            border-color:#86b7fe;
+        }
+
+        .btn{
+            border-radius:12px;
+            font-weight:700;
+            padding:.65rem 1rem;
+        }
+
+        .btn-primary{
+            background:linear-gradient(135deg, #0d6efd, #1d4ed8);
+            border:none;
+        }
+
+        .btn-primary:hover{
+            background:linear-gradient(135deg, #0b5ed7, #1e40af);
+        }
+
+        .btn-success{
+            border:none;
+            background:linear-gradient(135deg, #198754, #157347);
+        }
+
+        .btn-danger{
+            border:none;
+            background:linear-gradient(135deg, #dc3545, #b91c1c);
+        }
+
+        .btn-outline-danger{
+            border:1px solid #f1b7c0;
+            color:#b42318;
+            background:#fff;
+        }
+
+        .btn-outline-danger:hover{
+            background:#fff1f3;
+            color:#912018;
+            border-color:#e79cab;
+        }
+
+        .empty-state{
+            padding:3rem 1.5rem;
+            text-align:center;
+        }
+
+        .empty-icon{
+            width:72px;
+            height:72px;
+            margin:0 auto 1rem;
+            border-radius:22px;
+            background:#eaf3ff;
+            color:#0d6efd;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:1.7rem;
+        }
+
+        .sticky-tools{
+            position:sticky;
+            top:1rem;
+        }
+
+        @media (max-width: 991.98px){
+            .action-stack{
+                min-width:unset;
+            }
+        }
+
+        @media (max-width: 767.98px){
+            .page-wrap{
+                padding-top:1.25rem;
+            }
+
+            .hero-card{
+                border-radius:22px;
+            }
+
+            .section-head{
+                flex-direction:column;
+                align-items:flex-start;
+            }
+
+            .table thead{
+                display:none;
+            }
+
+            .table,
+            .table tbody,
+            .table tr,
+            .table td{
+                display:block;
+                width:100%;
+            }
+
+            .table tbody tr{
+                border-bottom:1px solid var(--border);
+                padding:1rem;
+            }
+
+            .table tbody td{
+                padding:.45rem 0;
+                border:none;
+            }
+
+            .table tbody td::before{
+                content:attr(data-label);
+                display:block;
+                font-size:.75rem;
+                font-weight:700;
+                color:var(--muted);
+                text-transform:uppercase;
+                margin-bottom:.18rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+    <div class="page-wrap">
+        <div class="container-fluid px-lg-4 px-3">
+
+            {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm rounded-4 border-0" role="alert">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-info-circle-fill"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="card hero-card mb-4">
+                <div class="card-body p-4 p-lg-5 hero-content">
+                    <span class="hero-badge">
+                        <i class="bi bi-shield-lock-fill"></i>
+                        Church Admin Control Panel
+                    </span>
+
+                    <h1 class="hero-title">Liquidation Viewing Access Requests</h1>
+                    <p class="hero-subtitle">
+                        Review requests from denomination administrators, approve temporary viewing access, reject unauthorized requests,
+                        or close previously granted access whenever church leadership decides to revoke visibility.
+                    </p>
+
+                    <div class="stats-grid">
+                        <div class="mini-stat">
+                            <div class="label">Total Requests</div>
+                            <div class="value">{{ requests|length }}</div>
+                        </div>
+                        <div class="mini-stat">
+                            <div class="label">Pending Review</div>
+                            <div class="value">{{ pending_count|default:"0" }}</div>
+                        </div>
+                        <div class="mini-stat">
+                            <div class="label">Approved Access</div>
+                            <div class="value">{{ approved_count|default:"0" }}</div>
+                        </div>
+                        <div class="mini-stat">
+                            <div class="label">Closed / Revoked</div>
+                            <div class="value">{{ closed_count|default:"0" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="content-card p-4 p-lg-4">
+                        <div class="section-head">
+                            <div>
+                                <h2 class="section-title">
+                                    <span class="icon-wrap">
+                                        <i class="bi bi-list-check"></i>
+                                    </span>
+                                    Request Management
+                                </h2>
+                                <p class="section-subtext">
+                                    Process denomination-admin access requests and manage active liquidation viewing privileges.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3 col-sm-6">
+                                <div class="stat-tile">
+                                    <div class="stat-icon icon-blue">
+                                        <i class="bi bi-inboxes-fill"></i>
+                                    </div>
+                                    <div class="stat-label">All Requests</div>
+                                    <p class="stat-value">{{ requests|length }}</p>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 col-sm-6">
+                                <div class="stat-tile">
+                                    <div class="stat-icon icon-yellow">
+                                        <i class="bi bi-hourglass-split"></i>
+                                    </div>
+                                    <div class="stat-label">Pending</div>
+                                    <p class="stat-value">{{ pending_count|default:"0" }}</p>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 col-sm-6">
+                                <div class="stat-tile">
+                                    <div class="stat-icon icon-green">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                    </div>
+                                    <div class="stat-label">Approved</div>
+                                    <p class="stat-value">{{ approved_count|default:"0" }}</p>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 col-sm-6">
+                                <div class="stat-tile">
+                                    <div class="stat-icon icon-red">
+                                        <i class="bi bi-slash-circle-fill"></i>
+                                    </div>
+                                    <div class="stat-label">Rejected / Closed</div>
+                                    <p class="stat-value">{{ rejected_closed_count }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="custom-table-wrap">
+                            {% if requests %}
+                                <div class="table-responsive">
+                                    <table class="table align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Denomination Admin</th>
+                                                <th>Status</th>
+                                                <th>Requested At</th>
+                                                <th>Remarks</th>
+                                                <th style="min-width: 280px;">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for req in requests %}
+                                                <tr>
+                                                    <td data-label="Denomination Admin">
+                                                        <div class="user-block">
+                                                            <div class="user-avatar">
+                                                                {{ req.denomination_admin.username|default:req.denomination_admin|slice:":1"|upper }}
+                                                            </div>
+                                                            <div>
+                                                                <div class="user-name">
+                                                                    {{ req.denomination_admin.get_full_name|default:req.denomination_admin.username|default:req.denomination_admin }}
+                                                                </div>
+                                                                <div class="user-meta">
+                                                                    {% if req.denomination_admin.email %}
+                                                                        <div><i class="bi bi-envelope me-1"></i>{{ req.denomination_admin.email }}</div>
+                                                                    {% endif %}
+                                                                    <div><i class="bi bi-building me-1"></i>{{ req.church.name }}</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td data-label="Status">
+                                                        {% if req.status == "PENDING" %}
+                                                            <span class="badge-status bg-pending-soft">
+                                                                <i class="bi bi-hourglass-split me-1"></i>Pending
+                                                            </span>
+                                                        {% elif req.status == "APPROVED" %}
+                                                            <span class="badge-status bg-approved-soft">
+                                                                <i class="bi bi-check-circle-fill me-1"></i>Approved
+                                                            </span>
+                                                        {% elif req.status == "REJECTED" %}
+                                                            <span class="badge-status bg-rejected-soft">
+                                                                <i class="bi bi-x-circle-fill me-1"></i>Rejected
+                                                            </span>
+                                                        {% elif req.status == "CLOSED" %}
+                                                            <span class="badge-status bg-closed-soft">
+                                                                <i class="bi bi-slash-circle-fill me-1"></i>Closed
+                                                            </span>
+                                                        {% endif %}
+                                                    </td>
+
+                                                    <td data-label="Requested At">
+                                                        <div class="fw-semibold text-dark">
+                                                            {{ req.requested_at|date:"M d, Y" }}
+                                                        </div>
+                                                        <small class="text-muted">
+                                                            {{ req.requested_at|date:"h:i A" }}
+                                                        </small>
+                                                    </td>
+
+                                                    <td data-label="Remarks">
+                                                        <div class="remarks-box">
+                                                            {% if req.remarks %}
+                                                                {{ req.remarks }}
+                                                            {% else %}
+                                                                <span class="text-muted">No review remarks yet.</span>
+                                                            {% endif %}
+
+                                                            {% if req.close_remarks %}
+                                                                <small>
+                                                                    <strong>Close reason:</strong> {{ req.close_remarks }}
+                                                                </small>
+                                                            {% endif %}
+                                                        </div>
+                                                    </td>
+
+                                                    <td data-label="Action">
+                                                        <div class="action-stack">
+                                                            {% if req.status == "PENDING" %}
+                                                                <div class="action-card">
+                                                                    <div class="action-label">
+                                                                        <i class="bi bi-check2-circle"></i>
+                                                                        Approve Request
+                                                                    </div>
+                                                                    <form method="post" action="{% url 'church_admin_liquidation_requests' %}">
+                                                                        {% csrf_token %}
+                                                                        <input type="hidden" name="request_id" value="{{ req.id }}">
+                                                                        <input type="hidden" name="action" value="approve">
+                                                                        <input type="text" name="remarks" class="form-control mb-2" placeholder="Approval remarks (optional)">
+                                                                        <button type="submit" class="btn btn-success w-100">
+                                                                            <i class="bi bi-check-circle me-1"></i>Approve Access
+                                                                        </button>
+                                                                    </form>
+                                                                </div>
+
+                                                                <div class="action-card">
+                                                                    <div class="action-label text-danger">
+                                                                        <i class="bi bi-x-circle"></i>
+                                                                        Reject Request
+                                                                    </div>
+                                                                    <form method="post" action="{% url 'church_admin_liquidation_requests' %}">
+                                                                        {% csrf_token %}
+                                                                        <input type="hidden" name="request_id" value="{{ req.id }}">
+                                                                        <input type="hidden" name="action" value="reject">
+                                                                        <input type="text" name="remarks" class="form-control mb-2" placeholder="Reason for rejection (optional)">
+                                                                        <button type="submit" class="btn btn-danger w-100">
+                                                                            <i class="bi bi-x-circle me-1"></i>Reject Access
+                                                                        </button>
+                                                                    </form>
+                                                                </div>
+
+                                                            {% elif req.status == "APPROVED" %}
+                                                                <div class="action-card">
+                                                                    <div class="action-label text-danger">
+                                                                        <i class="bi bi-lock-fill"></i>
+                                                                        Revoke Approved Access
+                                                                    </div>
+                                                                    <form method="post" action="{% url 'church_admin_liquidation_requests' %}">
+                                                                        {% csrf_token %}
+                                                                        <input type="hidden" name="request_id" value="{{ req.id }}">
+                                                                        <input type="hidden" name="action" value="close">
+                                                                        <input type="text" name="remarks" class="form-control mb-2" placeholder="Reason for closing access (optional)">
+                                                                        <button type="submit" class="btn btn-outline-danger w-100">
+                                                                            <i class="bi bi-slash-circle me-1"></i>Close Viewing
+                                                                        </button>
+                                                                    </form>
+                                                                </div>
+
+                                                            {% else %}
+                                                                <div class="action-card">
+                                                                    <div class="text-muted small">
+                                                                        <i class="bi bi-info-circle me-1"></i>
+                                                                        No further action is available for this request in its current state.
+                                                                    </div>
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="empty-state">
+                                    <div class="empty-icon">
+                                        <i class="bi bi-folder2-open"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-primary">No Access Requests Yet</h5>
+                                    <p class="text-muted mb-0">
+                                        There are currently no denomination-admin liquidation viewing requests to review.
+                                    </p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,855 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Review Expenses</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            flex: 1;
+            margin-top: 40px;
+            max-width: 1150px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .page-header h2 {
+            font-weight: 700;
+            color: #1e3c72;
+        }
+
+        .page-header p {
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+
+        .fraud-legend {
+            display: inline-flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .table thead th {
+            border-top: none;
+            border-bottom: 2px solid #e9ecef;
+            background-color: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            padding: 18px;
+        }
+
+        .table td {
+            vertical-align: middle;
+            padding: 18px;
+            color: #333;
+            border-top: 1px solid #f1f1f1;
+            font-size: 0.95rem;
+        }
+
+        .badge-category {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-alloc {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.80rem;
+            font-weight: 700;
+        }
+
+        .amount-cell {
+            font-weight: 700;
+            color: #2a5298;
+            font-size: 1.05rem;
+        }
+
+        .actions-bar {
+            background: white;
+            padding: 20px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .alloc-panel {
+            background: #ffffff;
+            border: 1px solid #edf2f7;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+            transition: border-color 0.3s ease;
+        }
+
+        .alloc-panel.has-error {
+            border: 2px solid #dc3545 !important;
+            background-color: #fff8f8;
+        }
+
+        .alloc-title {
+            font-weight: 700;
+            color: #1e3c72;
+            font-size: 0.95rem;
+        }
+
+        .alloc-help {
+            color: #6c757d;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+
+        .remaining-pill {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .remaining-ok {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .remaining-bad {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .balance-card-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            padding: 16px 20px;
+        }
+
+        .balance-card-header h5 {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .balance-card-header p {
+            margin: 4px 0 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .balance-badge-ok {
+            background: #d4edda;
+            color: #155724;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.80rem;
+            font-weight: 700;
+        }
+
+        .balance-badge-bad {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.80rem;
+            font-weight: 700;
+        }
+
+        .receipt-box {
+            min-width: 180px;
+        }
+
+        .fraud-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-top: 6px;
+            margin-right: 4px;
+        }
+
+        .fraud-on {
+            background: #e8f0fe;
+            color: #1e40af;
+        }
+
+        .fraud-off {
+            background: #f1f3f5;
+            color: #6c757d;
+        }
+
+        .fraud-ok {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .fraud-skip {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .fraud-note {
+            display: block;
+            font-size: 0.76rem;
+            color: #6c757d;
+            line-height: 1.45;
+            margin-top: 6px;
+            word-break: break-word;
+        }
+
+        .receipt-attached {
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: auto;
+            color: #adb5bd;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+{% include 'navbar.html' %}
+
+<div class="container">
+
+    <div class="page-header">
+        <h2><i class="fas fa-clipboard-check mr-2"></i>Review Expenses</h2>
+        <p>Please verify the details below before saving to the database. If you see insufficient funds, adjust allocations first.</p>
+
+        <div class="fraud-legend">
+            <span class="fraud-badge fraud-ok"><i class="fas fa-shield-check"></i> Fraud Check Passed</span>
+            <span class="fraud-badge fraud-skip"><i class="fas fa-exclamation-circle"></i> Fraud Check Skipped</span>
+            <span class="fraud-badge fraud-off"><i class="fas fa-power-off"></i> Fraud Detection Off</span>
+        </div>
+    </div>
+
+    {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} shadow-sm border-0 rounded-lg d-flex align-items-center">
+                    <i class="fas fa-info-circle mr-3 fa-lg"></i>
+                    <div>{{ message }}</div>
+                    <button type="button" class="close ml-auto" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if balance_preview_rows %}
+    <div class="card">
+        <div class="balance-card-header">
+            <h5><i class="fas fa-wallet mr-2"></i>Balance Preview</h5>
+            <p>This shows every fund affected by the current batch.</p>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Fund</th>
+                        <th>Categories</th>
+                        <th class="text-right">Current Balance</th>
+                        <th class="text-right">Requested</th>
+                        <th class="text-right">Projected Remaining</th>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in balance_preview_rows %}
+                    <tr class="{% if row.insufficient %}table-danger{% endif %}">
+                        <td class="font-weight-bold">{{ row.fund_label }}</td>
+                        <td>{{ row.categories }}</td>
+                        <td class="text-right">₱{{ row.current_balance }}</td>
+                        <td class="text-right">₱{{ row.requested_total }}</td>
+                        <td class="text-right font-weight-bold">₱{{ row.projected_remaining }}</td>
+                        <td class="text-center">
+                            {% if row.insufficient %}
+                                <span class="balance-badge-bad">Insufficient</span>
+                            {% else %}
+                                <span class="balance-badge-ok">OK</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <form method="post" id="allocationForm">
+        {% csrf_token %}
+
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="width: 50px;">#</th>
+                            <th>Category</th>
+                            <th>Date</th>
+                            <th>Description / Vendor</th>
+                            <th>Receipt / Fraud Check</th>
+                            <th class="text-right">Amount</th>
+                            <th class="text-center" style="width: 160px;">Allocation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in expenses %}
+                        {% with idx=item.idx amt=item.amount_str %}
+                        <tr>
+                            <td class="text-center text-muted font-weight-bold align-middle">
+                                {{ forloop.counter }}
+                            </td>
+
+                            <td class="align-middle" style="min-width: 200px;">
+                                <span class="badge badge-category mb-2">
+                                    {{ item.category_name|default:"Uncategorized" }}
+                                </span>
+                                <div>
+                                    {% for ln in item.alloc_lines %}
+                                        <div class="small mb-1 text-secondary" style="line-height: 1.5;">
+                                            <i class="fas fa-level-up-alt fa-rotate-90 text-muted mr-1" style="font-size: 10px;"></i>
+                                            {{ ln.fund_label }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </td>
+
+                            <td class="align-middle">
+                                <i class="far fa-calendar-alt text-muted mr-1"></i>
+                                {{ item.expense_date }}
+                            </td>
+
+                            <td class="align-middle">
+                                {% if item.description %}
+                                    {{ item.description }}
+                                {% endif %}
+
+                                {% if item.vendor %}
+                                    <div class="text-muted small mt-1"><strong>Vendor:</strong> {{ item.vendor }}</div>
+                                {% endif %}
+
+                                {% if not item.description and not item.vendor %}
+                                    <span class="text-muted font-italic small">--</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="align-middle">
+                                <div class="receipt-box">
+                                    {% if item.has_file or item.file_url or item.has_temp_file %}
+                                        <div class="receipt-attached text-success">
+                                            <i class="fas fa-paperclip"></i> Receipt Attached
+                                        </div>
+                                    {% else %}
+                                        <div class="text-muted small">No attachment</div>
+                                    {% endif %}
+
+                                    {% if item.fraud_detection_enabled %}
+                                        {% if item.fraud_checked %}
+                                            {% if "skipped" in item.fraud_reason|lower %}
+                                                <span class="fraud-badge fraud-skip">
+                                                    <i class="fas fa-exclamation-circle"></i> Check Skipped
+                                                </span>
+                                            {% else %}
+                                                <span class="fraud-badge fraud-ok">
+                                                    <i class="fas fa-shield-alt"></i> Check Passed
+                                                </span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="fraud-badge fraud-skip">
+                                                <i class="fas fa-minus-circle"></i> Not Checked
+                                            </span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="fraud-badge fraud-off">
+                                            <i class="fas fa-power-off"></i> Detection Off
+                                        </span>
+                                    {% endif %}
+
+                                    {% if item.fraud_reason %}
+                                        <span class="fraud-note">{{ item.fraud_reason }}</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+
+                            <td class="text-right align-middle">
+                                <div class="mt-4 pt-1">
+                                    {% for ln in item.alloc_lines %}
+                                        <div class="amount-cell mb-1" style="line-height: 1.5;">
+                                            ₱{{ ln.amount }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                {% if item.alloc_lines|length > 1 %}
+                                    <div class="border-top pt-1 mt-1 text-dark" style="font-size: 0.85rem;">
+                                        <strong>₱{{ amt }}</strong> <span class="text-muted">Total</span>
+                                    </div>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-center align-middle">
+                                <button type="button"
+                                        class="btn btn-outline-primary btn-sm rounded-pill"
+                                        data-toggle="collapse"
+                                        data-target="#alloc_{{ idx }}"
+                                        aria-expanded="false"
+                                        aria-controls="alloc_{{ idx }}">
+                                    <i class="fas fa-sliders-h mr-1"></i> Adjust
+                                </button>
+                            </td>
+                        </tr>
+
+                        <tr class="collapse" id="alloc_{{ idx }}">
+                            <td colspan="7" class="bg-light">
+                                <div class="alloc-panel" id="panel_{{ idx }}" data-expense-idx="{{ idx }}" data-expense-amount="{{ amt }}">
+                                    <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                                        <div>
+                                            <div class="alloc-title">Allocate this expense amount</div>
+                                            <div class="alloc-help">Total allocation must equal <strong>₱{{ amt }}</strong>.</div>
+                                        </div>
+
+                                        <div>
+                                            <span id="remaining_pill_{{ idx }}" class="remaining-pill {% if item.remaining and item.remaining != '0.00' %}remaining-bad{% else %}remaining-ok{% endif %}">
+                                                Remaining:
+                                                <span id="remaining_val_{{ idx }}">{{ item.remaining|default:"0.00" }}</span>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-row font-weight-bold text-muted d-none d-md-flex pb-2 border-bottom mb-2" style="font-size: 0.85rem;">
+                                        <div class="col-md-3">Fund Type</div>
+                                        <div class="col-md-3">Category / Fund Name</div>
+                                        <div class="col-md-2">Amount</div>
+                                        <div class="col-md-3">Receipt Image</div>
+                                        <div class="col-md-1"></div>
+                                    </div>
+
+                                    <div id="allocWrap_{{ idx }}">
+                                        {% for ln in item.alloc_lines %}
+                                        <div class="form-row align-items-center mb-2 alloc-row">
+
+                                            <div class="col-md-3 mb-2 mb-md-0">
+                                                <label class="small text-muted mb-1 d-block d-md-none">Fund Type</label>
+                                                <select class="form-control form-control-sm fund-type-selector" onchange="handleTypeChange(this)">
+                                                    <option value="U" {% if ln.fund == 'U' or not ln.fund %}selected{% endif %}>Unrestricted (General)</option>
+                                                    <option value="R" {% if ln.fund != 'U' and ln.fund %}selected{% endif %}>Restricted (Special Fund)</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-3 mb-2 mb-md-0">
+                                                <label class="small text-muted mb-1 d-block d-md-none">Category / Fund Name</label>
+
+                                                <input type="hidden" name="alloc_{{ idx }}_fund" class="real-fund-input" value="{{ ln.fund|default:'U' }}">
+                                                <input type="hidden" name="alloc_{{ idx }}_category" class="real-cat-input" value="{{ ln.category_id|default:'' }}">
+
+                                                <select class="form-control form-control-sm unrestricted-select {% if ln.fund != 'U' and ln.fund %}d-none{% endif %}" onchange="updateHiddenFields(this)">
+                                                    <option value="" {% if not ln.category_id %}selected{% endif %}>-- Select Category --</option>
+                                                    {% for cat in category_options %}
+                                                        <option value="{{ cat.id }}" {% if ln.fund == 'U' and cat.id|stringformat:"s" == ln.category_id|stringformat:"s" %}selected{% endif %}>
+                                                            {{ cat.name }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+
+                                                <select class="form-control form-control-sm restricted-select {% if ln.fund == 'U' or not ln.fund %}d-none{% endif %}" onchange="updateHiddenFields(this)">
+                                                    <option value="" disabled {% if ln.fund == 'U' or not ln.fund %}selected{% endif %}>-- Select Restricted Fund --</option>
+                                                    {% for f in fund_options %}
+                                                        {% if f.key != 'U' %}
+                                                            <option value="{{ f.key }}" {% if ln.fund == f.key %}selected{% endif %}>
+                                                                {{ f.label }}
+                                                            </option>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-2 mb-2 mb-md-0">
+                                                <label class="small text-muted mb-1 d-block d-md-none">Amount</label>
+                                                <input name="alloc_{{ idx }}_amount"
+                                                       class="form-control form-control-sm alloc-amount"
+                                                       value="{{ ln.amount }}"
+                                                       step="0.01"
+                                                       type="number"
+                                                       min="0"
+                                                       onkeyup="recalcRemaining('{{ idx }}')"
+                                                       onchange="recalcRemaining('{{ idx }}')">
+                                            </div>
+
+                                            <div class="col-md-3 mb-2 mb-md-0">
+                                                <label class="small text-muted mb-1 d-block d-md-none">Receipt</label>
+                                                <input type="file" accept="image/*,application/pdf" class="form-control-file form-control-sm" style="font-size: 0.75rem;" onchange="uploadReceipt(this, '{{ idx }}')">
+                                                <input type="hidden" name="alloc_{{ idx }}_temp_file_id[]" value="{{ ln.temp_file_id|default_if_none:'' }}">
+                                                <div class="upload-status mt-1" style="font-size: 0.75rem; font-weight: 600;">
+                                                    {% if ln.temp_file_id %}
+                                                        <span class="text-success"><i class="fas fa-check"></i> Attached</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-1 text-right">
+                                                <button type="button" class="btn btn-link text-danger p-0 mt-md-0 mt-2" onclick="removeAllocRow(this, '{{ idx }}')" title="Remove">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center flex-wrap mt-3">
+                                        <button type="button"
+                                                class="btn btn-outline-secondary btn-sm rounded-pill"
+                                                onclick="addAllocRow('{{ idx }}')">
+                                            <i class="fas fa-plus mr-1"></i> Add Split
+                                        </button>
+                                        <div class="text-muted small">
+                                            Tip: Adjust funds and categories manually if splitting a complex receipt.
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endwith %}
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="fas fa-inbox fa-3x mb-3 d-block text-secondary opacity-50"></i>
+                                No expenses found in session.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="actions-bar">
+            <div class="text-muted font-weight-bold">
+                Total Items: <span class="text-dark">{{ expenses|length }}</span>
+            </div>
+
+            <div>
+                <button type="submit" name="add_another" value="true"
+                        class="btn btn-outline-secondary px-4 mr-2 rounded-pill font-weight-bold"
+                        formnovalidate>
+                    <i class="fas fa-plus mr-2"></i> Add Another
+                </button>
+
+                <button type="submit" name="cancel" value="true"
+                        class="btn btn-outline-danger px-4 mr-2 rounded-pill font-weight-bold"
+                        formnovalidate>
+                    <i class="fas fa-times mr-2"></i> Cancel & Discard
+                </button>
+
+                <button type="submit" name="apply" value="true"
+                        class="btn btn-outline-primary px-4 mr-2 rounded-pill font-weight-bold">
+                    <i class="fas fa-sync-alt mr-2"></i> Apply Adjustments
+                </button>
+
+                <button type="submit" name="confirm" value="true"
+                        class="btn btn-success px-5 shadow-sm rounded-pill font-weight-bold">
+                    Confirm & Save <i class="fas fa-check ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </form>
+
+</div>
+
+<footer>
+    <p>&copy; 2024 Living Stone Evangelical Free Church Information System</p>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+const unrestrictedCategoriesHTML = `
+    <option value="" selected>-- Select Category --</option>
+    {% for cat in category_options %}
+      <option value="{{ cat.id }}">{{ cat.name|escapejs }}</option>
+    {% endfor %}
+`;
+
+const restrictedFundsHTML = `
+    <option value="" disabled selected>-- Select Restricted Fund --</option>
+    {% for f in fund_options %}
+        {% if f.key != 'U' %}
+            <option value="{{ f.key }}">{{ f.label|escapejs }}</option>
+        {% endif %}
+    {% endfor %}
+`;
+
+function toNumber(val){
+    if(val === null || val === undefined || val === '') return 0;
+    const n = parseFloat(val);
+    return isNaN(n) ? 0 : n;
+}
+
+function roundToTwo(num) {
+    return +(Math.round(num + "e+2")  + "e-2");
+}
+
+function recalcRemaining(idx){
+    const panel = document.getElementById('panel_' + idx);
+    if(!panel) return;
+
+    const totalAmount = roundToTwo(toNumber(panel.getAttribute('data-expense-amount')));
+    const inputs = panel.querySelectorAll('input.alloc-amount');
+
+    let sum = 0;
+    inputs.forEach(i => sum += roundToTwo(toNumber(i.value)));
+
+    const remaining = roundToTwo(totalAmount - sum);
+    const remainingEl = document.getElementById('remaining_val_' + idx);
+    const pill = document.getElementById('remaining_pill_' + idx);
+
+    if(remainingEl) remainingEl.textContent = remaining.toFixed(2);
+
+    if(pill){
+        if(Math.abs(remaining) === 0){
+            pill.classList.remove('remaining-bad');
+            pill.classList.add('remaining-ok');
+            panel.classList.remove('has-error');
+        } else {
+            pill.classList.remove('remaining-ok');
+            pill.classList.add('remaining-bad');
+            panel.classList.add('has-error');
+        }
+    }
+}
+
+function handleTypeChange(selectElem) {
+    const row = selectElem.closest('.alloc-row');
+    const type = selectElem.value;
+    const unrestrictSelect = row.querySelector('.unrestricted-select');
+    const restrictSelect = row.querySelector('.restricted-select');
+
+    if (type === 'U') {
+        unrestrictSelect.classList.remove('d-none');
+        restrictSelect.classList.add('d-none');
+        updateHiddenFields(unrestrictSelect);
+    } else {
+        unrestrictSelect.classList.add('d-none');
+        restrictSelect.classList.remove('d-none');
+        updateHiddenFields(restrictSelect);
+    }
+}
+
+function updateHiddenFields(detailSelect) {
+    const row = detailSelect.closest('.alloc-row');
+    const typeSelect = row.querySelector('.fund-type-selector');
+    const realFund = row.querySelector('.real-fund-input');
+    const realCat = row.querySelector('.real-cat-input');
+
+    if (typeSelect.value === 'U') {
+        realFund.value = 'U';
+        realCat.value = detailSelect.value;
+    } else {
+        realFund.value = detailSelect.value;
+        realCat.value = '';
+    }
+}
+
+function addAllocRow(idx){
+    const wrap = document.getElementById('allocWrap_' + idx);
+    if(!wrap) return;
+
+    const row = document.createElement('div');
+    row.className = 'form-row align-items-center mb-2 alloc-row';
+
+    row.innerHTML = `
+        <div class="col-md-3 mb-2 mb-md-0">
+            <label class="small text-muted mb-1 d-block d-md-none">Fund Type</label>
+            <select class="form-control form-control-sm fund-type-selector" onchange="handleTypeChange(this)">
+                <option value="U" selected>Unrestricted (General)</option>
+                <option value="R">Restricted (Special Fund)</option>
+            </select>
+        </div>
+
+        <div class="col-md-3 mb-2 mb-md-0">
+            <label class="small text-muted mb-1 d-block d-md-none">Category / Fund Name</label>
+
+            <input type="hidden" name="alloc_${idx}_fund" class="real-fund-input" value="U">
+            <input type="hidden" name="alloc_${idx}_category" class="real-cat-input" value="">
+
+            <select class="form-control form-control-sm unrestricted-select" onchange="updateHiddenFields(this)">
+                ${unrestrictedCategoriesHTML}
+            </select>
+
+            <select class="form-control form-control-sm restricted-select d-none" onchange="updateHiddenFields(this)">
+                ${restrictedFundsHTML}
+            </select>
+        </div>
+
+        <div class="col-md-2 mb-2 mb-md-0">
+            <label class="small text-muted mb-1 d-block d-md-none">Amount</label>
+            <input name="alloc_${idx}_amount"
+                   class="form-control form-control-sm alloc-amount"
+                   value="0.00"
+                   step="0.01"
+                   type="number"
+                   min="0"
+                   onkeyup="recalcRemaining('${idx}')"
+                   onchange="recalcRemaining('${idx}')">
+        </div>
+
+        <div class="col-md-3 mb-2 mb-md-0">
+            <label class="small text-muted mb-1 d-block d-md-none">Receipt</label>
+            <input type="file" accept="image/*,application/pdf" class="form-control-file form-control-sm" style="font-size: 0.75rem;" onchange="uploadReceipt(this, '${idx}')">
+            <input type="hidden" name="alloc_${idx}_temp_file_id[]" value="">
+            <div class="upload-status mt-1" style="font-size: 0.75rem; font-weight: 600;"></div>
+        </div>
+
+        <div class="col-md-1 text-right">
+            <button type="button" class="btn btn-link text-danger p-0 mt-md-0 mt-2" onclick="removeAllocRow(this, '${idx}')" title="Remove">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+    wrap.appendChild(row);
+    recalcRemaining(idx);
+}
+
+function removeAllocRow(btn, idx){
+    const row = btn.closest('.alloc-row');
+    if(row){
+        row.remove();
+        recalcRemaining(idx);
+    }
+}
+
+function uploadReceipt(inputElement, expenseIdx) {
+    const file = inputElement.files[0];
+    if (!file) return;
+
+    const container = inputElement.closest('.alloc-row');
+    const hiddenInput = container.querySelector(`input[name="alloc_${expenseIdx}_temp_file_id[]"]`);
+    const statusSpan = container.querySelector('.upload-status');
+
+    statusSpan.innerHTML = '<span class="text-primary"><i class="fas fa-spinner fa-spin"></i> Uploading...</span>';
+
+    const formData = new FormData();
+    formData.append('receipt_file', file);
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    fetch("{% url 'upload_temp_receipt' %}", {
+        method: "POST",
+        headers: { "X-CSRFToken": csrfToken },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.temp_file_id) {
+            hiddenInput.value = data.temp_file_id;
+            statusSpan.innerHTML = '<span class="text-success"><i class="fas fa-check"></i> Attached</span>';
+        } else {
+            statusSpan.innerHTML = '<span class="text-danger"><i class="fas fa-times"></i> Failed</span>';
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        statusSpan.innerHTML = '<span class="text-danger"><i class="fas fa-times"></i> Error</span>';
+    });
+}
+
+let clickedButtonName = '';
+document.querySelectorAll('button[type="submit"]').forEach(btn => {
+    btn.addEventListener('click', function() {
+        clickedButtonName = this.name;
+    });
+});
+
+document.getElementById('allocationForm').addEventListener('submit', function(e) {
+    const actionName = e.submitter ? e.submitter.name : clickedButtonName;
+    let hasErrors = false;
+
+    if (actionName === 'confirm') {
+        document.querySelectorAll('.alloc-panel').forEach(panel => {
+            const idx = panel.getAttribute('data-expense-idx');
+            const remainingEl = document.getElementById('remaining_val_' + idx);
+
+            if (remainingEl) {
+                const remaining = toNumber(remainingEl.textContent);
+                if (Math.abs(remaining) !== 0) {
+                    hasErrors = true;
+                    panel.classList.add('has-error');
+                    $('#alloc_' + idx).collapse('show');
+                } else {
+                    panel.classList.remove('has-error');
+                }
+            }
+        });
+
+        if (hasErrors) {
+            e.preventDefault();
+            alert("Allocation Mismatch: Please ensure the remaining balance for all expenses is exactly 0.00 before saving.");
+            return;
+        }
+    }
+
+    const disabledSelects = this.querySelectorAll('select:disabled');
+    disabledSelects.forEach(function(select) {
+        select.disabled = false;
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('.alloc-panel').forEach(p => {
+        const idx = p.getAttribute('data-expense-idx');
+        if(idx !== null) recalcRemaining(idx);
+    });
+});
+</script>
+
+</body>
+</html>
+

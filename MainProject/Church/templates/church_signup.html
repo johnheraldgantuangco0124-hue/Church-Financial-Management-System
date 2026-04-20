@@ -1,0 +1,371 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Register Church | Church IS</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+
+        .main-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .card-header-custom {
+            padding: 40px 40px 20px 40px;
+            text-align: center;
+        }
+
+        .card-body-custom {
+            padding: 0 40px 40px 40px;
+        }
+
+        .brand-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            color: white;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0, 242, 254, 0.3);
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            font-weight: 600;
+            margin: 25px 0 15px 0;
+            display: flex;
+            align-items: center;
+        }
+        .section-title::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #e0e0e0;
+            margin-left: 15px;
+        }
+
+        /* Form Floating Overrides */
+        .form-floating > .form-control,
+        .form-floating > .form-select {
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            padding-left: 15px;
+        }
+        .form-floating > .form-control:focus,
+        .form-floating > .form-select:focus {
+            border-color: #4facfe;
+            box-shadow: 0 0 0 4px rgba(79, 172, 254, 0.1);
+        }
+        .form-floating > label { padding-left: 15px; }
+
+        .btn-submit {
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            border: none;
+            padding: 12px;
+            font-weight: 500;
+            border-radius: 10px;
+            transition: transform 0.2s;
+            color: white;
+            width: 100%;
+        }
+        .btn-submit:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 242, 254, 0.4);
+            color: white;
+        }
+
+        .btn-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .hidden-django-input { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-md-9">
+
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm mb-4" role="alert">
+                    <i class="fas fa-info-circle me-2"></i> {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="card main-card">
+                <div class="card-header-custom">
+                    <div class="brand-icon">
+                        <i class="fas fa-church"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark">Register Church</h3>
+                    <p class="text-muted small">Create a new local church profile.</p>
+                </div>
+
+                <div class="card-body-custom">
+                    <form method="post" id="churchSignupForm" novalidate>
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                        {% endif %}
+
+                        <div class="section-title">
+                            <i class="fas fa-place-of-worship me-2 text-primary"></i> Church Details
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            {{ form.name }}
+                            <label for="{{ form.name.id_for_label }}">Church Name *</label>
+                            {% if form.name.errors %}
+                                <div class="text-danger small mt-1 ms-1">{{ form.name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <select class="form-select" id="province_select" required>
+                                        <option selected disabled value="">Loading...</option>
+                                    </select>
+                                    <label>Province *</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <select class="form-select" id="city_select" disabled required>
+                                        <option selected disabled value="">Select Province First</option>
+                                    </select>
+                                    <label>Municipality / City *</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <select class="form-select" id="barangay_select" disabled required>
+                                        <option selected disabled value="">Select City First</option>
+                                    </select>
+                                    <label>Barangay *</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    {{ form.purok }}
+                                    <label for="{{ form.purok.id_for_label }}">Purok / Street *</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="hidden-django-input">
+                            {{ form.province }}
+                            {{ form.municipality_or_city }}
+                            {{ form.barangay }}
+                        </div>
+
+                        <div class="section-title">
+                            <i class="fas fa-user-shield me-2 text-primary"></i> Admin Access
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    {{ form.admin_username }}
+                                    <label for="{{ form.admin_username.id_for_label }}">Username *</label>
+                                    {% if form.admin_username.errors %}
+                                        <div class="text-danger small mt-1 ms-1">{{ form.admin_username.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    {{ form.admin_email }}
+                                    <label for="{{ form.admin_email.id_for_label }}">Email Address *</label>
+                                    {% if form.admin_email.errors %}
+                                        <div class="text-danger small mt-1 ms-1">{{ form.admin_email.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-floating mb-4">
+                            {{ form.admin_password }}
+                            <label for="{{ form.admin_password.id_for_label }}">Secure Password *</label>
+                            {% if form.admin_password.errors %}
+                                <div class="text-danger small mt-1 ms-1">{{ form.admin_password.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" id="btn-submit" class="btn btn-submit shadow-sm">
+                                <span id="btn-text">
+                                    <i class="fas fa-check-circle me-2"></i> Register Church
+                                </span>
+                                <span id="btn-loader" class="d-none">
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    Sending Verification...
+                                </span>
+                            </button>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <a href="{% url 'login' %}" class="text-decoration-none text-muted small">
+                                <i class="fas fa-arrow-left me-1"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <p class="text-center text-white mt-3 small opacity-75">
+                <i class="fas fa-envelope me-1"></i> You will receive a verification email to activate your account.
+            </p>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // --- 1. Style Adjustments ---
+        $('input:not([type="hidden"]), select, textarea').addClass('form-control');
+        $('#province_select, #city_select, #barangay_select').removeClass('form-control').addClass('form-select');
+
+        // --- 2. Loading State on Submit ---
+        $('#churchSignupForm').on('submit', function() {
+            // Check if form is valid (basic browser check)
+            if (this.checkValidity()) {
+                const $btn = $('#btn-submit');
+                $btn.prop('disabled', true); // Disable button
+                $('#btn-text').addClass('d-none'); // Hide normal text
+                $('#btn-loader').removeClass('d-none'); // Show spinner
+            }
+        });
+
+        // --- 3. Address API Logic (PSGC) ---
+        const api_base = 'https://psgc.gitlab.io/api';
+        const $real_province = $('[name="province"]');
+        const $real_city = $('[name="municipality_or_city"]');
+        const $real_barangay = $('[name="barangay"]');
+        const $sel_prov = $('#province_select');
+        const $sel_city = $('#city_select');
+        const $sel_brgy = $('#barangay_select');
+
+        // Load Provinces
+        $.ajax({
+            url: api_base + '/provinces',
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                data.sort((a,b) => a.name.localeCompare(b.name));
+                $sel_prov.empty().append('<option selected disabled value="">Select Province</option>');
+                $.each(data, function(i, item) {
+                    $sel_prov.append($('<option>', {
+                        value: item.code,
+                        text: item.name,
+                        'data-name': item.name
+                    }));
+                });
+            }
+        });
+
+        // On Province Change
+        $sel_prov.change(function() {
+            let code = $(this).val();
+            let name = $(this).find('option:selected').data('name');
+            $real_province.val(name);
+
+            $sel_city.empty().append('<option selected disabled>Loading...</option>').prop('disabled', true);
+            $sel_brgy.empty().append('<option selected disabled>Select City First</option>').prop('disabled', true);
+            $real_city.val('');
+            $real_barangay.val('');
+
+            $.ajax({
+                url: `${api_base}/provinces/${code}/cities-municipalities`,
+                type: 'GET', dataType: 'json',
+                success: function(data) {
+                    data.sort((a,b) => a.name.localeCompare(b.name));
+                    $sel_city.empty().append('<option selected disabled>Select City/Municipality</option>');
+                    $.each(data, function(i, item) {
+                        $sel_city.append($('<option>', {
+                            value: item.code,
+                            text: item.name,
+                            'data-name': item.name
+                        }));
+                    });
+                    $sel_city.prop('disabled', false);
+                }
+            });
+        });
+
+        // On City Change
+        $sel_city.change(function() {
+            let code = $(this).val();
+            let name = $(this).find('option:selected').data('name');
+            $real_city.val(name);
+
+            $sel_brgy.empty().append('<option selected disabled>Loading...</option>').prop('disabled', true);
+            $real_barangay.val('');
+
+            $.ajax({
+                url: `${api_base}/cities-municipalities/${code}/barangays`,
+                type: 'GET', dataType: 'json',
+                success: function(data) {
+                    data.sort((a,b) => a.name.localeCompare(b.name));
+                    $sel_brgy.empty().append('<option selected disabled>Select Barangay</option>');
+                    $.each(data, function(i, item) {
+                        $sel_brgy.append($('<option>', {
+                            value: item.code,
+                            text: item.name
+                        }));
+                    });
+                    $sel_brgy.prop('disabled', false);
+                }
+            });
+        });
+
+        // On Barangay Change
+        $sel_brgy.change(function() {
+            let name = $(this).find('option:selected').text();
+            $real_barangay.val(name);
+        });
+    });
+</script>
+
+</body>
+</html>

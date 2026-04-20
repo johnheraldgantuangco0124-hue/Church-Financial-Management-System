@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-dark: #172554;
+            --primary-soft: #eff6ff;
+            --border: #e5e7eb;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --card-bg: #ffffff;
+            --page-bg: #f8fafc;
+            --shadow-sm: 0 8px 24px rgba(15, 23, 42, 0.06);
+            --shadow-md: 0 14px 34px rgba(15, 23, 42, 0.08);
+            --radius: 18px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content {
+            flex: 1;
+            padding-top: 40px;
+            padding-bottom: 50px;
+        }
+
+        .page-title {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+
+        .page-subtitle {
+            color: var(--text-muted);
+            margin-bottom: 28px;
+            font-size: 0.98rem;
+        }
+
+        .panel-card,
+        .info-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .panel-card {
+            padding: 24px;
+            height: 100%;
+        }
+
+        .avatar-wrap {
+            width: 84px;
+            height: 84px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+            border: 4px solid #fff;
+            background: #fff;
+        }
+
+        .avatar-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-name {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+            color: var(--text-dark);
+        }
+
+        .user-role {
+            display: inline-block;
+            background: var(--primary-soft);
+            color: var(--primary);
+            border: 1px solid #bfdbfe;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 0.84rem;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+
+        .side-section-title {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-top: 24px;
+            margin-bottom: 14px;
+        }
+
+        .info-list {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .info-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.95rem;
+            color: #334155;
+            padding: 10px 0;
+            border-bottom: 1px solid #eef2f7;
+        }
+
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+
+        .info-list i {
+            color: var(--primary);
+            width: 18px;
+            text-align: center;
+            margin-top: 3px;
+        }
+
+        .action-btn {
+            border-radius: 12px;
+            font-weight: 700;
+            padding: 11px 16px;
+            font-size: 0.94rem;
+        }
+
+        .btn-primary-soft {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        .btn-primary-soft:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+            color: #fff;
+        }
+
+        .btn-light-soft {
+            background: #fff;
+            border: 1px solid var(--border);
+            color: var(--text-dark);
+        }
+
+        .btn-light-soft:hover {
+            background: #f8fafc;
+            color: var(--text-dark);
+        }
+
+        .info-card-header {
+            padding: 24px 26px 14px;
+            border-bottom: 1px solid var(--border);
+            background: #fff;
+        }
+
+        .info-card-title {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+
+        .info-card-subtitle {
+            margin: 5px 0 0;
+            color: var(--text-muted);
+            font-size: 0.93rem;
+        }
+
+        .info-card-body {
+            padding: 24px 26px 26px;
+        }
+
+        .form-section-title {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 8px;
+            font-size: 0.94rem;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="date"],
+        input[type="password"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            border: 1px solid #dbe2ea;
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            background: #fff;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #93c5fd;
+            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.14);
+            background: #fff;
+        }
+
+        .helptext,
+        .form-text,
+        small {
+            display: block;
+            margin-top: 6px;
+            color: var(--text-muted);
+            font-size: 0.84rem;
+        }
+
+        .field-error {
+            margin-top: 8px;
+            color: #b91c1c;
+            font-size: 0.86rem;
+            font-weight: 600;
+        }
+
+        .field-error ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        .alert {
+            border-radius: 14px;
+            border: none;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .sticky-panel {
+            position: sticky;
+            top: 24px;
+        }
+
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .button-row .btn {
+            min-width: 150px;
+        }
+
+        .non-field-errors {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+        footer {
+            margin-top: auto;
+            text-align: center;
+            padding: 20px;
+            background: #0f172a;
+            color: #cbd5e1;
+            font-size: 0.92rem;
+        }
+
+        footer a {
+            color: #93c5fd;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        @media (max-width: 991.98px) {
+            .sticky-panel {
+                position: static;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .main-content {
+                padding-top: 24px;
+                padding-bottom: 30px;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .panel-card,
+            .info-card-body,
+            .info-card-header {
+                padding-left: 18px !important;
+                padding-right: 18px !important;
+            }
+
+            .button-row .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+    {% with profile_user=user_obj|default:user %}
+    <div class="container main-content">
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
+                    <strong class="mr-1">
+                        {% if message.tags == 'success' %}
+                            Success:
+                        {% elif message.tags == 'warning' %}
+                            Warning:
+                        {% elif message.tags == 'error' %}
+                            Error:
+                        {% else %}
+                            Notice:
+                        {% endif %}
+                    </strong>
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="mb-4">
+            <h1 class="page-title">Edit Profile</h1>
+            <p class="page-subtitle">Update your personal details, ministry affiliation, church assignment, and address information.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="sticky-panel">
+                    <div class="panel-card">
+                        <div class="text-center">
+                            <div class="avatar-wrap mx-auto">
+                                {% if profile_user.profile_picture %}
+                                    <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.first_name }}">
+                                {% else %}
+                                    <img src="https://ui-avatars.com/api/?name={{ profile_user.first_name }}+{{ profile_user.last_name }}&background=1E3A8A&color=fff&size=150" alt="User">
+                                {% endif %}
+                            </div>
+
+                            <div class="user-name">
+                                {{ profile_user.first_name }} {{ profile_user.last_name }}
+                            </div>
+
+                            <div class="text-muted mb-2">@{{ profile_user.username }}</div>
+
+                            <div class="user-role">
+                                <i class="fas fa-user-shield mr-1"></i>{{ profile_user.get_user_type_display }}
+                            </div>
+                        </div>
+
+                        <div class="side-section-title">Current Information</div>
+                        <ul class="info-list">
+                            <li>
+                                <i class="fas fa-church"></i>
+                                <div>
+                                    <strong>Organization:</strong><br>
+                                    {{ profile_user.get_organization_display|default:"Not assigned" }}
+                                </div>
+                            </li>
+                            <li>
+                                <i class="fas fa-place-of-worship"></i>
+                                <div>
+                                    <strong>Church:</strong><br>
+                                    {% if profile_user.church %}{{ profile_user.church.name }}{% else %}Not assigned{% endif %}
+                                </div>
+                            </li>
+                            <li>
+                                <i class="fas fa-layer-group"></i>
+                                <div>
+                                    <strong>Denomination:</strong><br>
+                                    {% if profile_user.denomination %}{{ profile_user.denomination.name }}{% else %}Not assigned{% endif %}
+                                </div>
+                            </li>
+                            <li>
+                                <i class="fas fa-calendar-alt"></i>
+                                <div>
+                                    <strong>Year Term:</strong><br>
+                                    {{ profile_user.get_year_term_display|default:"Not assigned" }}
+                                </div>
+                            </li>
+                        </ul>
+
+                        <div class="button-row mt-4">
+                            <a href="{% url 'user_detail' %}" class="btn btn-light-soft action-btn btn-block">
+                                <i class="fas fa-arrow-left mr-2"></i>Back to Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 mb-4">
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <h4 class="info-card-title">Profile Form</h4>
+                        <p class="info-card-subtitle">Make changes below, then save your updated profile.</p>
+                    </div>
+
+                    <div class="info-card-body">
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+
+                            {% if form.non_field_errors %}
+                                <div class="non-field-errors">
+                                    {{ form.non_field_errors }}
+                                </div>
+                            {% endif %}
+
+                            <div class="form-section-title">Editable Details</div>
+
+                            {% for field in form %}
+                                <div class="form-group">
+                                    {{ field.label_tag }}
+                                    {{ field }}
+
+                                    {% if field.help_text %}
+                                        <small>{{ field.help_text }}</small>
+                                    {% endif %}
+
+                                    {% if field.errors %}
+                                        <div class="field-error">
+                                            {{ field.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+
+                            <div class="button-row">
+                                <button type="submit" class="btn btn-primary-soft action-btn">
+                                    <i class="fas fa-save mr-2"></i>Save Changes
+                                </button>
+                                <a href="{% url 'user_detail' %}" class="btn btn-light-soft action-btn">
+                                    <i class="fas fa-times mr-2"></i>Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endwith %}
+
+    <footer>
+        <p class="mb-0">&copy; 2024 <a href="#">Living Stone Evangelical Free Church</a> Information System</p>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

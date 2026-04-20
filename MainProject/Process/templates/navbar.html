@@ -1,0 +1,902 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --nav-bg-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        --nav-hover: rgba(255, 255, 255, 0.15);
+        --dropdown-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
+        --accent-color: #2a5298;
+        --danger-soft: #fff5f5;
+        --danger-border: #ffebeb;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+    }
+
+    .navbar-custom {
+        background: var(--nav-bg-gradient);
+        padding: 0.75rem 1rem;
+        box-shadow: 0 4px 15px rgba(30, 60, 114, 0.30);
+        z-index: 1030;
+    }
+
+    .navbar-brand {
+        font-weight: 700;
+        font-size: 1.3rem;
+        letter-spacing: 0.4px;
+        color: #fff !important;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+    }
+
+    .navbar-brand i {
+        font-size: 1.25rem;
+        color: #facc15;
+    }
+
+    .nav-link {
+        color: rgba(255, 255, 255, 0.92) !important;
+        font-weight: 500;
+        font-size: 0.95rem;
+        padding: 0.6rem 1rem !important;
+        border-radius: 10px;
+        transition: all 0.2s ease-in-out;
+        margin: 0 2px;
+        display: flex;
+        align-items: center;
+    }
+
+    .nav-link:hover,
+    .nav-link.show {
+        color: #fff !important;
+        background-color: var(--nav-hover);
+        transform: translateY(-1px);
+    }
+
+    .nav-link i {
+        margin-right: 7px;
+        font-size: 1.05rem;
+        vertical-align: middle;
+    }
+
+    .dropdown-menu {
+        border: none;
+        border-radius: 14px;
+        box-shadow: var(--dropdown-shadow);
+        padding: 0.55rem;
+        margin-top: 12px;
+        animation: fadeIn 0.18s ease-out;
+        border-top: 3px solid #1e3c72;
+        min-width: 260px;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .dropdown-header {
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.70rem;
+        font-weight: 700;
+        color: #6c757d;
+        padding: 0.55rem 1rem;
+    }
+
+    .dropdown-item {
+        padding: 0.68rem 1rem;
+        font-size: 0.94rem;
+        color: #374151;
+        border-radius: 8px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s ease;
+    }
+
+    .dropdown-item:hover {
+        background-color: #f0f4f8;
+        color: #1e3c72;
+        padding-left: 1.15rem;
+    }
+
+    .dropdown-item i {
+        margin-right: 10px;
+        font-size: 1.05rem;
+        width: 20px;
+        text-align: center;
+        transition: transform 0.2s ease;
+    }
+
+    .dropdown-item:hover i {
+        transform: scale(1.08);
+    }
+
+    .user-pill {
+        background-color: rgba(255, 255, 255, 0.11);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 50px;
+        padding: 4px 14px 4px 4px !important;
+        transition: all 0.25s ease;
+    }
+
+    .user-pill:hover,
+    .user-pill.show {
+        background-color: rgba(255, 255, 255, 0.22);
+        border-color: rgba(255, 255, 255, 0.38);
+    }
+
+    .user-avatar {
+        width: 33px;
+        height: 33px;
+        background-color: #fff;
+        color: #1e3c72;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.10);
+        flex-shrink: 0;
+    }
+
+    .logout-btn {
+        background-color: var(--danger-soft);
+        color: #dc3545 !important;
+        font-weight: 600;
+        border: 1px solid var(--danger-border);
+        border-radius: 10px;
+        transition: all 0.2s ease;
+    }
+
+    .logout-btn:hover {
+        background-color: #dc3545;
+        color: white !important;
+        border-color: #dc3545;
+    }
+
+    .signed-in-badge {
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 0.45rem 0.7rem;
+        border-radius: 999px;
+    }
+
+    .nav-divider {
+        opacity: 0.08;
+    }
+
+    .nav-home { color: #fde68a; }
+    .nav-help { color: #a7f3d0; }
+    .nav-giving { color: #f9a8d4; }
+    .nav-reports { color: #86efac; }
+    .nav-accounting { color: #93c5fd; }
+    .nav-budgeting { color: #c4b5fd; }
+    .nav-ministry { color: #fca5a5; }
+    .nav-church { color: #fdba74; }
+    .nav-management { color: #fcd34d; }
+    .nav-denomination { color: #67e8f9; }
+
+    .icon-help { color: #0ea5e9; }
+    .icon-give { color: #10b981; }
+    .icon-history { color: #64748b; }
+    .icon-request { color: #f59e0b; }
+    .icon-thanks { color: #ec4899; }
+
+    .icon-daily { color: #3b82f6; }
+    .icon-weekly { color: #8b5cf6; }
+    .icon-monthly { color: #14b8a6; }
+    .icon-budget { color: #f59e0b; }
+    .icon-chart { color: #06b6d4; }
+    .icon-files { color: #6366f1; }
+    .icon-trend-analysis { color: #0ea5e9; }
+
+    .icon-bank-settings { color: #475569; }
+    .icon-bank-dashboard { color: #0ea5e9; }
+    .icon-deposit { color: #22c55e; }
+    .icon-withdraw { color: #ef4444; }
+    .icon-transfer { color: #8b5cf6; }
+
+    .icon-tithe { color: #f59e0b; }
+    .icon-offering { color: #10b981; }
+    .icon-donation { color: #ec4899; }
+    .icon-income { color: #3b82f6; }
+    .icon-unified-income { color: #7c3aed; }
+    .icon-receipt-history { color: #64748b; }
+
+    .icon-allocation { color: #0ea5e9; }
+    .icon-budget-summary { color: #f59e0b; }
+    .icon-manage-requests { color: #8b5cf6; }
+    .icon-release { color: #22c55e; }
+    .icon-liquidate { color: #ef4444; }
+    .icon-expense { color: #dc2626; }
+    .icon-ministries { color: #14b8a6; }
+    .icon-ai-openai { color: #10b981; }
+
+    .icon-approve { color: #22c55e; }
+    .icon-archive { color: #64748b; }
+    .icon-send-thanks { color: #ec4899; }
+
+    .icon-profile { color: #3b82f6; }
+    .icon-user { color: #6366f1; }
+    .icon-lock { color: #ef4444; }
+    .icon-shield { color: #22c55e; }
+    .icon-tags { color: #f59e0b; }
+    .icon-manage-accounts { color: #0ea5e9; }
+
+    .icon-bank { color: #0ea5e9; }
+    .icon-list-check { color: #8b5cf6; }
+    .icon-graph { color: #22c55e; }
+    .icon-liquidation-requests { color: #0ea5e9; }
+    .icon-denomination-profile { color: #06b6d4; }
+
+    .icon-password { color: #f59e0b; }
+    .icon-logout { color: #dc2626; }
+
+    .member-nav-link {
+        background: rgba(255, 255, 255, 0.10);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 14px;
+        padding: 0.65rem 1rem !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .member-nav-link:hover,
+    .member-nav-link:focus {
+        background: rgba(255, 255, 255, 0.18);
+        border-color: rgba(255, 255, 255, 0.28);
+        transform: translateY(-1px);
+    }
+
+    .member-request-icon {
+        color: #fbbf24;
+    }
+
+    .member-liquidation-icon {
+        color: #34d399;
+    }
+
+    .member-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: 8px;
+        padding: 0.18rem 0.5rem;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.16);
+        color: #ffffff;
+        letter-spacing: 0.02em;
+    }
+
+    .notification-bell {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1.3rem;
+        color: rgba(255, 255, 255, 0.92);
+        transition: all 0.2s ease-in-out;
+        margin-right: 1rem;
+    }
+
+    .notification-bell:hover {
+        color: #fff;
+        transform: scale(1.08);
+    }
+
+    .notification-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        border-radius: 50%;
+        width: 22px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 700;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+        border: 2px solid #1e3c72;
+    }
+
+    .notification-dropdown {
+        min-width: 380px;
+        max-height: 500px;
+        overflow-y: auto;
+        animation: fadeIn 0.18s ease-out;
+    }
+
+    .notification-item {
+        padding: 1rem;
+        border-bottom: 1px solid #f3f4f6;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .notification-item:hover {
+        background-color: #f8fafc;
+        border-left: 4px solid #2a5298;
+        padding-left: 0.75rem;
+    }
+
+    .notification-item.unread {
+        background-color: #f0f7ff;
+        border-left: 4px solid #2a5298;
+        padding-left: 0.75rem;
+    }
+
+    .notification-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        margin-right: 10px;
+        font-size: 1.1rem;
+    }
+
+    .notification-icon.budget {
+        background-color: #fef3c7;
+        color: #d97706;
+    }
+
+    .notification-icon.liquidation {
+        background-color: #dbeafe;
+        color: #0284c7;
+    }
+
+    .notification-icon.release {
+        background-color: #dcfce7;
+        color: #16a34a;
+    }
+
+    .notification-title {
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 0.95rem;
+        margin-bottom: 4px;
+    }
+
+    .notification-meta {
+        font-size: 0.85rem;
+        color: #6b7280;
+        margin-bottom: 4px;
+    }
+
+    .notification-description {
+        font-size: 0.88rem;
+        color: #4b5563;
+        line-height: 1.3;
+    }
+
+    .notification-empty {
+        padding: 2rem 1.5rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    .notification-footer {
+        padding: 0.75rem 1rem;
+        background-color: #f9fafb;
+        border-top: 1px solid #f3f4f6;
+        text-align: center;
+    }
+
+    .notification-footer a {
+        font-size: 0.9rem;
+        color: #2a5298;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .notification-footer a:hover {
+        color: #1e3c72;
+        text-decoration: underline;
+    }
+
+    @media (max-width: 1199.98px) {
+        .navbar-nav .dropdown-menu {
+            margin-top: 8px;
+        }
+
+        .nav-link {
+            margin: 2px 0;
+        }
+
+        .member-nav-link {
+            margin-bottom: 6px;
+            width: 100%;
+        }
+
+        .member-badge {
+            margin-left: auto;
+        }
+    }
+</style>
+
+<nav class="navbar navbar-expand-xl navbar-dark navbar-custom sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% if request.user.is_authenticated and request.user.user_type == 'DenominationAdmin' %}{% url 'denomination_dashboard' %}{% else %}{% url 'home' %}{% endif %}">
+            <i class="bi bi-buildings-fill"></i>
+            <span>ChurchSys</span>
+        </a>
+
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#churchNavbar" aria-controls="churchNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="churchNavbar">
+            <ul class="navbar-nav me-auto mb-2 mb-xl-0 ms-xl-3">
+
+                {% if request.user.is_authenticated and request.user.user_type == 'DenominationAdmin' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'denomination_dashboard' %}">
+                        <i class="bi bi-speedometer2 nav-home"></i> Dashboard
+                    </a>
+                </li>
+                {% elif not request.user.is_authenticated or request.user.user_type != 'Member' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'home' %}">
+                        <i class="bi bi-house-door nav-home"></i> Home
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if request.user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'help_center' %}">
+                        <i class="bi bi-question-circle nav-help"></i> Help
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if request.user.is_authenticated and request.user.user_type != 'DenominationAdmin' %}
+
+                    {% if request.user.user_type == 'Member' %}
+                    <li class="nav-item">
+                        <a class="nav-link member-nav-link" href="{% url 'budget_release' %}">
+                            <i class="bi bi-cash-stack member-request-icon"></i>
+                            Request Funds
+                            <span class="member-badge">
+                                <i class="bi bi-person-check-fill"></i> Member
+                            </span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link member-nav-link" href="{% url 'weekly_financial_report' %}">
+                            <i class="bi bi-receipt-cutoff member-liquidation-icon"></i>
+                            Financial Liquidation
+                            <span class="member-badge">
+                                <i class="bi bi-eye-fill"></i> Church Report
+                            </span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-file-earmark-bar-graph nav-reports"></i> Reports
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><h6 class="dropdown-header">Periodical</h6></li>
+                            <li><a class="dropdown-item" href="{% url 'financial_overview' %}"><i class="bi bi-calendar-check icon-daily"></i> Daily Overview</a></li>
+                            <li><a class="dropdown-item" href="{% url 'weekly_financial_report' %}"><i class="bi bi-calendar-week icon-weekly"></i> Financial Liquidation</a></li>
+
+                            <li><hr class="dropdown-divider nav-divider"></li>
+                            <li><h6 class="dropdown-header">Analysis</h6></li>
+                            <li><a class="dropdown-item" href="{% url 'budget_summary' %}"><i class="bi bi-list-columns-reverse icon-budget"></i> Master Budget List</a></li>
+                            <li><a class="dropdown-item" href="{% url 'analytics_dashboard' %}"><i class="bi bi-pie-chart icon-chart"></i> Visual Charts</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+
+                    {% if request.user.user_type == 'Treasurer' or request.user.user_type == 'Admin' or request.user.user_type == 'ChurchAdmin' %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-wallet2 nav-accounting"></i> Accounting
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><h6 class="dropdown-header">Assets & Banking</h6></li>
+                            <li><a class="dropdown-item" href="{% url 'bank_settings' %}"><i class="bi bi-gear icon-bank-settings"></i> Bank Settings</a></li>
+                            <li><a class="dropdown-item" href="{% url 'manage_bank' %}"><i class="bi bi-speedometer2 icon-bank-dashboard"></i> Bank Dashboard</a></li>
+                            <li><a class="dropdown-item" href="{% url 'bank_deposit' %}"><i class="bi bi-arrow-right-circle icon-deposit"></i> Deposit Cash</a></li>
+                            <li><a class="dropdown-item" href="{% url 'bank_withdraw' %}"><i class="bi bi-arrow-left-circle icon-withdraw"></i> Withdraw Cash</a></li>
+                            <li><a class="dropdown-item" href="{% url 'add_bank_movement' %}"><i class="bi bi-arrow-left-right icon-transfer"></i> Bank to Bank</a></li>
+
+                            <li><hr class="dropdown-divider nav-divider"></li>
+                            <li><h6 class="dropdown-header">Incoming Physical Funds and Expenses</h6></li>
+                            <li><a class="dropdown-item" href="{% url 'unified_income_entry' %}"><i class="bi bi-cash-coin icon-unified-income"></i> Unified Income Entry</a></li>
+                            <li><a class="dropdown-item" href="{% url 'add_expenses' %}"><i class="bi bi-dash-circle icon-expense"></i> Record General Expense</a></li>
+                            <li><a class="dropdown-item" href="{% url 'donation_history' %}"><i class="bi bi-clock-history icon-receipt-history"></i> Donation History & Receipts</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+
+                    {% if request.user.user_type == 'Treasurer' or request.user.user_type == 'Admin' or request.user.user_type == 'ChurchAdmin' %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-calculator-fill nav-budgeting"></i> Budgeting
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><h6 class="dropdown-header">Planning & Allocation</h6></li>
+
+                            {% if request.user.user_type == 'Admin' or request.user.user_type == 'ChurchAdmin' %}
+                            <li><a class="dropdown-item" href="{% url 'budgets_manage' %}"><i class="bi bi-calculator icon-allocation"></i> Set Allocation</a></li>
+                            {% endif %}
+
+                            <li><a class="dropdown-item" href="{% url 'budget_summary' %}"><i class="bi bi-table icon-budget-summary"></i> Budget Summary</a></li>
+
+                            <li><hr class="dropdown-divider nav-divider"></li>
+                            <li><h6 class="dropdown-header">Execution & Payouts</h6></li>
+                            <li><a class="dropdown-item" href="{% url 'budget_release' %}"><i class="bi bi-check2-square icon-manage-requests"></i> Manage Requests</a></li>
+                            <li><a class="dropdown-item" href="{% url 'release_budget' %}"><i class="bi bi-cash-stack icon-release"></i> Release Funds</a></li>
+                            <li><a class="dropdown-item" href="{% url 'budget_expense' %}"><i class="bi bi-receipt icon-liquidate"></i> Budget Expenses (Liquidate)</a></li>
+
+                            {% if request.user.user_type == 'Admin' or request.user.user_type == 'Treasurer' or request.user.user_type == 'ChurchAdmin' %}
+                            <li><hr class="dropdown-divider nav-divider"></li>
+                            <li><h6 class="dropdown-header">Optimization</h6></li>
+                            <li><a class="dropdown-item" href="{% url 'ministries_manage' %}"><i class="bi bi-diagram-2 icon-ministries"></i> Budget Management</a></li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'monthly_yearly_analysis' %}">
+                                    <i class="bi bi-graph-up-arrow icon-trend-analysis"></i> Analysis & Budget Optimization
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'prescriptive_budget_optimizer_openai' %}">
+                                    <i class="bi bi-robot icon-ai-openai"></i> OpenAI Budget Optimizer
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                    {% endif %}
+
+                    {% if request.user.user_type == 'Pastor' %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-book nav-ministry"></i> Budget Planning
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><h6 class="dropdown-header">Financial Planning</h6></li>
+                            <li><a class="dropdown-item" href="{% url 'budget_release' %}"><i class="bi bi-inbox-fill icon-manage-requests"></i> Requests & Approvals</a></li>
+                            <li><a class="dropdown-item" href="{% url 'budget_summary' %}"><i class="bi bi-list-columns-reverse icon-budget"></i> Master Budget List</a></li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'monthly_yearly_analysis' %}">
+                                    <i class="bi bi-graph-up-arrow icon-trend-analysis"></i> Analysis & Budget Optimization
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'prescriptive_budget_optimizer_openai' %}">
+                                    <i class="bi bi-robot icon-ai-openai"></i> OpenAI Budget Optimizer
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% endif %}
+
+                    {% if request.user.user_type == 'ChurchAdmin' or request.user.user_type == 'Admin' %}
+                        {% if request.user.church_id %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-building nav-church"></i> Church
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><h6 class="dropdown-header">Church Administration</h6></li>
+                                <li><a class="dropdown-item" href="{% url 'Church:my_church_edit' %}"><i class="bi bi-pencil-square icon-profile"></i> My Church Profile</a></li>
+                                <li><a class="dropdown-item" href="{% url 'user_detail' %}"><i class="bi bi-person-circle icon-user"></i> My Profile</a></li>
+
+                                <li><hr class="dropdown-divider nav-divider"></li>
+                                <li><h6 class="dropdown-header">Access Requests</h6></li>
+                                <li><a class="dropdown-item" href="{% url 'church_admin_liquidation_requests' %}"><i class="bi bi-shield-check icon-liquidation-requests"></i> Liquidation Access Requests</a></li>
+                            </ul>
+                        </li>
+                        {% endif %}
+                    {% endif %}
+
+                    {% if request.user.user_type == 'Admin' or request.user.user_type == 'Treasurer' or request.user.user_type == 'ChurchAdmin' %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-shield-lock nav-management"></i> Management
+                        </a>
+                        <ul class="dropdown-menu">
+
+                            {% if request.user.user_type == 'Admin' or request.user.user_type == 'ChurchAdmin' %}
+                            <li><h6 class="dropdown-header">Users & Access</h6></li>
+                            <li><a class="dropdown-item" href="{% url 'register' %}"><i class="bi bi-person-plus icon-user"></i> Create User</a></li>
+                            <li><a class="dropdown-item" href="{% url 'church-account-list' %}"><i class="bi bi-people-fill icon-manage-accounts"></i> Manage Church Accounts</a></li>
+                            <li><hr class="dropdown-divider nav-divider"></li>
+                            {% endif %}
+
+                            <li><h6 class="dropdown-header">Financial Controls</h6></li>
+
+                            {% if request.user.user_type == 'Admin' or request.user.user_type == 'ChurchAdmin' %}
+                            <li><a class="dropdown-item" href="{% url 'accounting_lock' %}"><i class="bi bi-lock-fill icon-lock"></i> Close Books (Lock Date)</a></li>
+                            {% endif %}
+
+                            {% if request.user.user_type == 'Admin' or request.user.user_type == 'ChurchAdmin' %}
+                            <li><a class="dropdown-item" href="{% url 'expense_fraud_detection_settings' %}"><i class="bi bi-shield-check icon-shield"></i> Fraud Detection</a></li>
+                            {% endif %}
+
+                            <li><a class="dropdown-item" href="{% url 'add_donation_category' %}"><i class="bi bi-tags-fill icon-tags"></i> Donation Types</a></li>
+                            <li><a class="dropdown-item" href="{% url 'manage_income_categories' %}"><i class="bi bi-tags icon-tags"></i> Other Income Types</a></li>
+                            <li><a class="dropdown-item" href="{% url 'manage_expense_categories' %}"><i class="bi bi-tags icon-tags"></i> Expense Categories</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+
+                {% endif %}
+
+                {% if request.user.is_authenticated %}
+                    {% if request.user.user_type == 'Admin' or request.user.user_type == 'DenominationAdmin' or request.user.user_type == 'ChurchAdmin' %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-bank2 nav-denomination"></i> Denomination
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><h6 class="dropdown-header">Denomination Profile</h6></li>
+
+                            {% if request.user.user_type == 'DenominationAdmin' and request.user.denomination_id %}
+                            <li>
+                                <a class="dropdown-item" href="{% url 'Church:my_denomination_edit' %}">
+                                    <i class="bi bi-pencil-square icon-denomination-profile"></i> My Denomination
+                                </a>
+                            </li>
+                            {% endif %}
+
+                            {% if request.user.user_type == 'DenominationAdmin' %}
+                            <li>
+                                <a class="dropdown-item" href="{% url 'Church:denomination_applications' %}">
+                                    <i class="bi bi-list-check icon-list-check"></i> Applications
+                                </a>
+                            </li>
+                            {% endif %}
+
+                            <li><hr class="dropdown-divider nav-divider"></li>
+                            <li><h6 class="dropdown-header">Access & Finance</h6></li>
+
+                            {% if request.user.user_type == 'Admin' %}
+                            <li>
+                                <a class="dropdown-item" href="{% url 'Church:denomination_applications' %}">
+                                    <i class="bi bi-list-check"></i> Applications
+                                </a>
+                            </li>
+                            {% endif %}
+
+                            <li>
+                                <a class="dropdown-item" href="{% url 'Church:apply_denomination' %}">
+                                    <i class="bi bi-bank icon-bank"></i> Apply
+                                </a>
+                            </li>
+
+                            {% if request.user.user_type == 'Admin' or request.user.user_type == 'DenominationAdmin' %}
+                            <li>
+                                <a class="dropdown-item" href="{% url 'Church:denomination_finance_overview' %}">
+                                    <i class="bi bi-graph-up-arrow icon-graph"></i> Financial Info
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                    {% endif %}
+                {% endif %}
+            </ul>
+
+            <ul class="navbar-nav ms-auto align-items-center">
+                {% if request.user.is_authenticated %}
+
+                <li class="nav-item dropdown">
+                    <a class="notification-bell" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-bell-fill"></i>
+                        <span class="notification-badge" id="notificationCount"></span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end notification-dropdown" id="notificationDropdown">
+                        <li><h6 class="dropdown-header">Notifications</h6></li>
+                        <li id="notificationList"></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle user-pill d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-avatar">
+                            {{ request.user.username|slice:":1"|upper }}
+                        </div>
+                        <span class="d-none d-xl-inline small text-white fw-bold">{{ request.user.username }}</span>
+                        <span class="d-inline d-xl-none small text-white">{{ request.user.username }}</span>
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li class="px-3 py-2 text-center">
+                            <span class="small text-muted d-block">Signed in as</span>
+                            <span class="badge bg-secondary signed-in-badge">{{ request.user.user_type }}</span>
+                        </li>
+
+                        <li><hr class="dropdown-divider nav-divider"></li>
+
+                        <li>
+                            <a class="dropdown-item" href="{% url 'help_center' %}">
+                                <i class="bi bi-question-circle icon-help"></i> Help Center
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item" href="{% url 'user_detail' %}">
+                                <i class="bi bi-person-circle icon-user"></i> My Profile
+                            </a>
+                        </li>
+
+                        {% if request.user.user_type == 'DenominationAdmin' and request.user.denomination_id %}
+                        <li>
+                            <a class="dropdown-item" href="{% url 'Church:my_denomination_edit' %}">
+                                <i class="bi bi-pencil-square icon-denomination-profile"></i> My Denomination
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% if request.user.user_type != 'DenominationAdmin' %}
+                            {% if request.user.user_type == 'ChurchAdmin' or request.user.user_type == 'Admin' %}
+                                {% if request.user.church_id %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'Church:my_church_edit' %}">
+                                        <i class="bi bi-building icon-profile"></i> My Church
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'church_admin_liquidation_requests' %}">
+                                        <i class="bi bi-shield-check icon-liquidation-requests"></i> Liquidation Access Requests
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'church-account-list' %}">
+                                        <i class="bi bi-people-fill icon-manage-accounts"></i> Manage Church Accounts
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'register' %}">
+                                        <i class="bi bi-person-plus icon-user"></i> Create User
+                                    </a>
+                                </li>
+                                {% endif %}
+                            {% endif %}
+
+                            {% if request.user.user_type == 'Admin' or request.user.user_type == 'ChurchAdmin' or request.user.user_type == 'Treasurer' or request.user.user_type == 'Pastor' %}
+                            <li>
+                                <a class="dropdown-item" href="{% url 'monthly_yearly_analysis' %}">
+                                    <i class="bi bi-graph-up-arrow icon-trend-analysis"></i> Analysis & Budget Optimization
+                                </a>
+                            </li>
+                            {% endif %}
+                        {% endif %}
+
+                        {% if request.user.user_type == 'ChurchAdmin' %}
+                        <li>
+                            <a class="dropdown-item" href="{% url 'Church:apply_denomination' %}">
+                                <i class="bi bi-bank icon-bank"></i> Apply for Denomination
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        <li>
+                            <a class="dropdown-item" href="{% url 'change_password' %}">
+                                <i class="bi bi-key icon-password"></i> Change Password
+                            </a>
+                        </li>
+
+                        <li class="p-2">
+                            <form action="{% url 'logout' %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm w-100 logout-btn d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-box-arrow-right me-2 icon-logout"></i> Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="btn btn-outline-light btn-sm px-4 rounded-pill fw-bold" href="{% url 'login' %}">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Login
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function loadNotifications() {
+        {% if request.user.is_authenticated %}
+        fetch('{% url "api_get_notifications" %}')
+            .then(response => response.json())
+            .then(data => {
+                const notificationList = document.getElementById('notificationList');
+                const notificationCount = document.getElementById('notificationCount');
+                const notificationDropdown = document.getElementById('notificationDropdown');
+
+                if (data.notifications.length > 0) {
+                    notificationCount.textContent = data.total_count;
+                    notificationCount.style.display = 'flex';
+
+                    let html = '<li><h6 class="dropdown-header">Notifications</h6></li>';
+
+                    data.notifications.forEach(notif => {
+                        let iconClass = '';
+                        let iconBg = '';
+
+                        if (notif.type === 'budget_approval') {
+                            iconClass = 'bi-check-circle';
+                            iconBg = 'budget';
+                        } else if (notif.type === 'liquidation') {
+                            iconClass = 'bi-shield-check';
+                            iconBg = 'liquidation';
+                        } else if (notif.type === 'release') {
+                            iconClass = 'bi-cash-stack';
+                            iconBg = 'release';
+                        }
+
+                        html += `
+                            <li>
+                                <a href="${notif.link}" class="notification-item ${notif.unread ? 'unread' : ''}">
+                                    <div style="display: flex; align-items: flex-start;">
+                                        <div class="notification-icon ${iconBg}">
+                                            <i class="bi ${iconClass}"></i>
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <div class="notification-title">${notif.title}</div>
+                                            <div class="notification-meta">${notif.category}</div>
+                                            <div class="notification-description">${notif.message}</div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                        `;
+                    });
+
+                    html += `
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="notification-footer">
+                            <a href="${data.view_all_link}">View All Notifications →</a>
+                        </li>
+                    `;
+
+                    notificationDropdown.innerHTML = html;
+                } else {
+                    notificationCount.style.display = 'none';
+                    notificationList.innerHTML = `
+                        <li class="notification-empty">
+                            <i class="bi bi-inbox" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i>
+                            <p>No new notifications</p>
+                        </li>
+                    `;
+                }
+            })
+            .catch(error => console.error('Error loading notifications:', error));
+        {% endif %}
+    }
+
+    document.addEventListener('DOMContentLoaded', loadNotifications);
+    setInterval(loadNotifications, 30000);
+</script>
+
+{% include 'includes/welcome_guide_modal.html' %}

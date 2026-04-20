@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Send Thank You Letter</title>
+
+  <!-- Bootstrap 4.5 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css"/>
+
+  <style>
+    :root { --ink:#111827; --muted:#6b7280; --line:#e5e7eb; --bg:#f9fafb; }
+    body { color: var(--ink); }
+    .page-title { margin-top: 1rem; margin-bottom: .25rem; }
+    .page-sub { color: var(--muted); margin-bottom: 1rem; }
+    .card { border-radius: .75rem; border: 1px solid var(--line); }
+    .card-header { background: #fff; border-bottom: 1px solid var(--line); }
+    .table { margin-bottom: 0; }
+    .table thead th { border-top: none; background: #f8fafc; }
+    .table tbody tr:hover { background: #fafafa; }
+    .amount { font-variant-numeric: tabular-nums; }
+    .muted { color: var(--muted); }
+    .badge-soft {
+      background: #f3f4f6;
+      color: #374151;
+      font-weight: 500;
+    }
+    /* Sticky footer action bar */
+    .action-bar {
+      position: sticky;
+      bottom: 0;
+      z-index: 1030;
+      background: rgba(255,255,255,.98);
+      border-top: 1px solid var(--line);
+      padding: .75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(4px);
+    }
+    /* Mobile tweaks */
+    @media (max-width: 576px) {
+      .toolbar .form-inline > * { margin-bottom: .5rem; }
+      .table thead { display: none; }
+      .table tbody tr { display: block; margin-bottom: .75rem; border: 1px solid var(--line); border-radius: .5rem; padding: .5rem; }
+      .table tbody td { display: flex; justify-content: space-between; border-top: none !important; padding: .4rem .25rem; }
+      .table tbody td:first-child { justify-content: flex-start; }
+      .table tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        margin-right: .75rem;
+        color: #374151;
+      }
+      .table .check-cell { display: inline-flex; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+  {% include 'navbar.html' %}
+
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <h1 class="page-title">Send Thank You Letter</h1>
+        <p class="page-sub">Select one or more approved references. The email will include the Reference No., Name, Amount, and Date.</p>
+      </div>
+    </div>
+
+    <!-- Django messages -->
+    {% if messages %}
+      <div class="row">
+        <div class="col-12">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <form method="post" class="mb-4">
+      {% csrf_token %}
+
+      <!-- Message field -->
+      <div class="card mb-3">
+        <div class="card-header">
+          <strong>Your Message</strong>
+        </div>
+        <div class="card-body">
+          {{ form.non_field_errors }}
+          <div class="form-group mb-0">
+            {{ form.message.label_tag }}
+            {{ form.message }}
+            {{ form.message.errors }}
+            <small class="form-text text-muted">This message will appear above the donation details.</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selection + table -->
+      <div class="card">
+        <div class="card-header d-flex flex-wrap align-items-center justify-content-between">
+          <div>
+            <strong>Select References</strong>
+          </div>
+
+          <!-- Toolbar -->
+          <div class="toolbar">
+            <form class="form-inline">
+              <div class="input-group mr-2 mb-0">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="search-label" title="Search">
+                    <span aria-hidden="true">🔎</span>
+                  </span>
+                </div>
+                <input id="search" type="search" class="form-control" placeholder="Search Ref No. or Name…" aria-label="Search by reference number or name" />
+              </div>
+
+              <div class="form-group mb-0">
+                <label for="sort" class="sr-only">Sort</label>
+                <select id="sort" class="form-control">
+                  <option value="default">Sort: Default</option>
+                  <option value="ref-asc">Ref No. ↑</option>
+                  <option value="ref-desc">Ref No. ↓</option>
+                  <option value="name-asc">Name A–Z</option>
+                  <option value="name-desc">Name Z–A</option>
+                  <option value="date-desc">Date Newest</option>
+                  <option value="date-asc">Date Oldest</option>
+                  <option value="amount-desc">Amount High</option>
+                  <option value="amount-asc">Amount Low</option>
+                </select>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        {% if approved_references %}
+          <div class="table-responsive">
+            <table class="table table-hover" id="ref-table">
+              <thead class="thead-light">
+                <tr>
+                  <th style="width: 46px;">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" class="custom-control-input" id="select-all">
+                      <label class="custom-control-label" for="select-all" title="Select all on this page"></label>
+                    </div>
+                  </th>
+                  <th>Reference No.</th>
+                  <th>Name</th>
+                  <th class="text-right">Amount</th>
+                  <th>Date</th>
+                  <th>File</th>
+                </tr>
+              </thead>
+              <tbody id="ref-body">
+                {% for reference in approved_references %}
+                  <tr
+                    data-ref="{{ reference.reference_number|lower }}"
+                    data-name="{{ reference.name|lower }}"
+                    data-date="{{ reference.date }}"
+                    data-amount="{{ reference.amount }}"
+                  >
+                    <td class="check-cell" data-label="">
+                      <div class="custom-control custom-checkbox">
+                        <input
+                          type="checkbox"
+                          class="custom-control-input ref-check"
+                          id="ref-{{ reference.id }}"
+                          name="approved_references"
+                          value="{{ reference.id }}"
+                        >
+                        <label class="custom-control-label" for="ref-{{ reference.id }}"></label>
+                      </div>
+                    </td>
+
+                    <td data-label="Reference No.">
+                      <span class="font-weight-bold">{{ reference.reference_number }}</span>
+                    </td>
+
+                    <td data-label="Name">
+                      {{ reference.name }}
+                    </td>
+
+                    <td class="text-right amount" data-label="Amount">
+                      <span class="badge badge-soft">
+                        {{ reference.amount }}
+                      </span>
+                    </td>
+
+                    <td data-label="Date">
+                      <span class="badge badge-light">{{ reference.date }}</span>
+                    </td>
+
+                    <td data-label="File">
+                      {% if reference.file %}
+                        <a class="btn btn-sm btn-outline-secondary" href="{{ reference.file.url }}" target="_blank" rel="noopener">Download</a>
+                      {% else %}
+                        <span class="text-muted">None</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Sticky footer action bar -->
+          <div class="action-bar">
+            <div class="text-muted">
+              Total references: <strong>{{ approved_references|length }}</strong>
+              &nbsp;&middot;&nbsp;
+              Selected: <strong id="selected-count">0</strong>
+            </div>
+            <button type="submit" class="btn btn-dark" id="send-btn" disabled>
+              Send Thank You Letters
+            </button>
+          </div>
+        {% else %}
+          <div class="p-4">
+            <div class="alert alert-light border text-muted mb-0">
+              No approved references available.
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <!-- jQuery + Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    (function(){
+      const $checks = $('.ref-check');
+      const $selectAll = $('#select-all');
+      const $sendBtn = $('#send-btn');
+      const $selectedCount = $('#selected-count');
+      const $search = $('#search');
+      const $sort = $('#sort');
+      const $rows = $('#ref-body > tr');
+
+      function updateCount() {
+        const count = $('.ref-check:checked').length;
+        $selectedCount.text(count);
+        $sendBtn.prop('disabled', count === 0);
+
+        const total = $checks.length;
+        $selectAll.prop('checked', count > 0 && count === total);
+        $selectAll.prop('indeterminate', count > 0 && count < total);
+      }
+
+      function filterRows() {
+        const term = ($search.val() || '').trim().toLowerCase();
+        $rows.each(function(){
+          const $r = $(this);
+          const ref = $r.data('ref') + '';
+          const name = $r.data('name') + '';
+          const match = !term || ref.includes(term) || name.includes(term);
+          $r.toggle(match);
+        });
+      }
+
+      function sortRows() {
+        const val = $sort.val();
+        const arr = $rows.get().filter(r => $(r).is(':visible'));
+        const parseAmount = a => parseFloat(a) || 0;
+        const parseDate = d => new Date(d).getTime() || 0;
+
+        arr.sort((a, b) => {
+          const $a = $(a), $b = $(b);
+          switch (val) {
+            case 'ref-asc':   return ($a.data('ref') > $b.data('ref')) ? 1 : -1;
+            case 'ref-desc':  return ($a.data('ref') < $b.data('ref')) ? 1 : -1;
+            case 'name-asc':  return ($a.data('name') > $b.data('name')) ? 1 : -1;
+            case 'name-desc': return ($a.data('name') < $b.data('name')) ? 1 : -1;
+            case 'date-asc':  return parseDate($a.data('date')) - parseDate($b.data('date'));
+            case 'date-desc': return parseDate($b.data('date')) - parseDate($a.data('date'));
+            case 'amount-asc':  return parseAmount($a.data('amount')) - parseAmount($b.data('amount'));
+            case 'amount-desc': return parseAmount($b.data('amount')) - parseAmount($a.data('amount'));
+            default: return 0;
+          }
+        });
+
+        // Re-append in sorted order
+        const $body = $('#ref-body');
+        arr.forEach(row => $body.append(row));
+      }
+
+      // Select all toggle
+      $selectAll.on('change', function(){
+        const checked = $(this).prop('checked');
+        $checks.prop('checked', checked);
+        updateCount();
+      });
+
+      // Individual checks
+      $checks.on('change', updateCount);
+
+      // Search & sort
+      $search.on('input', function(){
+        filterRows();
+        sortRows();
+      });
+      $sort.on('change', sortRows);
+
+      // Init
+      updateCount();
+      filterRows();
+    })();
+  </script>
+</body>
+</html>

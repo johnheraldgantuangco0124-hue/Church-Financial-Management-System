@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Account Settings | ChurchSys</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-main: #f4f7fb;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-soft: #e5e7eb;
+            --primary-dark: #172554;
+            --primary-mid: #1e3a8a;
+            --primary-light: #eff6ff;
+            --success-soft: #ecfdf3;
+            --info-soft: #f0f9ff;
+            --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.08);
+            --shadow-sm: 0 4px 14px rgba(15, 23, 42, 0.06);
+            --radius-lg: 1.25rem;
+            --radius-md: 0.9rem;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(59, 130, 246, 0.08), transparent 30%),
+                radial-gradient(circle at bottom right, rgba(30, 64, 175, 0.06), transparent 25%),
+                var(--bg-main);
+            color: var(--text-main);
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--primary-mid);
+            background: var(--primary-light);
+            padding: 0.45rem 0.75rem;
+            border-radius: 999px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            color: #0f172a;
+        }
+
+        .page-subtitle {
+            color: var(--text-muted);
+            max-width: 700px;
+            font-size: 0.98rem;
+        }
+
+        .main-card,
+        .side-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .main-card-header {
+            padding: 1.5rem 1.5rem 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border-soft);
+            background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+
+        .header-flex {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-mid));
+            color: #fff;
+            font-size: 1.6rem;
+            box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
+        }
+
+        .header-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 0.2rem;
+            color: #0f172a;
+        }
+
+        .header-text {
+            color: var(--text-muted);
+            margin-bottom: 0;
+            font-size: 0.92rem;
+        }
+
+        .main-card-body {
+            padding: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.55rem;
+            font-size: 0.95rem;
+        }
+
+        .form-text {
+            color: var(--text-muted);
+            font-size: 0.84rem;
+        }
+
+        .form-control,
+        .form-select {
+            min-height: 48px;
+            border-radius: 0.85rem;
+            border: 1px solid #dbe2ea;
+            padding: 0.75rem 0.95rem;
+            font-size: 0.95rem;
+            box-shadow: none !important;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #93c5fd;
+            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.12) !important;
+        }
+
+        input[type="file"].form-control {
+            padding: 0.65rem 0.85rem;
+        }
+
+        .field-block {
+            margin-bottom: 1.35rem;
+        }
+
+        .field-note-danger {
+            color: #b91c1c;
+            font-weight: 600;
+        }
+
+        .verification-banner {
+            display: flex;
+            gap: 0.9rem;
+            align-items: flex-start;
+            border: 1px solid #bfdbfe;
+            background: linear-gradient(135deg, #f8fbff 0%, #eef6ff 100%);
+            border-radius: 1rem;
+            padding: 1rem 1rem;
+            margin-bottom: 1.35rem;
+        }
+
+        .verification-banner i {
+            font-size: 1.4rem;
+            color: #2563eb;
+            margin-top: 0.1rem;
+        }
+
+        .verification-banner strong {
+            color: #1e3a8a;
+        }
+
+        .alert {
+            border-radius: 0.9rem;
+            border: none;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .alert-success {
+            background: #ecfdf3;
+            color: #166534;
+        }
+
+        .alert-error,
+        .alert-danger {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        .btn-primary-pro {
+            background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            color: #fff;
+            border: none;
+            border-radius: 0.9rem;
+            min-height: 52px;
+            font-weight: 700;
+            font-size: 0.96rem;
+            box-shadow: 0 10px 24px rgba(30, 58, 138, 0.18);
+        }
+
+        .btn-primary-pro:hover {
+            color: #fff;
+            transform: translateY(-1px);
+            opacity: 0.98;
+        }
+
+        .btn-light-pro {
+            background: #fff;
+            border: 1px solid var(--border-soft);
+            color: #475569;
+            border-radius: 0.9rem;
+            min-height: 50px;
+            font-weight: 600;
+        }
+
+        .btn-light-pro:hover {
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+        .side-card {
+            padding: 1.35rem;
+        }
+
+        .side-title {
+            font-size: 1rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: #0f172a;
+        }
+
+        .side-section + .side-section {
+            margin-top: 1.2rem;
+            padding-top: 1.2rem;
+            border-top: 1px solid var(--border-soft);
+        }
+
+        .status-box {
+            background: #f8fafc;
+            border: 1px solid var(--border-soft);
+            border-radius: 1rem;
+            padding: 1rem;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--success-soft);
+            color: #166534;
+            padding: 0.45rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .mini-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .mini-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.65rem;
+            font-size: 0.92rem;
+            color: #475569;
+        }
+
+        .mini-list li + li {
+            margin-top: 0.75rem;
+        }
+
+        .mini-list i {
+            color: #2563eb;
+            margin-top: 0.15rem;
+        }
+
+        .current-proof-link {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .current-proof-link:hover {
+            text-decoration: underline;
+        }
+
+        .divider-space {
+            height: 0.25rem;
+        }
+
+        .required-mark {
+            color: #dc2626;
+            margin-left: 0.2rem;
+        }
+
+        @media (max-width: 991.98px) {
+            .page-title {
+                font-size: 1.6rem;
+            }
+
+            .main-card-header,
+            .main-card-body,
+            .side-card {
+                padding: 1.2rem;
+            }
+
+            .header-flex {
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    {% include 'navbar.html' %}
+
+    <div class="container py-5">
+        <div class="page-header">
+            <span class="eyebrow">
+                <i class="bi bi-shield-lock"></i>
+                Bank Administration
+            </span>
+            <h1 class="page-title">Bank Account Settings</h1>
+            <p class="page-subtitle">
+                Configure the official church bank account used for financial operations. Please ensure that all submitted details match your supporting proof document exactly.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Main Form -->
+            <div class="col-lg-8">
+                <div class="main-card">
+                    <div class="main-card-header">
+                        <div class="header-flex">
+                            <div class="header-icon">
+                                <i class="bi bi-bank2"></i>
+                            </div>
+                            <div>
+                                <h4 class="header-title">Bank Configuration</h4>
+                                <p class="header-text">Maintain a verified and secure banking profile for your church account.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="main-card-body">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
+                                    {% if message.tags == 'error' or message.tags == 'danger' %}
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    {% else %}
+                                        <i class="bi bi-check-circle-fill me-2"></i>
+                                    {% endif %}
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <div class="verification-banner">
+                            <i class="bi bi-robot"></i>
+                            <div>
+                                <strong>AI Verification Enabled</strong>
+                                <div class="small text-muted mt-1">
+                                    The uploaded proof will be checked against the entered <u>Bank Name</u> and <u>Account Number</u> to help validate authenticity and accuracy.
+                                </div>
+                            </div>
+                        </div>
+
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+
+                            <div class="field-block">
+                                <label class="form-label">
+                                    Bank Name<span class="required-mark">*</span>
+                                </label>
+                                {{ form.bank_name }}
+                                {% if form.bank_name.errors %}
+                                    <div class="text-danger small mt-2">{{ form.bank_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="field-block">
+                                <label class="form-label">
+                                    Account Name<span class="required-mark">*</span>
+                                </label>
+                                {{ form.account_name }}
+                                {% if form.account_name.errors %}
+                                    <div class="text-danger small mt-2">{{ form.account_name.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text mt-2">
+                                    Example: <strong>Living Stone Church General Fund</strong>
+                                </div>
+                            </div>
+
+                            <div class="field-block">
+                                <label class="form-label">
+                                    Official Account Number<span class="required-mark">*</span>
+                                </label>
+                                {{ form.account_number }}
+                                {% if form.account_number.errors %}
+                                    <div class="text-danger small mt-2">{{ form.account_number.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text mt-2 field-note-danger">
+                                    Important: This must match your proof document exactly.
+                                </div>
+                            </div>
+
+                            <div class="field-block">
+                                <label class="form-label d-flex justify-content-between align-items-center gap-2">
+                                    <span>Proof of Ownership</span>
+                                    {% if bank.verification_image %}
+                                        <a href="{{ bank.verification_image.url }}" target="_blank" class="current-proof-link text-primary">
+                                            <i class="bi bi-eye me-1"></i>View Current Proof
+                                        </a>
+                                    {% endif %}
+                                </label>
+
+                                {{ form.verification_image }}
+
+                                {% if form.verification_image.errors %}
+                                    <div class="text-danger small mt-2">{{ form.verification_image.errors.0 }}</div>
+                                {% endif %}
+
+                                <div class="form-text mt-2">
+                                    Upload a clear image of your passbook, bank statement header, or online banking profile.
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-primary-pro">
+                                    <i class="bi bi-shield-check me-2"></i>
+                                    Verify & Save Settings
+                                </button>
+                                <a href="{% url 'financial_overview' %}" class="btn btn-light-pro">
+                                    Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="side-card">
+                    <div class="side-section">
+                        <h5 class="side-title">Verification Status</h5>
+                        <div class="status-box">
+                            <span class="status-pill">
+                                <i class="bi bi-patch-check-fill"></i>
+                                Secure Setup
+                            </span>
+                            <p class="small text-muted mt-3 mb-0">
+                                Keep your bank identity accurate to prevent mismatches during proof validation and transaction review.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="side-section">
+                        <h5 class="side-title">Accepted Proof</h5>
+                        <ul class="mini-list">
+                            <li>
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>Passbook account details page</span>
+                            </li>
+                            <li>
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>Bank statement header with account details</span>
+                            </li>
+                            <li>
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>Online banking profile screenshot</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="side-section">
+                        <h5 class="side-title">Best Practices</h5>
+                        <ul class="mini-list">
+                            <li>
+                                <i class="bi bi-shield-lock-fill"></i>
+                                <span>Ensure text is readable and not blurred.</span>
+                            </li>
+                            <li>
+                                <i class="bi bi-shield-lock-fill"></i>
+                                <span>Use the exact bank name as shown in the proof.</span>
+                            </li>
+                            <li>
+                                <i class="bi bi-shield-lock-fill"></i>
+                                <span>Double-check the account number before saving.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll("input, select, textarea").forEach(function (el) {
+                if (el.type === "hidden") return;
+
+                if (el.type === "file") {
+                    el.classList.add("form-control");
+                } else if (el.tagName === "SELECT") {
+                    el.classList.add("form-select");
+                } else {
+                    el.classList.add("form-control");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

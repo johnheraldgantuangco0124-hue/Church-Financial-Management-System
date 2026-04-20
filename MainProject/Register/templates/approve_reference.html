@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Approve Submitted References</title>
+
+  <!-- Bootstrap 4.5 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css"/>
+
+  <style>
+    body { background:#eef2f3; }
+    .section-card { border-radius: .75rem; border:1px solid #e5e7eb; }
+    .section-card .card-header { background:#fff; border-bottom:1px solid #e5e7eb; }
+    .thead-light th { background:#f8fafc; }
+    .amount { font-variant-numeric: tabular-nums; }
+    .toolbar .form-inline > * { margin-right:.5rem; }
+    @media (max-width: 576px) {
+      .toolbar .form-inline { display:block; }
+      .toolbar .form-inline > * { width:100%; margin-bottom:.5rem; }
+      .table thead { display:none; }
+      .table tbody tr { display:block; margin-bottom:.75rem; border:1px solid #e5e7eb; border-radius:.5rem; background:#fff; }
+      .table tbody td { display:flex; justify-content:space-between; padding:.5rem .75rem; border-top:none !important; }
+      .table tbody td::before { content: attr(data-label); font-weight:600; color:#374151; margin-right:.75rem; }
+    }
+  </style>
+</head>
+<body>
+  {% include 'navbar.html' %}
+
+  <div class="container py-4">
+    <div class="d-flex align-items-baseline justify-content-between flex-wrap">
+      <h2 class="mb-2">Pending Donations for Approval</h2>
+      {% if pending_items %}
+        <small class="text-muted">Total pending: {{ pending_items|length }}</small>
+      {% endif %}
+    </div>
+
+    <!-- Django messages -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <div class="card section-card">
+      <div class="card-header">
+        <div class="toolbar">
+          <form class="form-inline" onsubmit="return false;">
+            <div class="input-group">
+              <div class="input-group-prepend">
+                <span class="input-group-text">🔎</span>
+              </div>
+              <input id="search" type="search" class="form-control" placeholder="Search by Reference # or Name"/>
+            </div>
+            <input id="from" type="date" class="form-control" title="From date"/>
+            <input id="to" type="date" class="form-control" title="To date"/>
+            <button id="clear-filters" class="btn btn-outline-secondary">Clear</button>
+          </form>
+          <small class="text-muted d-block mt-2">Use filters to quickly find entries. Approval requires confirmation.</small>
+        </div>
+      </div>
+
+      {% if pending_items %}
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0" id="pending-table">
+            <thead class="thead-light">
+              <tr>
+                <th>Reference #</th>
+                <th>Name</th>
+                <th>Date</th>
+                <th class="text-right">Amount</th>
+                <th>File</th>
+                <th>Submitted By</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in pending_items %}
+                <tr
+                  data-ref="{{ item.reference_number|lower }}"
+                  data-name="{{ item.name|lower }}"
+                  data-date="{{ item.date|default:item.submitted_at }}"
+                >
+                  <td data-label="Reference #"><strong>{{ item.reference_number }}</strong></td>
+                  <td data-label="Name">{{ item.name }}</td>
+                  <td data-label="Date">{{ item.date }}</td>
+                  <td data-label="Amount" class="text-right amount">{{ item.amount|default:"—" }}</td>
+                  <td data-label="File">
+                    {% if item.file %}
+                      <a class="btn btn-sm btn-outline-secondary" href="{{ item.file.url }}" target="_blank" rel="noopener">View</a>
+                    {% else %}
+                      <span class="text-muted">None</span>
+                    {% endif %}
+                  </td>
+                  <td data-label="Submitted By">{{ item.submitted_by }}</td>
+                  <td data-label="Action">
+                    <form method="post" action="{% url 'reference_approve' item.pk %}" class="approve-form d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-success btn-sm approve-btn"
+                              data-refno="{{ item.reference_number }}"
+                              data-name="{{ item.name }}"
+                              data-amount="{{ item.amount|default:'—' }}"
+                              data-date="{{ item.date|default:'' }}">
+                        Approve
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="p-4 text-muted">No pending references.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- jQuery + Bootstrap -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    (function(){
+      const $search = $('#search');
+      const $from = $('#from');
+      const $to = $('#to');
+      const $clear = $('#clear-filters');
+      const $rows = $('#pending-table tbody tr');
+
+      function parseDate(d) {
+        const dt = new Date(d);
+        return isNaN(dt.getTime()) ? null : dt;
+      }
+      function rowMatches($row, term, fromDt, toDt) {
+        const ref = ($row.data('ref') || '').toString();
+        const name = ($row.data('name') || '').toString();
+        const dateStr = ($row.data('date') || '').toString();
+        const dt = parseDate(dateStr);
+
+        const matchesText = !term || ref.includes(term) || name.includes(term);
+        let matchesDate = true;
+        if (fromDt && dt) matchesDate = matchesDate && (dt >= fromDt);
+        if (toDt && dt)   matchesDate = matchesDate && (dt <= toDt);
+        return matchesText && matchesDate;
+      }
+      function filterTable() {
+        const term = ($search.val() || '').trim().toLowerCase();
+        const fromDt = parseDate($from.val());
+        const toDt = parseDate($to.val());
+        $rows.each(function(){
+          const $r = $(this);
+          $r.toggle(rowMatches($r, term, fromDt, toDt));
+        });
+      }
+      $search.on('input', filterTable);
+      $from.on('change', filterTable);
+      $to.on('change', filterTable);
+      $clear.on('click', function(){
+        $search.val(''); $from.val(''); $to.val(''); filterTable();
+        return false;
+      });
+      filterTable();
+
+      // Confirm before approving
+      $('.approve-form').on('submit', function(e){
+        const btn = $(this).find('.approve-btn')[0];
+        const refno = btn.getAttribute('data-refno') || '';
+        const name = btn.getAttribute('data-name') || '';
+        const amount = btn.getAttribute('data-amount') || '—';
+        const date = btn.getAttribute('data-date') || '';
+        const msg = `Approve this reference?\n\n` +
+                    `Reference #: ${refno}\n` +
+                    `Name: ${name}\n` +
+                    `Amount: ${amount}\n` +
+                    `Date: ${date}`;
+        if (!confirm(msg)) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

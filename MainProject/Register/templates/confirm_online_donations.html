@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Online Donation</title>
+</head>
+<body>
+    <h2>Review Online Donation</h2>
+
+    <div>
+        <p><strong>Amount:</strong> {{ donation.amount }}</p>
+        <p><strong>Donation Type:</strong> {{ donation.donation_type }}</p>
+        <p><strong>GCash Reference Number:</strong> {{ donation.gcash_reference_number }}</p>
+        <p><strong>Donation Date:</strong> {{ donation.donation_date }}</p>
+        <p><strong>Proof of Donation:</strong> <a href="{{ donation.proof_file.url }}" target="_blank">View Proof</a></p>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" name="confirm" value="approve">Approve</button>
+        <button type="submit" name="confirm" value="reject">Reject</button>
+    </form>
+
+    <a href="{% url 'donation_status' %}">Go Back to Donation Status</a>
+</body>
+</html>

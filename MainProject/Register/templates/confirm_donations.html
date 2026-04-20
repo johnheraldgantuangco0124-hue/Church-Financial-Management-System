@@ -1,0 +1,710 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review & Confirm | Church IS</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f3f4f6;
+            --card-border: #e5e7eb;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --success-soft: #ecfdf5;
+            --success-border: #d1fae5;
+            --success-text: #047857;
+            --warning-soft: #fff7ed;
+            --warning-border: #fed7aa;
+            --warning-text: #c2410c;
+            --info-soft: #eff6ff;
+            --info-border: #bfdbfe;
+            --info-text: #1d4ed8;
+            --danger-soft: #fef2f2;
+            --danger-border: #fecaca;
+            --danger-text: #b91c1c;
+            --neutral-soft: #f8fafc;
+            --neutral-border: #cbd5e1;
+            --neutral-text: #475569;
+            --purple-soft: #f5f3ff;
+            --purple-border: #ddd6fe;
+            --purple-text: #6d28d9;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background:
+                radial-gradient(900px 350px at 0% -10%, rgba(79,70,229,.08), transparent 55%),
+                radial-gradient(900px 350px at 100% 0%, rgba(16,185,129,.06), transparent 55%),
+                var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 40px 15px;
+        }
+
+        .card-review {
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+            background: #ffffff;
+            overflow: hidden;
+        }
+
+        .card-header-custom {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            padding: 2rem 2.25rem;
+            border-bottom: 1px solid var(--card-border);
+            text-align: center;
+        }
+
+        .header-icon {
+            width: 68px;
+            height: 68px;
+            background-color: #e0e7ff;
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem auto;
+            font-size: 1.8rem;
+            box-shadow: inset 0 0 0 8px rgba(255,255,255,.7);
+        }
+
+        .summary-strip {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: .75rem;
+            margin-top: 1rem;
+        }
+
+        .summary-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            background: white;
+            border: 1px solid var(--card-border);
+            border-radius: 999px;
+            padding: .55rem .95rem;
+            font-size: .86rem;
+            color: var(--text-muted);
+        }
+
+        .review-item {
+            padding: 1.4rem 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .review-item:last-child {
+            border-bottom: 0;
+        }
+
+        .entry-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            background: #eef2ff;
+            color: #4338ca;
+            border: 1px solid #c7d2fe;
+            font-size: .76rem;
+            font-weight: 700;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            padding: .38rem .8rem;
+            border-radius: 999px;
+        }
+
+        .amount-big {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .label-mini {
+            display: block;
+            font-size: .72rem;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: .28rem;
+        }
+
+        .value-main {
+            font-size: .96rem;
+            color: #374151;
+        }
+
+        .donor-box {
+            display: flex;
+            align-items: center;
+            gap: .85rem;
+        }
+
+        .donor-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: #f3f4f6;
+            color: #9ca3af;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .category-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            padding: .45rem .78rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid;
+        }
+
+        .category-general {
+            background-color: var(--success-soft);
+            color: var(--success-text);
+            border-color: var(--success-border);
+        }
+
+        .category-restricted {
+            background-color: var(--warning-soft);
+            color: var(--warning-text);
+            border-color: var(--warning-border);
+        }
+
+        .mini-card {
+            height: 100%;
+            background: #fbfcfe;
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 1rem;
+        }
+
+        .donor-type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .38rem .72rem;
+            border-radius: 999px;
+            font-size: .76rem;
+            font-weight: 700;
+            border: 1px solid;
+            margin-top: .45rem;
+        }
+
+        .donor-type-member {
+            background: var(--info-soft);
+            color: var(--info-text);
+            border-color: var(--info-border);
+        }
+
+        .donor-type-non-member {
+            background: var(--purple-soft);
+            color: var(--purple-text);
+            border-color: var(--purple-border);
+        }
+
+        .donor-type-anonymous {
+            background: var(--neutral-soft);
+            color: var(--neutral-text);
+            border-color: var(--neutral-border);
+        }
+
+        .link-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            padding: .45rem .75rem;
+            border-radius: 999px;
+            border: 1px solid var(--info-border);
+            background: var(--info-soft);
+            color: var(--info-text);
+            text-decoration: none;
+            font-size: .84rem;
+            font-weight: 600;
+        }
+
+        .link-chip:hover {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .ocr-box {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 14px;
+            padding: .9rem 1rem;
+        }
+
+        .ocr-text {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: .84rem;
+            color: #334155;
+            max-height: 170px;
+            overflow: auto;
+        }
+
+        .fraud-box {
+            border-radius: 14px;
+            padding: 1rem;
+            border: 1px solid;
+            height: 100%;
+        }
+
+        .fraud-box.on {
+            background: var(--success-soft);
+            border-color: var(--success-border);
+        }
+
+        .fraud-box.off {
+            background: var(--neutral-soft);
+            border-color: var(--neutral-border);
+        }
+
+        .fraud-box.skipped {
+            background: var(--warning-soft);
+            border-color: var(--warning-border);
+        }
+
+        .fraud-box.failed {
+            background: var(--danger-soft);
+            border-color: var(--danger-border);
+        }
+
+        .fraud-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            padding: .38rem .72rem;
+            border-radius: 999px;
+            font-size: .78rem;
+            font-weight: 700;
+            border: 1px solid;
+        }
+
+        .fraud-status-badge.enabled,
+        .fraud-status-badge.checked {
+            color: var(--success-text);
+            background: #ffffff;
+            border-color: var(--success-border);
+        }
+
+        .fraud-status-badge.disabled {
+            color: var(--neutral-text);
+            background: #ffffff;
+            border-color: var(--neutral-border);
+        }
+
+        .fraud-status-badge.skipped {
+            color: var(--warning-text);
+            background: #ffffff;
+            border-color: var(--warning-border);
+        }
+
+        .fraud-status-badge.failed {
+            color: var(--danger-text);
+            background: #ffffff;
+            border-color: var(--danger-border);
+        }
+
+        .fraud-reason {
+            margin-top: .85rem;
+            font-size: .86rem;
+            line-height: 1.6;
+            color: #374151;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .proof-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            padding: .36rem .72rem;
+            border-radius: 999px;
+            font-size: .78rem;
+            font-weight: 700;
+            border: 1px solid #dbeafe;
+            background: #eff6ff;
+            color: #1d4ed8;
+            margin-top: .65rem;
+        }
+
+        .total-section {
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            border-top: 1px solid var(--card-border);
+        }
+
+        .total-box {
+            background: white;
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1rem 1.25rem;
+            min-width: 280px;
+            box-shadow: 0 4px 10px rgba(0,0,0,.04);
+        }
+
+        .btn-action {
+            padding: 0.85rem 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-confirm {
+            background-color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            color: white;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-confirm:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+            color: white;
+        }
+
+        .btn-cancel {
+            background: white;
+            border: 1px solid #d1d5db;
+            color: #4b5563;
+        }
+
+        .btn-cancel:hover {
+            background: #f3f4f6;
+            color: #dc2626;
+            border-color: #fecaca;
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 20px 0;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+
+{% include 'navbar.html' %}
+
+<div class="main-content">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-10 col-lg-11">
+
+                {% if messages %}
+                    <div class="mb-3">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags|default:'info' }} shadow-sm border-0">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="card card-review">
+
+                    <div class="card-header-custom">
+                        <div class="header-icon">
+                            <i class="bi bi-clipboard-check"></i>
+                        </div>
+                        <h2 class="h4 fw-bold mb-1">Review Donation Entries</h2>
+                        <p class="text-secondary mb-0">
+                            Please verify each staged donation before permanently saving it to the database.
+                        </p>
+
+                        <div class="summary-strip">
+                            <span class="summary-pill">
+                                <i class="bi bi-collection"></i>
+                                {{ donations|length }} Entr{{ donations|length|pluralize:"y,ies" }}
+                            </span>
+                            <span class="summary-pill">
+                                <i class="bi bi-eye"></i>
+                                Review Before Save
+                            </span>
+                            <span class="summary-pill">
+                                <i class="bi bi-shield-check"></i>
+                                Fraud Status Included
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-0">
+                        <form method="post">
+                            {% csrf_token %}
+
+                            {% for item in donations %}
+                                <div class="review-item">
+                                    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+                                        <span class="entry-badge">
+                                            <i class="bi bi-hash"></i>
+                                            Entry {{ forloop.counter }}
+                                        </span>
+
+                                        <div class="text-end">
+                                            <span class="label-mini">Amount</span>
+                                            <div class="amount-big">₱ {{ item.amount|floatformat:2|intcomma }}</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3">
+                                        <div class="col-lg-4">
+                                            <div class="mini-card">
+                                                <span class="label-mini">Donor</span>
+                                                <div class="donor-box">
+                                                    <div class="donor-avatar">
+                                                        <i class="bi bi-person-fill"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-semibold text-dark">
+                                                            {{ item.donor_display|default:"Anonymous" }}
+                                                        </div>
+
+                                                        {% if item.donor_type == "member" %}
+                                                            <span class="donor-type-badge donor-type-member">
+                                                                <i class="bi bi-people-fill"></i>
+                                                                Member
+                                                            </span>
+                                                            {% if item.user_name %}
+                                                                <div class="small text-secondary mt-2">
+                                                                    Linked User: {{ item.user_name }}
+                                                                </div>
+                                                            {% elif item.user_id %}
+                                                                <div class="small text-secondary mt-2">
+                                                                    Linked User ID: {{ item.user_id }}
+                                                                </div>
+                                                            {% endif %}
+                                                        {% elif item.donor_type == "non_member" %}
+                                                            <span class="donor-type-badge donor-type-non-member">
+                                                                <i class="bi bi-person-badge-fill"></i>
+                                                                Non-member
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="donor-type-badge donor-type-anonymous">
+                                                                <i class="bi bi-incognito"></i>
+                                                                Anonymous
+                                                            </span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-lg-4">
+                                            <div class="mini-card">
+                                                <span class="label-mini">Category</span>
+                                                <div class="mb-2">
+                                                    <span class="category-badge {% if item.is_restricted %}category-restricted{% else %}category-general{% endif %}">
+                                                        <i class="bi bi-tag-fill"></i>
+                                                        {{ item.donations_type_name }}
+                                                    </span>
+                                                </div>
+
+                                                {% if item.other_donations_type %}
+                                                    <div class="small text-secondary">
+                                                        <i class="bi bi-chat-left-text me-1"></i>
+                                                        {{ item.other_donations_type }}
+                                                    </div>
+                                                {% else %}
+                                                    <div class="small text-secondary">No additional note.</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <div class="col-lg-4">
+                                            <div class="mini-card">
+                                                <span class="label-mini">Date</span>
+                                                <div class="value-main">
+                                                    <i class="bi bi-calendar-event me-1 text-secondary"></i>
+                                                    {{ item.donations_date }}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-lg-6">
+                                            <div class="mini-card">
+                                                <span class="label-mini">Attached Receipt File</span>
+                                                {% if item.file_url %}
+                                                    <a href="{{ item.file_url }}" target="_blank" class="link-chip">
+                                                        <i class="bi bi-file-earmark-arrow-down"></i>
+                                                        Open Receipt File
+                                                    </a>
+                                                {% else %}
+                                                    <div class="small text-secondary">No receipt file uploaded.</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <div class="col-lg-6">
+                                            <div class="mini-card">
+                                                <span class="label-mini">Attached Receipt Image</span>
+                                                {% if item.receipt_image_url %}
+                                                    <a href="{{ item.receipt_image_url }}" target="_blank" class="link-chip">
+                                                        <i class="bi bi-image"></i>
+                                                        Open Receipt Image
+                                                    </a>
+                                                {% else %}
+                                                    <div class="small text-secondary">No receipt image uploaded.</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">
+                                            {% if item.fraud_detection_enabled %}
+                                                <div class="fraud-box {% if item.fraud_checked %}on{% else %}skipped{% endif %}">
+                                                    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                                                        <div>
+                                                            <span class="label-mini">Fraud Detection</span>
+                                                            <div class="fw-bold text-dark mb-1">Donation Proof Screening</div>
+                                                        </div>
+
+                                                        {% if item.fraud_checked %}
+                                                            <span class="fraud-status-badge checked">
+                                                                <i class="bi bi-shield-check"></i>
+                                                                Checked
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="fraud-status-badge skipped">
+                                                                <i class="bi bi-shield-exclamation"></i>
+                                                                Skipped
+                                                            </span>
+                                                        {% endif %}
+                                                    </div>
+
+                                                    {% if item.fraud_proof_used %}
+                                                        <div class="proof-chip">
+                                                            <i class="bi bi-paperclip"></i>
+                                                            Proof Used:
+                                                            {% if item.fraud_proof_used == "receipt_image" %}
+                                                                Receipt Image
+                                                            {% elif item.fraud_proof_used == "file" %}
+                                                                Receipt File
+                                                            {% else %}
+                                                                {{ item.fraud_proof_used }}
+                                                            {% endif %}
+                                                        </div>
+                                                    {% endif %}
+
+                                                    <div class="fraud-reason">
+                                                        {{ item.fraud_reason }}
+                                                    </div>
+                                                </div>
+                                            {% else %}
+                                                <div class="fraud-box off">
+                                                    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                                                        <div>
+                                                            <span class="label-mini">Fraud Detection</span>
+                                                            <div class="fw-bold text-dark mb-1">Donation Proof Screening</div>
+                                                        </div>
+
+                                                        <span class="fraud-status-badge disabled">
+                                                            <i class="bi bi-power"></i>
+                                                            Disabled
+                                                        </span>
+                                                    </div>
+
+                                                    <div class="fraud-reason">
+                                                        {{ item.fraud_reason|default:"Fraud detection is OFF." }}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="col-12">
+                                            <div class="mini-card">
+                                                <span class="label-mini">OCR Preview</span>
+                                                <div class="ocr-box">
+                                                    {% if item.ocr_text %}
+                                                        <pre class="ocr-text">{{ item.ocr_text }}</pre>
+                                                    {% else %}
+                                                        <div class="small text-secondary">No OCR text captured for this entry.</div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="p-5 text-center text-muted">
+                                    <i class="bi bi-inbox fs-1 mb-3 d-block opacity-25"></i>
+                                    No pending data found.
+                                </div>
+                            {% endfor %}
+
+                            {% if donations %}
+                                <div class="total-section p-4">
+                                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                                        <div class="text-center text-md-start">
+                                            <div class="text-uppercase text-secondary fw-bold small">Total Batch Amount</div>
+                                            <div class="small text-secondary">
+                                                This is the total amount of all staged donation entries.
+                                            </div>
+                                        </div>
+
+                                        <div class="total-box text-center text-md-end">
+                                            <div class="small text-uppercase text-secondary fw-bold mb-1">Grand Total</div>
+                                            <div class="fs-3 fw-bold text-success">₱ {{ total_amount|floatformat:2|intcomma }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <div class="p-4 bg-white border-top text-center">
+                                <div class="alert alert-light border d-inline-flex align-items-center mb-4 text-secondary small px-4 py-2 rounded-pill">
+                                    <i class="bi bi-info-circle-fill me-2 text-primary"></i>
+                                    Clicking "Confirm & Save" will permanently record these {{ donations|length }} entr{{ donations|length|pluralize:"y,ies" }}.
+                                </div>
+
+                                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                                    <button type="submit" name="cancel" value="1" class="btn btn-action btn-cancel"
+                                            onclick="return confirm('Are you sure? This will discard all pending entries.');">
+                                        <i class="bi bi-x-lg me-2"></i>Discard & Go Back
+                                    </button>
+
+                                    <button type="submit" name="confirm" value="1" class="btn btn-action btn-confirm px-5">
+                                        Confirm & Save <i class="bi bi-check-lg ms-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <div class="container">
+        <p>&copy; {% now "Y" %} Church Information System</p>
+    </div>
+</footer>
+
+</body>
+</html>

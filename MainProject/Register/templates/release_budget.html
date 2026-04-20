@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Release Funds | ChurchSys</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-body: #eef3f8;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --card-bg: #ffffff;
+            --card-soft: #f8fafc;
+            --primary-accent: #2563eb;
+            --primary-dark: #1e3a5f;
+            --success-accent: #10b981;
+            --danger-accent: #ef4444;
+            --warning-accent: #f59e0b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 8px 20px rgba(15, 23, 42, 0.05);
+            --shadow-md: 0 18px 40px rgba(15, 23, 42, 0.08);
+            --radius-xl: 22px;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 10px;
+        }
+
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 22%),
+                radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.05), transparent 18%),
+                linear-gradient(180deg, #f8fbff 0%, var(--bg-body) 100%);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .page-hero {
+            background: linear-gradient(135deg, #0f172a 0%, var(--primary-dark) 100%);
+            border-radius: var(--radius-xl);
+            padding: 1.6rem 1.8rem;
+            box-shadow: var(--shadow-md);
+            color: white;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .page-hero::before {
+            content: "";
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 190px;
+            height: 190px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+        }
+
+        .page-hero::after {
+            content: "";
+            position: absolute;
+            left: -60px;
+            bottom: -60px;
+            width: 170px;
+            height: 170px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+        }
+
+        .page-hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: .45rem .8rem;
+            border-radius: 999px;
+            background: rgba(255,255,255,.12);
+            border: 1px solid rgba(255,255,255,.18);
+            font-size: .8rem;
+            font-weight: 700;
+            margin-bottom: .85rem;
+        }
+
+        .toolbar-btn {
+            border-radius: 999px;
+            font-weight: 600;
+            padding: .7rem 1rem;
+        }
+
+        .card {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            background: var(--card-bg);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .card-action {
+            border-top: 4px solid var(--success-accent);
+        }
+
+        .card-header {
+            background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.15rem 1.35rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-card {
+            padding: 1.2rem 1.35rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-title {
+            font-size: .78rem;
+            font-weight: 800;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            margin-bottom: .85rem;
+        }
+
+        .form-control, .form-select {
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: .72rem .9rem;
+            font-size: .92rem;
+            min-height: 46px;
+            transition: all .2s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: white;
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+        }
+
+        .input-group-text {
+            border-radius: 12px;
+            background: white;
+            border-color: var(--border-color);
+        }
+
+        .table-responsive {
+            max-height: 620px;
+        }
+
+        .table thead th {
+            background-color: #f8fafc;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.35rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        .table tbody td {
+            padding: 1rem 1.35rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #fbfdff;
+        }
+
+        .fw-bold-dark {
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .num-cell {
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 600;
+            letter-spacing: -0.4px;
+            text-align: right;
+        }
+
+        .amount-highlight {
+            color: #059669;
+            background-color: #ecfdf5;
+            padding: 5px 10px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .btn-release {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            box-shadow: 0 8px 18px rgba(16, 185, 129, 0.18);
+            transition: all 0.2s ease;
+        }
+
+        .btn-release:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(16, 185, 129, 0.25);
+            color: white;
+        }
+
+        .btn-release:disabled {
+            background: #cbd5e1;
+            box-shadow: none;
+            cursor: not-allowed;
+            color: #64748b;
+        }
+
+        .btn-decline {
+            background: white;
+            color: var(--danger-accent);
+            border: 1px solid #fecaca;
+            padding: 7px 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-decline:hover {
+            background: #fef2f2;
+            color: #dc2626;
+            border-color: #fca5a5;
+        }
+
+        .user-avatar {
+            width: 30px;
+            height: 30px;
+            background-color: #e2e8f0;
+            color: #64748b;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+
+        .badge-balance {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.75rem;
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            padding: 5px 9px;
+            border-radius: 6px;
+        }
+
+        .empty-state {
+            padding: 3rem 1rem;
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            font-size: 2.6rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+
+        .source-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            color: var(--text-secondary);
+        }
+
+        .source-pill.bank {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-color: #bfdbfe;
+        }
+
+        .source-pill.cash {
+            background: #ecfdf5;
+            color: #047857;
+            border-color: #a7f3d0;
+        }
+
+        .choice-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 0.9rem 1rem;
+            transition: all 0.15s ease;
+            cursor: pointer;
+            background: white;
+        }
+
+        .choice-card:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+        }
+
+        .choice-card.active {
+            border-color: #60a5fa;
+            background: #eff6ff;
+            box-shadow: inset 0 0 0 1px #60a5fa;
+        }
+
+        .choice-card input {
+            transform: scale(1.05);
+        }
+
+        .modal-note {
+            font-size: 0.86rem;
+            color: var(--text-secondary);
+        }
+
+        .table-filter-empty {
+            display: none;
+        }
+
+        .table-filter-empty.show {
+            display: table-row;
+        }
+
+        .soft-badge {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            border-radius: 999px;
+            padding: .45rem .8rem;
+            font-size: .78rem;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+{% include 'navbar.html' %}
+
+<div class="container py-5">
+
+    <div class="page-hero">
+        <div class="page-hero-content d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+            <div>
+                <div class="hero-chip">
+                    <i class="bi bi-cash-coin"></i>
+                    Budget Disbursement Center
+                </div>
+                <h2 class="fw-bold mb-1">Fund Disbursement</h2>
+                <p class="mb-0 text-white-50">Review approved requests, release funds with the correct source, and maintain a clean audit trail.</p>
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'budget_release' %}" class="btn btn-light toolbar-btn shadow-sm">
+                    <i class="bi bi-inbox me-2"></i>Requests
+                </a>
+                <a href="{% url 'budgets_manage' %}" class="btn btn-outline-light toolbar-btn">
+                    <i class="bi bi-wallet2 me-2"></i>Budgets
+                </a>
+                {% if bank_acct %}
+                    <span class="soft-badge align-self-center bg-white text-dark">
+                        <i class="bi bi-bank me-1"></i>
+                        Bank: ₱{{ bank_acct.current_balance|floatformat:2 }}
+                    </span>
+                {% else %}
+                    <a href="{% url 'bank_settings' %}" class="btn btn-warning toolbar-btn">
+                        <i class="bi bi-bank me-2"></i>Set Bank
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
+                <div class="d-flex align-items-center">
+                    {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill me-2 fs-5"></i>{% endif %}
+                    {% if message.tags == 'error' %}<i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>{% endif %}
+                    {% if message.tags == 'warning' %}<i class="bi bi-exclamation-circle-fill me-2 fs-5"></i>{% endif %}
+                    {% if message.tags != 'success' and message.tags != 'error' and message.tags != 'warning' %}<i class="bi bi-info-circle-fill me-2 fs-5"></i>{% endif %}
+                    <span>{{ message }}</span>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- SEARCH / FILTER BAR -->
+    <div class="card filter-card">
+        <div class="filter-title">Search and Filter</div>
+        <div class="row g-3 align-items-end">
+            <div class="col-lg-5">
+                <label class="form-label small fw-semibold text-secondary mb-2">Budget Name / Ministry</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" id="budgetSearchInput" class="form-control border-start-0" placeholder="Search budget name or ministry">
+                </div>
+            </div>
+
+            <div class="col-lg-3">
+                <label class="form-label small fw-semibold text-secondary mb-2">Date</label>
+                <input type="date" id="budgetDateInput" class="form-control">
+            </div>
+
+            <div class="col-lg-2">
+                <button type="button" id="clearBudgetFilters" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-x-circle me-1"></i>Clear
+                </button>
+            </div>
+
+            <div class="col-lg-2">
+                <div class="small text-secondary fw-semibold" id="filterStatusText">Showing all records</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card card-action mb-5">
+        <div class="card-header">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-lightning-charge-fill text-success"></i>
+                <span>Ready for Release</span>
+            </div>
+            {% if approved %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">{{ approved.count }} Pending</span>
+            {% endif %}
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="approvedTable">
+                <thead>
+                    <tr>
+                        <th>Budget Name</th>
+                        <th>Budget Period & Balance</th>
+                        <th>Approval Details</th>
+                        <th class="text-end">Amount</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in approved %}
+                    <tr class="searchable-row"
+                        data-search="{{ a.budget|lower }} {{ a.budget.ministry.name|lower }}"
+                        data-date="{{ a.date_released|date:'Y-m-d' }}">
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded p-2 bg-light text-primary">
+                                    <i class="bi bi-folder2-open"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold-dark">{{ a.budget }}</div>
+                                    <div class="small text-secondary">
+                                        Ministry: {{ a.budget.ministry.name }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="d-flex flex-column align-items-start gap-1">
+                                <span class="badge bg-light text-secondary border fw-normal">
+                                    {{ a.budget.get_month_display|slice:":3" }} {{ a.budget.year }}
+                                </span>
+
+                                <span class="badge-balance" title="Current Live Balance">
+                                    Avail: ₱{{ a.budget.current_balance|floatformat:2 }}
+                                </span>
+
+                                <span class="small text-muted">Needed: {{ a.date_released|date:"M d, Y" }}</span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <span class="user-avatar" title="{{ a.approved_by.username }}">
+                                    {{ a.approved_by.username|slice:":1"|upper|default:"A" }}
+                                </span>
+                                <div>
+                                    <div class="small fw-semibold text-dark">{{ a.approved_by.username|default:"Admin" }}</div>
+                                    {% if a.remarks %}
+                                        <div class="small text-muted fst-italic text-truncate" style="max-width: 180px;" title="{{ a.remarks }}">
+                                            "{{ a.remarks }}"
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="text-end">
+                            <span class="amount-highlight num-cell">₱{{ a.amount|floatformat:2 }}</span>
+                        </td>
+
+                        <td class="text-end">
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="btn-decline" data-bs-toggle="modal" data-bs-target="#declineModal{{ a.pk }}" title="Decline Request">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+
+                                {% if a.amount <= a.budget.current_balance %}
+                                    <button
+                                        type="button"
+                                        class="btn-release open-release-modal"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#releaseModal"
+                                        data-url="{% url 'release_budget_release' a.pk %}"
+                                        data-amount="{{ a.amount }}"
+                                        data-budget="{{ a.budget }}"
+                                        data-date="{{ a.date_released|date:'M d, Y' }}"
+                                        data-has-bank="{% if bank_acct %}1{% else %}0{% endif %}"
+                                        data-bank-balance="{% if bank_acct %}{{ bank_acct.current_balance|default:'0' }}{% else %}0{% endif %}"
+                                    >
+                                        Release <i class="bi bi-arrow-right-short"></i>
+                                    </button>
+                                {% else %}
+                                    <div class="d-flex flex-column align-items-end">
+                                        <button type="button" class="btn-release" disabled title="Insufficient Funds">
+                                            Low Funds
+                                        </button>
+                                        <span class="text-danger small mt-1 fw-bold" style="font-size: 0.65rem;">
+                                            Max: ₱{{ a.budget.current_balance|floatformat:2 }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="modal fade text-start" id="declineModal{{ a.pk }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content border-0 shadow">
+                                        <form method="post" action="{% url 'release_budget_decline' a.pk %}">
+                                            {% csrf_token %}
+                                            <div class="modal-header bg-danger-subtle text-danger border-0">
+                                                <h5 class="modal-title fs-6 fw-bold">
+                                                    <i class="bi bi-exclamation-octagon-fill me-2"></i>Decline Release
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p class="small text-secondary mb-3">
+                                                    You are about to decline the release of <strong>₱{{ a.amount|floatformat:2 }}</strong> for <strong>{{ a.budget }}</strong>.
+                                                    This action is irreversible.
+                                                </p>
+                                                <div class="mb-3">
+                                                    <label class="form-label small fw-bold text-dark">Reason for Rejection <span class="text-danger">*</span></label>
+                                                    <textarea name="declined_reason" class="form-control" rows="3" required placeholder="e.g. Insufficient funds, request duplicate, or changes in budget plan..."></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer border-0 pt-0">
+                                                <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-danger btn-sm">Confirm Decline</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <i class="bi bi-check2-circle text-success opacity-50"></i>
+                                </div>
+                                <h6 class="text-dark">All caught up!</h6>
+                                <p class="small text-muted mb-0">There are no approved requests waiting for disbursement.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                    {% if approved %}
+                    <tr class="table-filter-empty">
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <i class="bi bi-search opacity-50"></i>
+                                </div>
+                                <h6 class="text-dark">No matching approved requests</h6>
+                                <p class="small text-muted mb-0">Try another budget name, ministry, or date.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-clock-history text-secondary"></i>
+                <span>Release History</span>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="historyTable">
+                <thead>
+                    <tr>
+                        <th>Budget Name</th>
+                        <th>Date Released</th>
+                        <th>Source</th>
+                        <th>Processed By</th>
+                        <th class="text-end">Amount Disbursed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in released %}
+                    <tr class="searchable-row"
+                        data-search="{{ r.budget|lower }} {{ r.budget.ministry.name|lower }}"
+                        data-date="{{ r.date_released|date:'Y-m-d' }}">
+                        <td>
+                            <span class="fw-bold-dark">{{ r.budget }}</span>
+                            <span class="text-muted mx-1">&middot;</span>
+                            <span class="small text-muted">{{ r.budget.ministry.name }}</span>
+                        </td>
+                        <td>{{ r.date_released|date:"M d, Y" }}</td>
+                        <td>
+                            <span class="source-pill {% if r.deduct_from == 'bank' %}bank{% else %}cash{% endif %}">
+                                {% if r.deduct_from == 'bank' %}
+                                    <i class="bi bi-bank"></i> {{ r.deduct_from_label|default:"Bank" }}
+                                {% else %}
+                                    <i class="bi bi-cash-stack"></i> {{ r.deduct_from_label|default:"Physical Cash" }}
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <span class="user-avatar" style="width: 24px; height: 24px; font-size: 10px;">
+                                    {{ r.released_by.username|slice:":1"|upper|default:"S" }}
+                                </span>
+                                <span class="small">{{ r.released_by.username|default:"System" }}</span>
+                            </div>
+                        </td>
+                        <td class="text-end num-cell text-secondary">₱{{ r.amount|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <i class="bi bi-journal-x"></i>
+                                </div>
+                                <h6 class="text-dark">No history found</h6>
+                                <p class="small text-muted mb-0">Past releases will appear here.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                    {% if released %}
+                    <tr class="table-filter-empty">
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <i class="bi bi-search opacity-50"></i>
+                                </div>
+                                <h6 class="text-dark">No matching release history</h6>
+                                <p class="small text-muted mb-0">Try another budget name, ministry, or date.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- RELEASE MODAL -->
+<div class="modal fade" id="releaseModal" tabindex="-1" aria-labelledby="releaseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form method="post" id="releaseForm">
+                {% csrf_token %}
+
+                <div class="modal-header bg-success-subtle border-0">
+                    <h5 class="modal-title fs-6 fw-bold text-success" id="releaseModalLabel">
+                        <i class="bi bi-check-circle-fill me-2"></i>Confirm Release
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <div class="small text-secondary mb-1">Budget Name</div>
+                        <div class="fw-bold-dark" id="releaseBudgetText">-</div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <div class="small text-secondary mb-1">Amount</div>
+                            <div class="fw-bold-dark num-cell text-start" id="releaseAmountText">₱0.00</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="small text-secondary mb-1">Needed Date</div>
+                            <div class="fw-bold-dark" id="releaseDateText">-</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Deduct From <span class="text-danger">*</span></label>
+
+                        <label class="choice-card d-flex justify-content-between align-items-center mb-2" id="choiceCashCard">
+                            <div>
+                                <div class="fw-semibold text-dark"><i class="bi bi-cash-stack me-2 text-success"></i>Physical Cash</div>
+                                <div class="modal-note">Release will be deducted from Main Treasury.</div>
+                            </div>
+                            <input class="form-check-input" type="radio" name="deduct_from" value="cash" id="deductCash" required>
+                        </label>
+
+                        <label class="choice-card d-flex justify-content-between align-items-center" id="choiceBankCard">
+                            <div>
+                                <div class="fw-semibold text-dark"><i class="bi bi-bank me-2 text-primary"></i>Bank</div>
+                                <div class="modal-note">
+                                    {% if bank_acct %}
+                                        Current Bank Balance: ₱{{ bank_acct.current_balance|floatformat:2 }}
+                                    {% else %}
+                                        No bank account configured yet.
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <input class="form-check-input" type="radio" name="deduct_from" value="bank" id="deductBank" required>
+                        </label>
+                    </div>
+
+                    <div id="bankWarning" class="alert alert-warning d-none mb-2"></div>
+                    <div id="bankError" class="alert alert-danger d-none mb-2"></div>
+
+                    <p class="small text-secondary mb-0">
+                        Please confirm the deduction source before continuing.
+                    </p>
+                </div>
+
+                <div class="modal-footer border-0 pt-0">
+                    <a href="{% url 'bank_settings' %}" id="setBankBtn" class="btn btn-warning btn-sm d-none">
+                        <i class="bi bi-bank me-1"></i>Set Bank First
+                    </a>
+                    <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success btn-sm" id="confirmReleaseBtn">
+                        Confirm Release
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- LOCK MODAL -->
+<div class="modal fade" id="lockModal" tabindex="-1" aria-labelledby="lockModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-danger-subtle border-0">
+                <h5 class="modal-title fs-6 fw-bold text-danger" id="lockModalLabel">
+                    <i class="bi bi-lock-fill me-2"></i>Posting Period Locked
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0 text-secondary">{{ lock_message }}</p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal">Okay</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const releaseForm = document.getElementById("releaseForm");
+    const releaseBudgetText = document.getElementById("releaseBudgetText");
+    const releaseAmountText = document.getElementById("releaseAmountText");
+    const releaseDateText = document.getElementById("releaseDateText");
+
+    const deductCash = document.getElementById("deductCash");
+    const deductBank = document.getElementById("deductBank");
+
+    const choiceCashCard = document.getElementById("choiceCashCard");
+    const choiceBankCard = document.getElementById("choiceBankCard");
+
+    const bankWarning = document.getElementById("bankWarning");
+    const bankError = document.getElementById("bankError");
+    const setBankBtn = document.getElementById("setBankBtn");
+    const confirmBtn = document.getElementById("confirmReleaseBtn");
+
+    const budgetSearchInput = document.getElementById("budgetSearchInput");
+    const budgetDateInput = document.getElementById("budgetDateInput");
+    const clearBudgetFilters = document.getElementById("clearBudgetFilters");
+    const filterStatusText = document.getElementById("filterStatusText");
+
+    let currentAmount = 0;
+    let hasBank = false;
+    let bankBalance = 0;
+
+    function money(value) {
+        const n = parseFloat(value || 0);
+        return `₱${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    function resetReleaseModal() {
+        bankWarning.classList.add("d-none");
+        bankError.classList.add("d-none");
+        setBankBtn.classList.add("d-none");
+        confirmBtn.disabled = false;
+
+        deductCash.checked = false;
+        deductBank.checked = false;
+
+        choiceCashCard.classList.remove("active");
+        choiceBankCard.classList.remove("active");
+    }
+
+    function updateChoiceCards() {
+        choiceCashCard.classList.toggle("active", deductCash.checked);
+        choiceBankCard.classList.toggle("active", deductBank.checked);
+    }
+
+    function validateSource() {
+        bankWarning.classList.add("d-none");
+        bankError.classList.add("d-none");
+        setBankBtn.classList.add("d-none");
+        confirmBtn.disabled = false;
+
+        updateChoiceCards();
+
+        if (deductBank.checked) {
+            if (!hasBank) {
+                bankWarning.textContent = "No bank account is set in the system. Please configure bank settings first.";
+                bankWarning.classList.remove("d-none");
+                setBankBtn.classList.remove("d-none");
+                confirmBtn.disabled = true;
+                return;
+            }
+
+            if (currentAmount > bankBalance) {
+                bankError.textContent =
+                    `Cannot continue. Bank balance is insufficient. Bank Balance: ${money(bankBalance)}, Required: ${money(currentAmount)}.`;
+                bankError.classList.remove("d-none");
+                confirmBtn.disabled = true;
+            }
+        }
+    }
+
+    document.querySelectorAll(".open-release-modal").forEach(button => {
+        button.addEventListener("click", function () {
+            resetReleaseModal();
+
+            releaseForm.action = this.dataset.url;
+            currentAmount = parseFloat(this.dataset.amount || "0");
+            hasBank = this.dataset.hasBank === "1";
+            bankBalance = parseFloat(this.dataset.bankBalance || "0");
+
+            releaseBudgetText.textContent = this.dataset.budget || "-";
+            releaseAmountText.textContent = money(currentAmount);
+            releaseDateText.textContent = this.dataset.date || "-";
+        });
+    });
+
+    deductCash.addEventListener("change", validateSource);
+    deductBank.addEventListener("change", validateSource);
+
+    choiceCashCard.addEventListener("click", function () {
+        deductCash.checked = true;
+        validateSource();
+    });
+
+    choiceBankCard.addEventListener("click", function () {
+        deductBank.checked = true;
+        validateSource();
+    });
+
+    function normalizeText(value) {
+        return (value || "").toString().trim().toLowerCase();
+    }
+
+    function applyTableFilters() {
+        const query = normalizeText(budgetSearchInput ? budgetSearchInput.value : "");
+        const selectedDate = budgetDateInput ? budgetDateInput.value : "";
+
+        let totalVisible = 0;
+
+        document.querySelectorAll("table").forEach(table => {
+            const rows = table.querySelectorAll("tbody .searchable-row");
+            const emptyRow = table.querySelector("tbody .table-filter-empty");
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const searchableText = normalizeText(row.dataset.search);
+                const rowDate = row.dataset.date || "";
+
+                const matchesText = !query || searchableText.includes(query);
+                const matchesDate = !selectedDate || rowDate === selectedDate;
+                const show = matchesText && matchesDate;
+
+                row.style.display = show ? "" : "none";
+                if (show) {
+                    visibleCount++;
+                    totalVisible++;
+                }
+            });
+
+            if (emptyRow) {
+                emptyRow.classList.toggle("show", rows.length > 0 && visibleCount === 0);
+            }
+        });
+
+        if (!query && !selectedDate) {
+            filterStatusText.textContent = "Showing all records";
+        } else {
+            filterStatusText.textContent = `${totalVisible} matching record(s)`;
+        }
+    }
+
+    if (budgetSearchInput) {
+        budgetSearchInput.addEventListener("input", applyTableFilters);
+    }
+
+    if (budgetDateInput) {
+        budgetDateInput.addEventListener("change", applyTableFilters);
+    }
+
+    if (clearBudgetFilters) {
+        clearBudgetFilters.addEventListener("click", function () {
+            if (budgetSearchInput) budgetSearchInput.value = "";
+            if (budgetDateInput) budgetDateInput.value = "";
+            applyTableFilters();
+        });
+    }
+
+    {% if show_lock_modal %}
+        const lockModalEl = document.getElementById("lockModal");
+        if (lockModalEl) {
+            const lockModal = new bootstrap.Modal(lockModalEl);
+            lockModal.show();
+        }
+    {% endif %}
+
+    applyTableFilters();
+});
+</script>
+
+</body>
+</html>

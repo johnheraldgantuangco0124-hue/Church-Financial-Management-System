@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Release Budget (from Approved)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Optional: Bootstrap for quick styling -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background: #f7f8fa; }
+    .card { box-shadow: 0 2px 12px rgba(0,0,0,.04); }
+    .form-text { font-size: .85rem; }
+    .table thead th { white-space: nowrap; }
+    .text-mono { font-variant-numeric: tabular-nums; font-family: ui-monospace,SFMono-Regular,Menlo,monospace; }
+  </style>
+</head>
+<body>
+<div class="container py-4">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="mb-0">Release Budget <small class="text-muted">from Approved</small></h2>
+    <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm">Back</a>
+  </div>
+
+  <!-- Flash messages -->
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-2" role="alert">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Disbursement form -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <p class="text-muted mb-3">
+        Post the <strong>actual release</strong> (cash/check/transfer). The system validates that you can’t
+        release beyond the <em>approved</em> amount for the selected budget. Expenses can only be recorded
+        against funds released here.
+      </p>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">{{ form.budget.label }}</label>
+            {{ form.budget }}
+            {% if form.budget.errors %}
+              <div class="text-danger small">{{ form.budget.errors|striptags }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label">{{ form.date_released.label }}</label>
+            {{ form.date_released }}
+            {% if form.date_released.errors %}
+              <div class="text-danger small">{{ form.date_released.errors|striptags }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label">{{ form.amount.label }}</label>
+            {{ form.amount }}
+            <div class="form-text">e.g., ₱3,000 or 3000.00</div>
+            {% if form.amount.errors %}
+              <div class="text-danger small">{{ form.amount.errors|striptags }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label">{{ form.method.label }}</label>
+            {{ form.method }}
+            {% if form.method.errors %}
+              <div class="text-danger small">{{ form.method.errors|striptags }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label">{{ form.reference.label }}</label>
+            {{ form.reference }}
+            <div class="form-text">Check/OR/Txn ID (optional)</div>
+            {% if form.reference.errors %}
+              <div class="text-danger small">{{ form.reference.errors|striptags }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">{{ form.remarks.label }}</label>
+            {{ form.remarks }}
+            {% if form.remarks.errors %}
+              <div class="text-danger small">{{ form.remarks.errors|striptags }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">
+          Release Funds
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Recent Releases -->
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive mt-3">
+        <table class="table table-sm table-striped align-middle">
+          <thead>
+          <tr>
+            <th style="width: 110px;">Date</th>
+            <th>Ministry</th>
+            <th style="width: 120px;">Period</th>
+            <th class="text-end" style="width: 140px;">Amount</th>
+            <th style="width: 120px;">Method</th>
+            <th style="width: 160px;">Reference</th>
+            <th>Remarks</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for d in disbursements %}
+            <tr>
+              <td class="text-mono">{{ d.date_released }}</td>
+              <td>{{ d.budget.ministry.name }}</td>
+              <td class="text-mono">{{ d.budget.month }}/{{ d.budget.year }}</td>
+              <td class="text-end text-mono">₱{{ d.amount|floatformat:2 }}</td>
+              <td>{{ d.method|default:"—" }}</td>
+              <td>{{ d.reference|default:"—" }}</td>
+              <td>{{ d.remarks|default:"—" }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="7" class="text-muted">No releases yet.</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="text-muted small">
+        Tip: You can only record expenses up to the total released (minus what’s already spent)
+        and never beyond the overall allocation.
+      </div>
+    </div>
+  </div>
+
+  <!-- Optional: helper notice -->
+  <div class="alert alert-info mt-4">
+    Need to <em>approve or decline</em> requests first? Go to your Approval Queue page.
+  </div>
+</div>
+</body>
+</html>

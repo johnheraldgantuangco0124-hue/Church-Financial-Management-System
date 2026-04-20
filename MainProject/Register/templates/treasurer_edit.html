@@ -1,0 +1,614 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Treasurer | Church IS</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-soft: #eff6ff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --danger: #dc2626;
+            --success: #16a34a;
+            --shadow-sm: 0 4px 14px rgba(15, 23, 42, 0.05);
+            --shadow-md: 0 14px 40px rgba(15, 23, 42, 0.08);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(180deg, #eff6ff 0%, #f8fafc 180px, #f8fafc 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page-shell {
+            flex: 1;
+            padding: 32px 0 48px;
+        }
+
+        .page-topbar {
+            margin-bottom: 24px;
+        }
+
+        .breadcrumb {
+            margin-bottom: 12px;
+        }
+
+        .breadcrumb-item a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .breadcrumb-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .page-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .page-heading h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+            letter-spacing: -0.02em;
+        }
+
+        .page-heading p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.96rem;
+        }
+
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--primary-soft);
+            color: var(--primary-dark);
+            border: 1px solid #bfdbfe;
+            border-radius: 999px;
+            padding: 10px 16px;
+            font-weight: 700;
+            font-size: 0.86rem;
+            white-space: nowrap;
+        }
+
+        .main-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            border-radius: 22px;
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+
+        .main-card-header {
+            padding: 26px 30px 22px;
+            border-bottom: 1px solid var(--border);
+            background:
+                radial-gradient(circle at top right, rgba(37, 99, 235, 0.10), transparent 30%),
+                linear-gradient(180deg, #ffffff 0%, #fcfcff 100%);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .header-icon {
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%);
+            color: #fff;
+            font-size: 1.35rem;
+            box-shadow: 0 10px 22px rgba(37, 99, 235, 0.22);
+        }
+
+        .header-text h2 {
+            margin: 0 0 6px;
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .header-text p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .main-card-body {
+            padding: 28px 30px 30px;
+        }
+
+        .section-block + .section-block {
+            margin-top: 28px;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: 0.02em;
+        }
+
+        .section-title .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary);
+            box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.12);
+        }
+
+        .section-panel {
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 22px;
+            background: #fff;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .form-label {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        .form-control,
+        .form-select,
+        input,
+        select,
+        textarea {
+            border-radius: 14px !important;
+            border: 1px solid #dbe3ee !important;
+            min-height: 46px;
+            padding: 10px 14px !important;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            background-color: #fff;
+            box-shadow: none !important;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        textarea {
+            min-height: 110px;
+        }
+
+        .form-control:focus,
+        .form-select:focus,
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #93c5fd !important;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12) !important;
+        }
+
+        .field-wrap {
+            position: relative;
+        }
+
+        .errorlist {
+            list-style: none;
+            padding-left: 0;
+            margin: 8px 0 0;
+            color: var(--danger);
+            font-size: 0.84rem;
+            font-weight: 500;
+        }
+
+        .alert {
+            border: none;
+            border-radius: 16px;
+        }
+
+        .alert i {
+            margin-right: 8px;
+        }
+
+        .action-bar {
+            margin-top: 28px;
+            padding-top: 22px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .action-note {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            margin: 0;
+        }
+
+        .btn-professional {
+            border-radius: 14px;
+            padding: 11px 20px;
+            font-weight: 700;
+            font-size: 0.93rem;
+        }
+
+        .btn-cancel {
+            background: #fff;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+        }
+
+        .btn-cancel:hover {
+            background: #f8fafc;
+            color: #0f172a;
+            border-color: #94a3b8;
+        }
+
+        .btn-save {
+            color: #fff;
+            border: none;
+            background: linear-gradient(135deg, var(--success) 0%, #15803d 100%);
+            box-shadow: 0 10px 24px rgba(22, 163, 74, 0.18);
+        }
+
+        .btn-save:hover {
+            color: #fff;
+            opacity: 0.96;
+            transform: translateY(-1px);
+        }
+
+        .form-grid-gap {
+            row-gap: 18px;
+        }
+
+        .modal-content {
+            border: none;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.18);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--success) 0%, #15803d 100%);
+            color: white;
+            border-bottom: none;
+        }
+
+        .modal-title {
+            font-weight: 700;
+        }
+
+        .btn-close-white {
+            filter: brightness(0) invert(1);
+        }
+
+        footer {
+            background-color: #0f172a;
+            color: #cbd5e1;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: auto;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 0.88rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-card-header,
+            .main-card-body {
+                padding-left: 18px;
+                padding-right: 18px;
+            }
+
+            .section-panel {
+                padding: 18px;
+            }
+
+            .page-heading h1 {
+                font-size: 1.4rem;
+            }
+
+            .action-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .action-bar .d-flex {
+                width: 100%;
+            }
+
+            .action-bar .btn-professional {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+{% include 'navbar.html' %}
+
+<div class="container page-shell">
+    <div class="page-topbar">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'church-account-list' %}">Treasurers</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Edit Treasurer</li>
+            </ol>
+        </nav>
+
+        <div class="page-heading">
+            <div>
+                <h1>Edit Treasurer Profile</h1>
+                <p>Update the treasurer’s account and profile information in a structured and professional interface.</p>
+            </div>
+            <div class="role-badge">
+                <i class="fas fa-wallet"></i>
+                Treasurer Management
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm mb-4" role="alert">
+                <i class="fas fa-circle-info"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="main-card">
+        <div class="main-card-header">
+            <div class="header-content">
+                <div class="header-icon">
+                    <i class="fas fa-user-edit"></i>
+                </div>
+                <div class="header-text">
+                    <h2>Treasurer Information Editor</h2>
+                    <p>Review the record carefully before saving any changes to the treasurer account.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="section-block">
+                    <div class="section-title">
+                        <span class="dot"></span>
+                        <span>Account Information</span>
+                    </div>
+
+                    <div class="section-panel">
+                        <div class="row form-grid-gap">
+                            <div class="col-md-4">
+                                <div class="field-wrap">
+                                    <label class="form-label">Username</label>
+                                    {{ form.username }}
+                                    {{ form.username.errors }}
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="field-wrap">
+                                    <label class="form-label">Email Address</label>
+                                    {{ form.email }}
+                                    {{ form.email.errors }}
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="field-wrap">
+                                    <label class="form-label">User Type</label>
+                                    {{ form.user_type }}
+                                    {{ form.user_type.errors }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-block">
+                    <div class="section-title">
+                        <span class="dot"></span>
+                        <span>Personal Information</span>
+                    </div>
+
+                    <div class="section-panel">
+                        <div class="row form-grid-gap">
+                            <div class="col-md-4">
+                                <div class="field-wrap">
+                                    <label class="form-label">First Name</label>
+                                    {{ form.first_name }}
+                                    {{ form.first_name.errors }}
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="field-wrap">
+                                    <label class="form-label">Middle Name</label>
+                                    {{ form.middle_name }}
+                                    {{ form.middle_name.errors }}
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="field-wrap">
+                                    <label class="form-label">Last Name</label>
+                                    {{ form.last_name }}
+                                    {{ form.last_name.errors }}
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="field-wrap">
+                                    <label class="form-label">Birthdate</label>
+                                    {{ form.birthdate }}
+                                    {{ form.birthdate.errors }}
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="field-wrap">
+                                    <label class="form-label">Year Term</label>
+                                    {{ form.year_term }}
+                                    {{ form.year_term.errors }}
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="field-wrap">
+                                    <label class="form-label">Organization</label>
+                                    {{ form.organization }}
+                                    {{ form.organization.errors }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-block">
+                    <div class="section-title">
+                        <span class="dot"></span>
+                        <span>Address Information</span>
+                    </div>
+
+                    <div class="section-panel">
+                        <div class="row form-grid-gap">
+                            <div class="col-md-3">
+                                <div class="field-wrap">
+                                    <label class="form-label">Province</label>
+                                    {{ form.province }}
+                                    {{ form.province.errors }}
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="field-wrap">
+                                    <label class="form-label">Municipality / City</label>
+                                    {{ form.municipality_or_city }}
+                                    {{ form.municipality_or_city.errors }}
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="field-wrap">
+                                    <label class="form-label">Barangay</label>
+                                    {{ form.barangay }}
+                                    {{ form.barangay.errors }}
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="field-wrap">
+                                    <label class="form-label">Purok</label>
+                                    {{ form.purok }}
+                                    {{ form.purok.errors }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <p class="action-note">
+                        <i class="fas fa-shield-halved me-1"></i>
+                        Changes will be applied immediately after saving.
+                    </p>
+
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{% url 'church-account-list' %}" class="btn btn-professional btn-cancel">
+                            <i class="fas fa-arrow-left me-1"></i> Back to List
+                        </a>
+                        <button type="submit" class="btn btn-professional btn-save">
+                            <i class="fas fa-floppy-disk me-1"></i> Save Changes
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="successModalLabel">Update Successful</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                Treasurer details have been successfully updated.
+            </div>
+            <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                <a href="{% url 'church-account-list' %}" class="btn btn-primary btn-professional w-100">OK</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2024 Living Stone Evangelical Free Church Information System</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll("input, select, textarea").forEach(function (el) {
+            if (el.type !== "hidden" && el.type !== "checkbox" && el.type !== "radio") {
+                el.classList.add("form-control");
+            }
+        });
+
+        document.querySelectorAll("select").forEach(function (el) {
+            el.classList.add("form-select");
+        });
+    });
+</script>
+
+{% if success %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+        successModal.show();
+    });
+</script>
+{% endif %}
+
+</body>
+</html>

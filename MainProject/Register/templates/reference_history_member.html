@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>My Reference History</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css"/>
+  <style>
+    .card { border-radius: .75rem; border: 1px solid #e5e7eb; }
+    .thead-light th { background: #f8fafc; }
+    .amount { font-variant-numeric: tabular-nums; }
+    .badge-soft { background:#f3f4f6; color:#374151; font-weight:500; }
+  </style>
+</head>
+<body>
+  {% include 'navbar.html' %}
+
+  <div class="container py-4">
+    <div class="d-flex align-items-baseline justify-content-between mb-2">
+      <h3 class="mb-0">My Donations History</h3>
+      <small class="text-muted">Today: {{ today }}</small>
+    </div>
+
+    <form class="card mb-3" method="get">
+      <div class="card-body">
+        <div class="form-row align-items-end">
+          <div class="form-group col-sm-5">
+            <label for="from">From</label>
+            <input type="date" id="from" name="from" value="{{ date_from }}" class="form-control">
+          </div>
+          <div class="form-group col-sm-5">
+            <label for="to">To</label>
+            <input type="date" id="to" name="to" value="{{ date_to }}" class="form-control">
+          </div>
+          <div class="form-group col-sm-2">
+            <button type="submit" class="btn btn-dark btn-block">Filter</button>
+          </div>
+        </div>
+        {% if date_from or date_to %}
+          <a href="{% url 'reference_history_member' %}" class="btn btn-link p-0">Clear filters</a>
+        {% endif %}
+      </div>
+    </form>
+
+    <!-- Approved -->
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>Approved Donations</strong>
+        <div>Total: <span class="badge badge-soft amount">{{ approved_total }}</span></div>
+      </div>
+      {% if approved_items %}
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0">
+            <thead class="thead-light">
+              <tr>
+                <th>Reference No.</th>
+                <th>Name</th>
+                <th>Date</th>
+                <th class="text-right">Amount</th>
+                <th>File</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ref in approved_items %}
+                <tr>
+                  <td><strong>{{ ref.reference_number }}</strong></td>
+                  <td>{{ ref.name }}</td>
+                  <td>{{ ref.date }}</td>
+                  <td class="text-right amount">{{ ref.amount }}</td>
+                  <td>
+                    {% if ref.file %}
+                      <a href="{{ ref.file.url }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">Download</a>
+                    {% else %}
+                      <span class="text-muted">None</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="p-3 text-muted">No approved donations found.</div>
+      {% endif %}
+    </div>
+
+    <!-- Pending -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>Pending Submissions</strong>
+        {% if pending_total %}
+          <div>Estimated Total: <span class="badge badge-soft amount">{{ pending_total }}</span></div>
+        {% endif %}
+      </div>
+      {% if pending_items %}
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0">
+            <thead class="thead-light">
+              <tr>
+                <th>Reference No.</th>
+                <th>Name</th>
+                <th>Submitted At</th>
+                {% if pending_items.first.amount %}<th class="text-right">Amount</th>{% endif %}
+                <th>File</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ref in pending_items %}
+                <tr>
+                  <td><strong>{{ ref.reference_number }}</strong></td>
+                  <td>{{ ref.name }}</td>
+                  <td>{{ ref.submitted_at }}</td>
+                  {% if ref.amount %}<td class="text-right amount">{{ ref.amount }}</td>{% endif %}
+                  <td>
+                    {% if ref.file %}
+                      <a href="{{ ref.file.url }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">Download</a>
+                    {% else %}
+                      <span class="text-muted">None</span>
+                    {% endif %}
+                  </td>
+                  <td><span class="badge badge-warning">Pending</span></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="p-3 text-muted">No pending submissions.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

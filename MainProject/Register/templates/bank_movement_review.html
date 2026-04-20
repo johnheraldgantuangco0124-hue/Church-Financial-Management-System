@@ -1,0 +1,910 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bank Movement | Review</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+  <style>
+    :root{
+      --bg: #f4f7fb;
+      --surface: #ffffff;
+      --surface-soft: #f8fbff;
+      --border: #e5e7eb;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --shadow-sm: 0 8px 24px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 16px 40px rgba(15, 23, 42, 0.10);
+      --radius-xl: 20px;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+    }
+
+    *{
+      box-sizing: border-box;
+    }
+
+    body{
+      background:
+        radial-gradient(circle at top right, rgba(37,99,235,.10), transparent 22%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      color: var(--text);
+      font-family: "Inter", sans-serif;
+      min-height: 100vh;
+    }
+
+    .page-wrap{
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .hero-card{
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%);
+      border: 0;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      position: relative;
+    }
+
+    .hero-card::before{
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 85% 20%, rgba(255,255,255,.14), transparent 20%),
+        radial-gradient(circle at 70% 80%, rgba(255,255,255,.08), transparent 25%);
+      pointer-events: none;
+    }
+
+    .hero-content{
+      position: relative;
+      z-index: 2;
+      padding: 1.5rem 1.5rem;
+    }
+
+    .hero-title{
+      font-size: clamp(1.35rem, 1.8vw, 1.9rem);
+      font-weight: 800;
+      margin-bottom: .35rem;
+      color: #fff;
+      letter-spacing: -.02em;
+    }
+
+    .hero-subtitle{
+      color: rgba(255,255,255,.82);
+      font-size: .98rem;
+      max-width: 720px;
+      line-height: 1.6;
+      margin-bottom: 0;
+    }
+
+    .hero-badge{
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      padding: .55rem .95rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,.14);
+      color: #fff;
+      font-weight: 700;
+      font-size: .86rem;
+      border: 1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(6px);
+    }
+
+    .soft-btn{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      min-height: 46px;
+      padding: .72rem 1.15rem;
+      border-radius: 999px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      transition: .2s ease;
+      text-decoration: none;
+    }
+
+    .soft-btn:hover{
+      transform: translateY(-1px);
+    }
+
+    .soft-btn-light{
+      background: #fff;
+      color: #0f172a;
+      box-shadow: 0 10px 25px rgba(0,0,0,.12);
+    }
+
+    .soft-btn-light:hover{
+      color: #0f172a;
+      background: #f8fafc;
+    }
+
+    .panel{
+      background: var(--surface);
+      border: 1px solid rgba(226,232,240,.95);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .panel-header{
+      padding: 1.25rem 1.25rem 0;
+    }
+
+    .panel-title{
+      font-size: 1.08rem;
+      font-weight: 800;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -.01em;
+    }
+
+    .panel-subtitle{
+      color: var(--muted);
+      margin-top: .35rem;
+      font-size: .94rem;
+    }
+
+    .panel-body{
+      padding: 1.25rem;
+    }
+
+    .alert-modern{
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: .95rem 1rem;
+      font-weight: 500;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+    }
+
+    .alert-modern i{
+      margin-right: .45rem;
+    }
+
+    .status-note{
+      border: 1px solid #fde68a;
+      background: linear-gradient(180deg, #fffdf5 0%, #fffbeb 100%);
+      color: #92400e;
+    }
+
+    .summary-grid{
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 1rem;
+    }
+
+    .summary-card{
+      grid-column: span 6;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 1rem;
+      min-height: 112px;
+      box-shadow: 0 8px 22px rgba(15,23,42,.04);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .summary-card::after{
+      content: "";
+      position: absolute;
+      right: -14px;
+      top: -14px;
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: rgba(37, 99, 235, 0.06);
+    }
+
+    .summary-card.full{
+      grid-column: span 12;
+    }
+
+    .summary-label{
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .76rem;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      margin-bottom: .7rem;
+    }
+
+    .summary-value{
+      font-size: 1.08rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    .summary-value.amount{
+      font-size: 1.45rem;
+      color: var(--primary-dark);
+      letter-spacing: -.02em;
+    }
+
+    .chip{
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      padding: .45rem .8rem;
+      border-radius: 999px;
+      font-size: .82rem;
+      font-weight: 700;
+      line-height: 1;
+      border: 1px solid transparent;
+    }
+
+    .chip.primary{
+      color: #1d4ed8;
+      background: #eff6ff;
+      border-color: #dbeafe;
+    }
+
+    .chip.success{
+      color: #15803d;
+      background: #f0fdf4;
+      border-color: #dcfce7;
+    }
+
+    .chip.warning{
+      color: #b45309;
+      background: #fffbeb;
+      border-color: #fde68a;
+    }
+
+    .chip.dark{
+      color: #0f172a;
+      background: #f8fafc;
+      border-color: #e2e8f0;
+    }
+
+    .section-divider{
+      border: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #dbe3ef, transparent);
+      margin: 1.5rem 0;
+    }
+
+    .detail-card{
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+    }
+
+    .detail-card-header{
+      padding: 1rem 1.1rem;
+      border-bottom: 1px solid var(--border);
+      background: #f8fbff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .8rem;
+      flex-wrap: wrap;
+    }
+
+    .detail-card-title{
+      font-size: 1rem;
+      font-weight: 800;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      color: var(--text);
+    }
+
+    .detail-table{
+      margin: 0;
+    }
+
+    .detail-table th,
+    .detail-table td{
+      padding: .95rem 1rem;
+      vertical-align: middle;
+      border-color: #edf2f7;
+      font-size: .95rem;
+    }
+
+    .detail-table th{
+      width: 260px;
+      background: #fbfdff;
+      color: var(--muted);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      font-size: .78rem;
+    }
+
+    .detail-table td{
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .empty-state{
+      border: 1px dashed #cbd5e1;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      padding: 1.4rem;
+      color: var(--muted);
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .proof-box{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .9rem;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      box-shadow: 0 8px 20px rgba(15,23,42,.04);
+      flex-wrap: wrap;
+    }
+
+    .proof-meta{
+      display: flex;
+      align-items: center;
+      gap: .85rem;
+      min-width: 0;
+    }
+
+    .proof-icon{
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #eff6ff;
+      color: var(--primary);
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .proof-title{
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: .15rem;
+    }
+
+    .proof-subtitle{
+      color: var(--muted);
+      font-size: .9rem;
+      margin-bottom: 0;
+    }
+
+    .btn-primary-modern{
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      border: 0;
+      color: #fff;
+      box-shadow: 0 12px 26px rgba(37,99,235,.28);
+    }
+
+    .btn-primary-modern:hover{
+      color: #fff;
+      filter: brightness(.98);
+    }
+
+    .btn-success-modern{
+      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+      border: 0;
+      color: #fff;
+      box-shadow: 0 12px 26px rgba(22,163,74,.24);
+    }
+
+    .btn-success-modern:hover{
+      color: #fff;
+      filter: brightness(.98);
+    }
+
+    .btn-danger-soft{
+      background: #fff;
+      color: var(--danger);
+      border: 1px solid #fecaca;
+    }
+
+    .btn-danger-soft:hover{
+      background: #fef2f2;
+      color: #b91c1c;
+      border-color: #fca5a5;
+    }
+
+    .btn-secondary-soft{
+      background: #fff;
+      color: #334155;
+      border: 1px solid #dbe3ef;
+    }
+
+    .btn-secondary-soft:hover{
+      background: #f8fafc;
+      color: #0f172a;
+      border-color: #cbd5e1;
+    }
+
+    .actions-wrap{
+      display: flex;
+      flex-wrap: wrap;
+      gap: .75rem;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .sticky-actions{
+      position: sticky;
+      bottom: 14px;
+      z-index: 10;
+      margin-top: 1.25rem;
+    }
+
+    .sticky-actions .panel{
+      border-radius: 22px;
+      box-shadow: 0 18px 38px rgba(15,23,42,.14);
+      background: rgba(255,255,255,.95);
+      backdrop-filter: blur(10px);
+    }
+
+    .action-note{
+      color: var(--muted);
+      font-size: .92rem;
+      font-weight: 500;
+    }
+
+    @media (max-width: 991.98px){
+      .summary-card{
+        grid-column: span 12;
+      }
+
+      .detail-table th{
+        width: 180px;
+      }
+    }
+
+    @media (max-width: 767.98px){
+      .hero-content,
+      .panel-body,
+      .panel-header{
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+
+      .detail-table th,
+      .detail-table td{
+        padding: .85rem .8rem;
+      }
+
+      .actions-wrap{
+        justify-content: stretch;
+      }
+
+      .actions-wrap .soft-btn,
+      .actions-wrap a,
+      .actions-wrap button{
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  {% include 'navbar.html' %}
+
+  <div class="container py-4 py-lg-5">
+    <div class="page-wrap">
+
+      {% if messages %}
+        <div class="mb-4">
+          {% for message in messages %}
+            <div class="alert
+              {% if 'success' in message.tags %}alert-success
+              {% elif 'error' in message.tags %}alert-danger
+              {% elif 'warning' in message.tags %}alert-warning
+              {% else %}alert-info{% endif %}
+              alert-modern mb-2">
+              <i class="bi
+                {% if 'success' in message.tags %}bi-check-circle-fill
+                {% elif 'error' in message.tags %}bi-exclamation-triangle-fill
+                {% elif 'warning' in message.tags %}bi-exclamation-circle-fill
+                {% else %}bi-info-circle-fill{% endif %}"></i>
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="hero-card mb-4">
+        <div class="hero-content">
+          <div class="d-flex flex-column flex-lg-row align-items-lg-start justify-content-between gap-3">
+            <div>
+              <div class="hero-badge mb-3">
+                <i class="bi bi-shield-check"></i>
+                Final Review Required
+              </div>
+              <h1 class="hero-title">
+                <i class="bi bi-clipboard-check me-2"></i>Review Bank Movement
+              </h1>
+              <p class="hero-subtitle">
+                Review all details carefully before confirming. This entry is still a draft and will only be permanently recorded after confirmation.
+              </p>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+              <a href="{% url 'add_bank_movement' %}" class="soft-btn soft-btn-light">
+                <i class="bi bi-arrow-left"></i>Back to Entry Form
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% if not staged %}
+        <div class="panel">
+          <div class="panel-body">
+            <div class="empty-state">
+              <div class="mb-3" style="font-size:2rem; color:#94a3b8;">
+                <i class="bi bi-folder-x"></i>
+              </div>
+              <h5 class="fw-bold mb-2 text-dark">Draft not found</h5>
+              <p class="mb-3">The bank movement draft is missing or may have already expired from the session.</p>
+              <a href="{% url 'add_bank_movement' %}" class="soft-btn btn-primary-modern">
+                <i class="bi bi-plus-circle"></i>Add Bank Movement
+              </a>
+            </div>
+          </div>
+        </div>
+      {% else %}
+
+      <div class="panel mb-4">
+        <div class="panel-header">
+          <h2 class="panel-title">Draft Summary</h2>
+          <div class="panel-subtitle">
+            Check the transaction overview, linked details, and proof file before saving.
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div class="alert status-note alert-modern mb-4">
+            <i class="bi bi-hourglass-split"></i>
+            <strong>This is only a draft.</strong> Nothing is recorded in the system until you click <strong>Confirm &amp; Record</strong>.
+          </div>
+
+          <div class="summary-grid">
+
+            <div class="summary-card">
+              <div class="summary-label">
+                <i class="bi bi-arrow-left-right"></i>
+                Direction
+              </div>
+              <div class="summary-value">
+                {% with dir=staged.direction %}
+                  {% if dir == "CASH_TO_BANK" %}
+                    <span class="chip success"><i class="bi bi-arrow-down-circle"></i>Cash → Bank (Deposit)</span>
+                  {% elif dir == "BANK_TO_CASH" %}
+                    <span class="chip warning"><i class="bi bi-arrow-up-circle"></i>Bank → Cash (Withdrawal)</span>
+                  {% elif dir == "BANK_TO_BANK" %}
+                    <span class="chip primary"><i class="bi bi-arrow-left-right"></i>Bank → Bank (Transfer)</span>
+                  {% elif dir == "DIRECT_BANK_RECEIPT" %}
+                    <span class="chip success"><i class="bi bi-bank"></i>Direct to Bank (Income)</span>
+                  {% elif dir == "BANK_PAID_EXPENSE" %}
+                    <span class="chip warning"><i class="bi bi-credit-card-2-front"></i>Paid from Bank (Expense)</span>
+                  {% else %}
+                    <span class="chip dark">{{ dir|default:"-" }}</span>
+                  {% endif %}
+                {% endwith %}
+              </div>
+            </div>
+
+            <div class="summary-card">
+              <div class="summary-label">
+                <i class="bi bi-diagram-3"></i>
+                Source Type
+              </div>
+              <div class="summary-value">
+                {% with st=staged.source_type %}
+                  {% if st == "TITHE" %}
+                    <span class="chip primary"><i class="bi bi-wallet2"></i>Tithe</span>
+                  {% elif st == "OFFERING" %}
+                    <span class="chip primary"><i class="bi bi-gift"></i>Offering</span>
+                  {% elif st == "DONATION" %}
+                    <span class="chip primary"><i class="bi bi-heart"></i>Donation</span>
+                  {% elif st == "OTHER_INCOME" %}
+                    <span class="chip primary"><i class="bi bi-cash-stack"></i>Other Income</span>
+                  {% elif st == "EXPENSE" %}
+                    <span class="chip warning"><i class="bi bi-receipt"></i>Expense</span>
+                  {% elif st == "TRANSFER_ONLY" %}
+                    <span class="chip dark"><i class="bi bi-arrow-left-right"></i>Transfer Only</span>
+                  {% else %}
+                    <span class="chip dark">{{ st|default:"-" }}</span>
+                  {% endif %}
+                {% endwith %}
+              </div>
+            </div>
+
+            <div class="summary-card">
+              <div class="summary-label">
+                <i class="bi bi-calendar-event"></i>
+                Transaction Date
+              </div>
+              <div class="summary-value">{{ staged.date|default:"-" }}</div>
+            </div>
+
+            <div class="summary-card">
+              <div class="summary-label">
+                <i class="bi bi-cash-coin"></i>
+                Amount
+              </div>
+              <div class="summary-value amount">₱ {{ staged.amount|default:"0"|intcomma }}</div>
+            </div>
+
+            <div class="summary-card">
+              <div class="summary-label">
+                <i class="bi bi-upc-scan"></i>
+                Reference Number
+              </div>
+              <div class="summary-value">{{ staged.reference_no|default:"-" }}</div>
+            </div>
+
+            <div class="summary-card">
+              <div class="summary-label">
+                <i class="bi bi-journal-text"></i>
+                Memo
+              </div>
+              <div class="summary-value">{{ staged.memo|default:"-" }}</div>
+            </div>
+
+            {% if staged.direction == "DIRECT_BANK_RECEIPT" and staged.source_type == "DONATION" %}
+            <div class="summary-card full">
+              <div class="summary-label">
+                <i class="bi bi-person-heart"></i>
+                Donor Preview
+              </div>
+              <div class="summary-value">
+                {% if staged.donor_type == "member" %}
+                  <span class="chip primary mb-2"><i class="bi bi-person-badge"></i>Member</span><br>
+                {% elif staged.donor_type == "non_member" %}
+                  <span class="chip primary mb-2"><i class="bi bi-person"></i>Non-member</span><br>
+                {% elif staged.donor_type == "anonymous" %}
+                  <span class="chip dark mb-2"><i class="bi bi-incognito"></i>Anonymous</span><br>
+                {% endif %}
+
+                {% if staged.donor_display %}
+                  {{ staged.donor_display }}
+                {% elif staged.donation_member_name %}
+                  {{ staged.donation_member_name }}
+                {% elif staged.donor %}
+                  {{ staged.donor }}
+                {% elif staged.donor_type == "anonymous" %}
+                  Anonymous
+                {% else %}
+                  -
+                {% endif %}
+              </div>
+            </div>
+            {% endif %}
+
+            <div class="summary-card full">
+              <div class="summary-label">
+                <i class="bi bi-file-earmark-check"></i>
+                Proof Attachment
+              </div>
+
+              <div class="proof-box">
+                <div class="proof-meta">
+                  <div class="proof-icon">
+                    <i class="bi bi-file-earmark-image"></i>
+                  </div>
+                  <div>
+                    <div class="proof-title">
+                      {% if staged.file_url %}Proof file attached{% else %}No proof file attached{% endif %}
+                    </div>
+                    <p class="proof-subtitle">
+                      {% if staged.file_url %}
+                        Open the uploaded proof file to verify the transaction evidence.
+                      {% else %}
+                        No file is available for preview.
+                      {% endif %}
+                    </p>
+                  </div>
+                </div>
+
+                {% if staged.file_url %}
+                  <a href="{{ staged.file_url }}" target="_blank" class="soft-btn btn-primary-modern">
+                    <i class="bi bi-box-arrow-up-right"></i>View Proof File
+                  </a>
+                {% else %}
+                  <span class="chip dark"><i class="bi bi-dash-circle"></i>Unavailable</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <hr class="section-divider">
+
+          <div class="detail-card">
+            <div class="detail-card-header">
+              <h3 class="detail-card-title">
+                <i class="bi bi-info-circle"></i>Linked Record Details
+              </h3>
+
+              {% with dir=staged.direction st=staged.source_type %}
+                {% if dir == "DIRECT_BANK_RECEIPT" and st == "DONATION" %}
+                  <span class="chip primary">Donation Details</span>
+                {% elif dir == "DIRECT_BANK_RECEIPT" and st == "OTHER_INCOME" %}
+                  <span class="chip primary">Other Income Details</span>
+                {% elif dir == "BANK_PAID_EXPENSE" and st == "EXPENSE" %}
+                  <span class="chip warning">Expense Details</span>
+                {% else %}
+                  <span class="chip dark">General Entry</span>
+                {% endif %}
+              {% endwith %}
+            </div>
+
+            {% if staged.direction == "DIRECT_BANK_RECEIPT" and staged.source_type == "DONATION" %}
+              <div class="table-responsive">
+                <table class="table detail-table align-middle">
+                  <tbody>
+                    <tr>
+                      <th>Donation Category ID</th>
+                      <td>{{ staged.donations_type_id|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                      <th>Donor Type</th>
+                      <td>
+                        {% if staged.donor_type == "member" %}
+                          Member
+                        {% elif staged.donor_type == "non_member" %}
+                          Non-member
+                        {% elif staged.donor_type == "anonymous" %}
+                          Anonymous
+                        {% else %}
+                          -
+                        {% endif %}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Donor Name</th>
+                      <td>
+                        {% if staged.donor_display %}
+                          {{ staged.donor_display }}
+                        {% elif staged.donation_member_name %}
+                          {{ staged.donation_member_name }}
+                        {% elif staged.donor %}
+                          {{ staged.donor }}
+                        {% elif staged.donor_type == "anonymous" %}
+                          Anonymous
+                        {% else %}
+                          -
+                        {% endif %}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Selected Member / Pastor / Treasurer</th>
+                      <td>
+                        {% if staged.donation_member_name %}
+                          {{ staged.donation_member_name }}
+                        {% elif staged.donation_member_id %}
+                          Member ID: {{ staged.donation_member_id }}
+                        {% else %}
+                          -
+                        {% endif %}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Member ID</th>
+                      <td>{{ staged.donation_member_id|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                      <th>Other Donation Type</th>
+                      <td>{{ staged.other_donations_type|default:"-" }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+            {% elif staged.direction == "DIRECT_BANK_RECEIPT" and staged.source_type == "OTHER_INCOME" %}
+              <div class="table-responsive">
+                <table class="table detail-table align-middle">
+                  <tbody>
+                    <tr>
+                      <th>Other Income Category ID</th>
+                      <td>{{ staged.income_type_id|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                      <th>Description</th>
+                      <td>{{ staged.income_description|default:"-" }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+            {% elif staged.direction == "BANK_PAID_EXPENSE" and staged.source_type == "EXPENSE" %}
+              <div class="table-responsive">
+                <table class="table detail-table align-middle">
+                  <tbody>
+                    <tr>
+                      <th>Expense Category ID</th>
+                      <td>{{ staged.expense_category_id|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                      <th>Description</th>
+                      <td>{{ staged.expense_description|default:"-" }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+            {% else %}
+              <div class="p-4">
+                <div class="empty-state">
+                  <div class="mb-2" style="font-size:1.6rem; color:#94a3b8;">
+                    <i class="bi bi-info-square"></i>
+                  </div>
+                  No extra linked-record fields are required for this transaction type.
+                </div>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="sticky-actions">
+            <div class="panel">
+              <div class="panel-body py-3">
+                <form method="post" action="{% url 'review_bank_movement' %}">
+                  {% csrf_token %}
+
+                  <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                    <div>
+                      <div class="fw-bold text-dark mb-1">
+                        Ready to save this bank movement?
+                      </div>
+                      <div class="action-note">
+                        Confirm to record the transaction. Cancel will remove the draft and staged proof file.
+                      </div>
+                    </div>
+
+                    <div class="actions-wrap">
+                      <button type="submit" name="confirm" value="1" class="soft-btn btn-success-modern">
+                        <i class="bi bi-check2-circle"></i>Confirm &amp; Record
+                      </button>
+
+                      <button type="submit" name="cancel" value="1" class="soft-btn btn-danger-soft">
+                        <i class="bi bi-x-circle"></i>Cancel &amp; Delete Draft
+                      </button>
+
+                      <a href="{% url 'bank_movement_history' %}" class="soft-btn btn-secondary-soft">
+                        <i class="bi bi-clock-history"></i>View History
+                      </a>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

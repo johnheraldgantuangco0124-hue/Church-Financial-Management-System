@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Charts</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        footer {
+            text-align: center;
+            padding: 15px;
+            background-color: black;
+            color: white;
+            bottom: 0;
+            width: 100%;
+        }
+        footer p {
+            margin: 0;
+            font-size: 14px;
+        }
+        footer a {
+            color: #28a745;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+        #successModal {
+            top: auto;
+            right: 0;
+            bottom: 20px;
+            left: auto;
+            position: fixed;
+            width: auto;
+            margin: 0;
+            background-color: #007BFF;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 15px 25px;
+            border-radius: 5px;
+            display: none;
+            z-index: 1050;
+        }
+    </style>
+</head>
+<body>
+{% include 'navbar.html' %}
+
+<div class="container mt-5">
+    <h3 class="text-center">Daily Finance Chart</h3>
+    <canvas id="dailyFinanceChart" width="800" height="400"></canvas>
+</div>
+
+<div class="container mt-5">
+    <h3 class="text-center">Monthly Finance Chart</h3>
+    <canvas id="monthlyFinanceChart" width="800" height="400"></canvas>
+</div>
+
+<footer>
+    <p>&copy; 2024 <a href="#">Living Stone Evangelical Free Church</a> Information System</p>
+</footer>
+
+<script>
+    // Daily Finance Chart Data
+    const dailyChartData = {{ daily_chart_data|safe }};
+    const dailyCtx = document.getElementById('dailyFinanceChart').getContext('2d');
+    new Chart(dailyCtx, {
+        type: 'line',
+        data: {
+            labels: dailyChartData.labels,
+            datasets: [
+                {
+                    label: 'Expense',
+                    data: dailyChartData.datasets.Expense,
+                    borderColor: 'red',
+                    fill: false,
+                },
+                {
+                    label: 'Offering',
+                    data: dailyChartData.datasets.Offering,
+                    borderColor: 'blue',
+                    fill: false,
+                },
+                {
+                    label: 'Donations',
+                    data: dailyChartData.datasets.Donations,
+                    borderColor: 'green',
+                    fill: false,
+                },
+                {
+                    label: 'Tithe',
+                    data: dailyChartData.datasets.Tithe,
+                    borderColor: 'orange',
+                    fill: false,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: 'Daily Finance Transactions',
+            },
+        },
+    });
+
+    // Monthly Finance Chart Data
+    const monthlyChartData = {{ monthly_chart_data|safe }};
+    const monthlyCtx = document.getElementById('monthlyFinanceChart').getContext('2d');
+    new Chart(monthlyCtx, {
+        type: 'line',
+        data: {
+            labels: monthlyChartData.labels,
+            datasets: [
+                {
+                    label: 'Total Tithes',
+                    data: monthlyChartData.datasets.TotalTithes,
+                    borderColor: 'orange',
+                    fill: false,
+                },
+                {
+                    label: 'Total Offering',
+                    data: monthlyChartData.datasets.TotalOffering,
+                    borderColor: 'blue',
+                    fill: false,
+                },
+                {
+                    label: 'Total Donations',
+                    data: monthlyChartData.datasets.TotalDonations,
+                    borderColor: 'green',
+                    fill: false,
+                },
+                {
+                    label: 'Total Expenses',
+                    data: monthlyChartData.datasets.TotalExpenses,
+                    borderColor: 'red',
+                    fill: false,
+                },
+                {
+                    label: 'Total Accumulated',
+                    data: monthlyChartData.datasets.TotalAccumulated,
+                    borderColor: 'purple',
+                    fill: false,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: 'Monthly Financial Summary',
+            },
+        },
+    });
+</script>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

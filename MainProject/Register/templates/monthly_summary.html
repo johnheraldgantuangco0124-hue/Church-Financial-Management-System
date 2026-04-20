@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Overview</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        .content-wrapper, .content-wrapper2 {
+            margin: 20px;
+            padding: 20px;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .transaction-table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        .transaction-table th, .transaction-table td {
+            text-align: center;
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+
+        .transaction-table thead th {
+            background-color: #007bff;
+            color: #ffffff;
+        }
+
+        .transaction-table tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .transaction-table tbody tr:hover {
+            background-color: #e9ecef;
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            background-color: Black;
+            color: white;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        footer p {
+            margin: 0;
+            font-size: 14px;
+        }
+        footer a {
+            color: #28a745;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+    <div class="content-wrapper">
+        <h3>Monthly Financial Summary</h3>
+    </div>
+
+    <div class="content-wrapper2">
+        <table class="transaction-table">
+            <thead>
+                <tr>
+                    <th>Year</th>
+                    <th>Month</th>
+                    <th>Total Tithes</th>
+                    <th>Total Offering</th>
+                    <th>Total Donations</th>
+                    <th>Total Expenses</th>
+                    <th>Total Accumulated</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    <td>{{ row.Year }}</td>
+                    <td>{{ row.Month }}</td>
+                    <td>{{ row.TotalTithes }}</td>
+                    <td>{{ row.TotalOffering }}</td>
+                    <td>{{ row.TotalDonations }}</td>
+                    <td>{{ row.TotalExpenses }}</td>
+                    <td>{{ row.TotalAccumulated }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center;">No data available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <footer>
+        <p>&copy; 2024 <a href="#">Living Stone Evangelical Free Church</a> Information System</p>
+    </footer>
+</body>
+</html>

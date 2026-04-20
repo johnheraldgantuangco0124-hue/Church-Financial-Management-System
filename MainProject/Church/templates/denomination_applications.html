@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Applications | Church System</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-body: #f8fafc;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --card-bg: #ffffff;
+            --border-soft: #e2e8f0;
+
+            --primary: #2563eb;
+            --primary-soft: #eff6ff;
+            --primary-dark: #1d4ed8;
+
+            --success: #10b981;
+            --success-soft: #ecfdf5;
+            --success-dark: #047857;
+
+            --warning: #f59e0b;
+            --warning-soft: #fffbeb;
+            --warning-dark: #b45309;
+
+            --danger: #ef4444;
+            --danger-soft: #fef2f2;
+            --danger-dark: #b91c1c;
+        }
+
+        body {
+            background: var(--bg-body);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+        }
+
+        .dashboard-wrap {
+            max-width: 1200px;
+        }
+
+        .hero-card {
+            border: none;
+            border-radius: 24px;
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 45%, #3b82f6 100%);
+            color: white;
+            box-shadow: 0 20px 40px rgba(37, 99, 235, 0.18);
+            overflow: hidden;
+        }
+
+        .hero-card .btn-light-custom {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.18);
+            backdrop-filter: blur(6px);
+            border-radius: 999px;
+            padding: 10px 18px;
+            font-weight: 600;
+        }
+
+        .hero-card .btn-light-custom:hover {
+            background: rgba(255,255,255,0.24);
+            color: white;
+        }
+
+        .summary-card {
+            border: none;
+            border-radius: 20px;
+            background: var(--card-bg);
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+            padding: 1.25rem;
+            height: 100%;
+        }
+
+        .summary-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .icon-warning {
+            background: var(--warning-soft);
+            color: var(--warning-dark);
+            border: 1px solid #fde68a;
+        }
+
+        .icon-danger {
+            background: var(--danger-soft);
+            color: var(--danger-dark);
+            border: 1px solid #fecaca;
+        }
+
+        .icon-success {
+            background: var(--success-soft);
+            color: var(--success-dark);
+            border: 1px solid #a7f3d0;
+        }
+
+        .summary-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.2rem;
+        }
+
+        .summary-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .summary-action {
+            margin-top: 0.9rem;
+        }
+
+        .btn-view-section {
+            border-radius: 999px;
+            font-weight: 600;
+            padding: 0.55rem 1rem;
+        }
+
+        .mini-muted {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+        }
+
+        .modal-content {
+            border: none;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 24px 80px rgba(15, 23, 42, 0.18);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #eef2f7;
+            padding: 1rem 1.25rem;
+        }
+
+        .modal-title {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .nav-tabs {
+            border-bottom: 1px solid #e2e8f0;
+            gap: 0.5rem;
+            padding: 0 1rem;
+            background: #fff;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            border-radius: 14px 14px 0 0;
+            color: var(--text-secondary);
+            font-weight: 600;
+            padding: 0.9rem 1rem;
+        }
+
+        .nav-tabs .nav-link.active {
+            background: var(--primary-soft);
+            color: var(--primary-dark);
+        }
+
+        .modal-body {
+            background: #fff;
+            padding: 0;
+        }
+
+        .tab-pane-inner {
+            padding: 1rem 1rem 1.25rem;
+        }
+
+        .table-responsive {
+            border-radius: 16px;
+            border: 1px solid #eef2f7;
+            overflow: hidden;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background: #f8fafc;
+            color: var(--text-secondary);
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem 1rem;
+            border-bottom: 1px solid var(--border-soft);
+            white-space: nowrap;
+        }
+
+        .table tbody td {
+            padding: 1rem 1rem;
+            vertical-align: middle;
+            color: var(--text-secondary);
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.94rem;
+        }
+
+        .table-hover tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .fw-bold-dark {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .church-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .avatar-green {
+            background: var(--success-soft);
+            color: var(--success-dark);
+            border: 1px solid #d1fae5;
+        }
+
+        .avatar-blue {
+            background: var(--primary-soft);
+            color: var(--primary-dark);
+            border: 1px solid #dbeafe;
+        }
+
+        .avatar-red {
+            background: var(--danger-soft);
+            color: var(--danger-dark);
+            border: 1px solid #fecaca;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.45rem 0.85rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+
+        .status-pending {
+            background: var(--warning-soft);
+            color: var(--warning-dark);
+            border-color: #fde68a;
+        }
+
+        .status-revoked {
+            background: var(--danger-soft);
+            color: var(--danger-dark);
+            border-color: #fecaca;
+        }
+
+        .status-active {
+            background: var(--success-soft);
+            color: var(--success-dark);
+            border-color: #a7f3d0;
+        }
+
+        .btn-approve {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            font-weight: 600;
+            padding: 7px 15px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            box-shadow: 0 6px 14px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-approve:hover {
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .btn-soft-danger {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid transparent;
+            font-weight: 600;
+            padding: 7px 14px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+        }
+
+        .btn-soft-danger:hover {
+            background: #991b1b;
+            color: white;
+        }
+
+        .reason-box {
+            background: #fff7f7;
+            border: 1px solid #fee2e2;
+            border-radius: 12px;
+            padding: 0.75rem 0.9rem;
+            color: #7f1d1d;
+            font-size: 0.9rem;
+            line-height: 1.45;
+            min-width: 220px;
+            max-width: 380px;
+        }
+
+        .empty-state {
+            padding: 3rem 1rem;
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+
+        .quick-buttons .btn {
+            border-radius: 999px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .modal-dialog {
+                margin: 0.75rem;
+            }
+
+            .summary-value {
+                font-size: 1.7rem;
+            }
+
+            .hero-card .d-flex {
+                gap: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+{% include 'navbar.html' %}
+
+<div class="container py-5 dashboard-wrap">
+
+    <div class="hero-card p-4 p-md-5 mb-4">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-4">
+            <div>
+                <h2 class="fw-bold mb-2">Denomination Dashboard</h2>
+                <p class="mb-0 opacity-75">
+                    Manage all application records in one clean modal window.
+                    {% if request.user.denomination %}
+                        <span class="fw-semibold">({{ request.user.denomination.name }})</span>
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 quick-buttons">
+                <button class="btn btn-light-custom open-management-modal" data-target-tab="#incoming-tab" data-bs-toggle="modal" data-bs-target="#applicationCenterModal">
+                    <i class="bi bi-inbox-fill me-1"></i> Incoming Requests
+                </button>
+                <button class="btn btn-light-custom open-management-modal" data-target-tab="#revoked-tab" data-bs-toggle="modal" data-bs-target="#applicationCenterModal">
+                    <i class="bi bi-x-octagon-fill me-1"></i> Revoked
+                </button>
+                <button class="btn btn-light-custom open-management-modal" data-target-tab="#active-tab" data-bs-toggle="modal" data-bs-target="#applicationCenterModal">
+                    <i class="bi bi-building-check me-1"></i> Active Churches
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
+                <div class="d-flex align-items-center">
+                    {% if message.tags == 'success' %}
+                        <i class="bi bi-check-circle-fill me-2 fs-5 text-success"></i>
+                    {% elif message.tags == 'error' %}
+                        <i class="bi bi-exclamation-triangle-fill me-2 fs-5 text-danger"></i>
+                    {% else %}
+                        <i class="bi bi-info-circle-fill me-2 fs-5 text-primary"></i>
+                    {% endif %}
+                    <span>{{ message }}</span>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="summary-card">
+                <div class="summary-icon icon-warning">
+                    <i class="bi bi-inbox-fill"></i>
+                </div>
+                <div class="summary-label">Pending Applications</div>
+                <div class="summary-value">{{ pending_count|default:0 }}</div>
+                <div class="summary-action">
+                    <button class="btn btn-outline-warning btn-view-section open-management-modal"
+                            data-target-tab="#incoming-tab"
+                            data-bs-toggle="modal"
+                            data-bs-target="#applicationCenterModal">
+                        View Requests
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="summary-card">
+                <div class="summary-icon icon-danger">
+                    <i class="bi bi-x-octagon-fill"></i>
+                </div>
+                <div class="summary-label">Revoked Applications</div>
+                <div class="summary-value">{{ revoked_count|default:0 }}</div>
+                <div class="summary-action">
+                    <button class="btn btn-outline-danger btn-view-section open-management-modal"
+                            data-target-tab="#revoked-tab"
+                            data-bs-toggle="modal"
+                            data-bs-target="#applicationCenterModal">
+                        View Revoked
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="summary-card">
+                <div class="summary-icon icon-success">
+                    <i class="bi bi-building-check"></i>
+                </div>
+                <div class="summary-label">Active Member Churches</div>
+                <div class="summary-value">{{ approved_churches.count }}</div>
+                <div class="summary-action">
+                    <button class="btn btn-outline-success btn-view-section open-management-modal"
+                            data-target-tab="#active-tab"
+                            data-bs-toggle="modal"
+                            data-bs-target="#applicationCenterModal">
+                        View Members
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ONE MODAL WITH 3 TABS -->
+<div class="modal fade" id="applicationCenterModal" tabindex="-1" aria-labelledby="applicationCenterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title mb-1" id="applicationCenterModalLabel">Application Center</h5>
+                    <div class="mini-muted">View and manage denomination records in one place.</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <ul class="nav nav-tabs" id="applicationCenterTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="incoming-tab" data-bs-toggle="tab" data-bs-target="#incoming-pane" type="button" role="tab">
+                        <i class="bi bi-inbox-fill me-1"></i>
+                        Incoming Requests
+                        <span class="badge bg-warning text-dark ms-1">{{ pending_count|default:0 }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="revoked-tab" data-bs-toggle="tab" data-bs-target="#revoked-pane" type="button" role="tab">
+                        <i class="bi bi-x-octagon-fill me-1"></i>
+                        Revoked Applications
+                        <span class="badge bg-danger ms-1">{{ revoked_count|default:0 }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="active-tab" data-bs-toggle="tab" data-bs-target="#active-pane" type="button" role="tab">
+                        <i class="bi bi-building-check me-1"></i>
+                        Active Member Churches
+                        <span class="badge bg-success ms-1">{{ approved_churches.count }}</span>
+                    </button>
+                </li>
+            </ul>
+
+            <div class="modal-body">
+                <div class="tab-content">
+
+                    <!-- Incoming Requests -->
+                    <div class="tab-pane fade show active" id="incoming-pane" role="tabpanel">
+                        <div class="tab-pane-inner">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Applicant Church</th>
+                                            <th>Location</th>
+                                            <th>Date Applied</th>
+                                            <th>Status</th>
+                                            <th class="text-end">Decision</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for app in applications %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="church-avatar avatar-green">
+                                                        {{ app.church.name|slice:":1"|upper }}
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold-dark">{{ app.church.name }}</div>
+                                                        <div class="small text-muted">ID: #{{ app.church.id }}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <td>
+                                                <div class="fw-bold-dark">
+                                                    {{ app.church.municipality_or_city|default:"N/A" }}, {{ app.church.province|default:"N/A" }}
+                                                </div>
+                                                <div class="small text-muted">{{ app.church.barangay|default:"No barangay specified" }}</div>
+                                            </td>
+
+                                            <td>
+                                                <div class="fw-bold-dark">{{ app.applied_at|date:"M d, Y" }}</div>
+                                                <div class="small text-muted">{{ app.applied_at|timesince }} ago</div>
+                                            </td>
+
+                                            <td>
+                                                <span class="status-badge status-pending">
+                                                    <i class="bi bi-hourglass-split"></i> Pending
+                                                </span>
+                                            </td>
+
+                                            <td class="text-end">
+                                                <div class="d-flex justify-content-end gap-2 flex-wrap">
+                                                    <form action="{% url 'Church:application_action' app.pk %}" method="post">
+                                                        {% csrf_token %}
+                                                        <button type="submit"
+                                                                name="action"
+                                                                value="approve"
+                                                                class="btn-approve"
+                                                                onclick="return confirm('Confirm approval for {{ app.church.name }}?');">
+                                                            <i class="bi bi-check-lg me-1"></i> Approve
+                                                        </button>
+                                                    </form>
+
+                                                    <form action="{% url 'Church:application_action' app.pk %}" method="post">
+                                                        {% csrf_token %}
+                                                        <button type="submit"
+                                                                name="action"
+                                                                value="reject"
+                                                                class="btn-soft-danger"
+                                                                onclick="return confirm('Are you sure you want to reject {{ app.church.name }}?');">
+                                                            <i class="bi bi-x-lg"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="5">
+                                                <div class="empty-state">
+                                                    <div class="empty-state-icon">
+                                                        <i class="bi bi-check2-circle text-success opacity-50"></i>
+                                                    </div>
+                                                    <h5 class="fw-bold text-dark">All Caught Up!</h5>
+                                                    <p class="text-muted mb-0">No new applications to review.</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Revoked Applications -->
+                    <div class="tab-pane fade" id="revoked-pane" role="tabpanel">
+                        <div class="tab-pane-inner">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Church</th>
+                                            <th>Date Applied</th>
+                                            <th>Date Revoked</th>
+                                            <th>Revocation Reason</th>
+                                            <th>Processed By</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for app in revoked_applications %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="church-avatar avatar-red">
+                                                        {{ app.church.name|slice:":1"|upper }}
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold-dark">{{ app.church.name }}</div>
+                                                        <div class="small text-muted">
+                                                            {{ app.church.municipality_or_city|default:"N/A" }}, {{ app.church.province|default:"N/A" }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <td>
+                                                <div class="fw-bold-dark">{{ app.applied_at|date:"M d, Y" }}</div>
+                                                <div class="small text-muted">{{ app.applied_at|timesince }} ago</div>
+                                            </td>
+
+                                            <td>
+                                                {% if app.decided_at %}
+                                                    <div class="fw-bold-dark">{{ app.decided_at|date:"M d, Y" }}</div>
+                                                    <div class="small text-muted">{{ app.decided_at|timesince }} ago</div>
+                                                {% else %}
+                                                    <span class="text-muted">—</span>
+                                                {% endif %}
+                                            </td>
+
+                                            <td>
+                                                {% if app.revocation_reason %}
+                                                    <div class="reason-box">{{ app.revocation_reason }}</div>
+                                                {% else %}
+                                                    <span class="text-muted">No reason provided</span>
+                                                {% endif %}
+                                            </td>
+
+                                            <td>
+                                                {% if app.decided_by %}
+                                                    <span class="fw-bold-dark">{{ app.decided_by.get_full_name|default:app.decided_by.username }}</span>
+                                                {% else %}
+                                                    <span class="text-muted">—</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="5">
+                                                <div class="empty-state">
+                                                    <div class="empty-state-icon">
+                                                        <i class="bi bi-x-octagon text-danger opacity-50"></i>
+                                                    </div>
+                                                    <h5 class="fw-bold text-dark">No Revoked Applications</h5>
+                                                    <p class="text-muted mb-0">Revoked applications will appear here.</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Churches -->
+                    <div class="tab-pane fade" id="active-pane" role="tabpanel">
+                        <div class="tab-pane-inner">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Church Name</th>
+                                            <th>Location</th>
+                                            <th>Status</th>
+                                            <th class="text-end">Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for church in approved_churches %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="church-avatar avatar-blue">
+                                                        {{ church.name|slice:":1"|upper }}
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold-dark">{{ church.name }}</div>
+                                                        <div class="small text-muted">ID: #{{ church.id }}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <td>
+                                                <div class="fw-bold-dark">
+                                                    {{ church.municipality_or_city|default:"N/A" }}, {{ church.province|default:"N/A" }}
+                                                </div>
+                                                <div class="small text-muted">{{ church.barangay|default:"No barangay specified" }}</div>
+                                            </td>
+
+                                            <td>
+                                                <span class="status-badge status-active">
+                                                    <i class="bi bi-check-circle-fill"></i> Active Member
+                                                </span>
+                                            </td>
+
+                                            <td class="text-end">
+                                                <button class="btn btn-sm btn-light border text-secondary" disabled>
+                                                    View Profile
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="4">
+                                                <div class="empty-state">
+                                                    <div class="empty-state-icon">
+                                                        <i class="bi bi-building-exclamation text-secondary opacity-50"></i>
+                                                    </div>
+                                                    <h5 class="fw-bold text-dark">No Members Yet</h5>
+                                                    <p class="text-muted mb-0">Approved churches will appear here.</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const triggerButtons = document.querySelectorAll('.open-management-modal');
+
+        triggerButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const targetTabSelector = this.getAttribute('data-target-tab');
+                const targetTab = document.querySelector(targetTabSelector);
+
+                if (targetTab) {
+                    const tab = new bootstrap.Tab(targetTab);
+                    tab.show();
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

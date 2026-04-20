@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Liquidation & Expenses | ChurchSys</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-body: #eef3f8;
+      --surface-card: #ffffff;
+      --surface-soft: #f8fafc;
+      --text-primary: #0f172a;
+      --text-secondary: #64748b;
+      --primary-color: #0f172a;
+      --accent-color: #2563eb;
+      --accent-hover: #1d4ed8;
+      --ai-gradient: linear-gradient(135deg, #6366f1, #a855f7);
+      --border-color: #e2e8f0;
+      --success-soft: #ecfdf5;
+      --success-text: #047857;
+      --warning-soft: #fffbeb;
+      --warning-text: #b45309;
+      --danger-soft: #fef2f2;
+      --danger-text: #b91c1c;
+      --shadow-sm: 0 8px 20px rgba(15, 23, 42, 0.05);
+      --shadow-md: 0 16px 36px rgba(15, 23, 42, 0.08);
+      --radius-xl: 22px;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 10px;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 22%),
+        radial-gradient(circle at bottom right, rgba(99, 102, 241, 0.05), transparent 18%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg-body) 100%);
+      font-family: 'Inter', sans-serif;
+      color: var(--text-primary);
+      font-size: 0.925rem;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .page-hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+      border-radius: var(--radius-xl);
+      padding: 1.6rem 1.75rem;
+      box-shadow: var(--shadow-md);
+      color: white;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+
+    .page-hero::before {
+      content: "";
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .page-hero::after {
+      content: "";
+      position: absolute;
+      bottom: -70px;
+      left: -70px;
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+    }
+
+    .page-hero-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.45rem 0.8rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+    }
+
+    .sidebar-wrapper {
+      background: var(--surface-card);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-sm);
+      height: calc(100vh - 120px);
+      min-height: 720px;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+    }
+
+    .sidebar-top {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+    }
+
+    .sidebar-search-box {
+      border: 1px solid var(--border-color);
+      background: var(--surface-soft);
+      border-radius: 14px;
+      padding: 0.85rem;
+      margin-top: 0.85rem;
+    }
+
+    .sidebar-search-title {
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      margin-bottom: 0.65rem;
+    }
+
+    .nav-pills-custom {
+      background: #f1f5f9;
+      padding: 0.35rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .nav-pills-custom .nav-link {
+      color: #94a3b8;
+      font-weight: 700;
+      font-size: 0.85rem;
+      border-radius: 9px;
+      transition: all 0.2s ease;
+      background: transparent;
+    }
+
+    .nav-pills-custom .nav-link:hover:not(.active) {
+      color: #64748b;
+      background-color: rgba(0,0,0,0.05);
+    }
+
+    .nav-pills-custom .nav-link.active {
+      background-color: var(--accent-color);
+      color: white;
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25);
+    }
+
+    .tab-scroll {
+      flex-grow: 1;
+      overflow: auto;
+      background: white;
+      scrollbar-width: thin;
+    }
+
+    .list-item-custom {
+      border: none;
+      border-left: 3px solid transparent;
+      padding: 1rem 1.1rem;
+      transition: all 0.2s;
+      margin-bottom: 2px;
+      background: white;
+    }
+
+    .list-item-custom:hover {
+      background-color: #f8fafc;
+    }
+
+    .list-item-custom.active {
+      background-color: #eff6ff;
+      border-left-color: var(--accent-color);
+    }
+
+    .list-item-custom.active strong {
+      color: var(--accent-color);
+    }
+
+    .card-clean {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      background: var(--surface-card);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+
+    .card-header-clean {
+      background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1.15rem 1.4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 18px;
+      border: 1px solid transparent;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.03);
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.07);
+      border-color: var(--border-color);
+    }
+
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.45rem;
+      flex-shrink: 0;
+    }
+
+    .form-control, .form-select {
+      background-color: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      min-height: 44px;
+    }
+
+    .form-control:focus, .form-select:focus {
+      background-color: white;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    .expense-row {
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .expense-row:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
+    }
+
+    .btn-ai {
+      background: var(--ai-gradient);
+      border: none;
+      color: white;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.45rem 0.85rem;
+      font-size: 0.85rem;
+      transition: opacity 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-ai:hover {
+      opacity: 0.95;
+      color: white;
+      box-shadow: 0 8px 18px rgba(99, 102, 241, 0.28);
+    }
+
+    .table-custom th {
+      background-color: #f8fafc;
+      color: var(--text-secondary);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      padding: 1rem 1.35rem;
+      border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
+    }
+
+    .table-custom td {
+      padding: 1rem 1.35rem;
+      vertical-align: middle;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .table-custom tr:last-child td {
+      border-bottom: none;
+    }
+
+    .num-font {
+      font-family: 'Plus Jakarta Sans', monospace;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    input[type="file"]::file-selector-button {
+      border: none;
+      background: #e2e8f0;
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      color: var(--text-primary);
+      font-size: 0.8rem;
+      margin-right: 10px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    input[type="file"]::file-selector-button:hover {
+      background: #cbd5e1;
+    }
+
+    .help-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: .32rem .65rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-color);
+      background: #f8fafc;
+      color: #64748b;
+      font-size: .8rem;
+      font-weight: 700;
+    }
+
+    .source-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: .38rem .75rem;
+      border-radius: 999px;
+      font-size: .78rem;
+      font-weight: 700;
+      border: 1px solid var(--border-color);
+      background: #fff;
+      color: var(--text-secondary);
+    }
+
+    .source-pill.bank {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-color: #bfdbfe;
+    }
+
+    .source-pill.cash {
+      background: #ecfdf5;
+      color: #047857;
+      border-color: #a7f3d0;
+    }
+
+    .choice-card {
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 0.95rem 1rem;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      background: #fff;
+    }
+
+    .choice-card:hover {
+      border-color: #cbd5e1;
+      background: #f8fafc;
+    }
+
+    .choice-card input {
+      transform: scale(1.05);
+    }
+
+    .choice-card.disabled {
+      opacity: .55;
+      cursor: not-allowed;
+      background: #f8fafc;
+    }
+
+    .search-result-note {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      margin-top: 0.6rem;
+    }
+
+    .search-empty {
+      display: none;
+      text-align: center;
+      color: var(--text-secondary);
+      padding: 2rem 1rem;
+    }
+
+    .search-empty.show {
+      display: block;
+    }
+
+    .soft-section {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+    }
+
+    .sticky-action-bar {
+      position: sticky;
+      bottom: 0;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(8px);
+      border-top: 1px solid var(--border-color);
+      margin: 1rem -1.5rem -1.5rem;
+      padding: 1rem 1.5rem;
+    }
+
+    /* ===== CUSTOM MODAL STYLES ===== */
+    .modal-notify .modal-content {
+      border: none;
+      border-radius: 18px;
+      box-shadow: 0 24px 48px rgba(15, 23, 42, 0.15);
+      overflow: hidden;
+    }
+
+    .modal-notify .modal-header {
+      border-bottom: 1px solid var(--border-color);
+      padding: 1.25rem 1.5rem;
+    }
+
+    .modal-notify .modal-body {
+      padding: 1.5rem;
+      font-size: 0.925rem;
+      color: var(--text-primary);
+    }
+
+    .modal-notify .modal-footer {
+      border-top: 1px solid var(--border-color);
+      padding: 1rem 1.5rem;
+    }
+
+    .modal-icon-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 991.98px) {
+      .sidebar-wrapper {
+        height: auto;
+        min-height: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+{% include 'navbar.html' %}
+
+<div class="container-fluid py-4 px-lg-5">
+
+  <div class="page-hero">
+    <div class="page-hero-content d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+      <div>
+        <div class="hero-chip">
+          <i class="bi bi-receipt-cutoff"></i>
+          Liquidation Management
+        </div>
+        <h3 class="fw-bold mb-1">Expense Encoding</h3>
+        <p class="mb-0 text-white-50">Manage liquidations, scan receipts, reconcile balances, and finalize releases with complete audit visibility.</p>
+      </div>
+
+      <a href="{% url 'release_budget' %}" class="btn btn-light fw-semibold rounded-pill px-4 shadow-sm">
+        <i class="bi bi-arrow-left me-2"></i>Back to Releases
+      </a>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }} border-0 shadow-sm rounded-4 d-flex align-items-center mb-4">
+        <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+        <div class="fw-medium">{{ message }}</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="row g-4">
+
+    <!-- ================== SIDEBAR ================== -->
+    <div class="col-lg-3">
+      <div class="sidebar-wrapper">
+
+        <div class="sidebar-top">
+          <ul class="nav nav-pills nav-pills-custom nav-fill" id="sidebarTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link {% if not selected_release or not selected_release.is_liquidated %}active{% endif %}"
+                id="pending-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#pending-list"
+                type="button"
+                role="tab"
+              >
+                Pending
+                <span class="badge bg-white text-secondary ms-1">{{ pending_liquidations|length }}</span>
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link {% if selected_release and selected_release.is_liquidated %}active{% endif %}"
+                id="history-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#history-list"
+                type="button"
+                role="tab"
+              >
+                History
+                <span class="badge bg-white text-secondary ms-1">{{ liquidated_history|length }}</span>
+              </button>
+            </li>
+          </ul>
+
+          <!-- SEARCH FILTERS -->
+          <div class="sidebar-search-box">
+            <div class="sidebar-search-title">Search Releases</div>
+
+            <div class="mb-2">
+              <label class="form-label small fw-semibold text-secondary mb-1">Ministry / Budget Name</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                <input type="text" id="releaseSearchInput" class="form-control border-start-0" placeholder="Search ministry or budget">
+              </div>
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label small fw-semibold text-secondary mb-1">Date</label>
+              <input type="date" id="releaseSearchDate" class="form-control">
+            </div>
+
+            <div class="d-flex gap-2 mt-2">
+              <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill w-100" id="clearReleaseFilters">
+                <i class="bi bi-x-circle me-1"></i>Clear
+              </button>
+            </div>
+
+            <div class="search-result-note" id="releaseSearchStatus">
+              Use the filters above to narrow the list.
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content tab-scroll">
+          <div
+            class="tab-pane fade {% if not selected_release or not selected_release.is_liquidated %}show active{% endif %}"
+            id="pending-list"
+            role="tabpanel"
+          >
+            <div class="list-group list-group-flush release-list">
+              {% for item in pending_liquidations %}
+                <a href="?release_id={{ item.id }}"
+                   class="list-group-item list-group-item-action list-item-custom searchable-release {% if selected_release and selected_release.id == item.id %}active{% endif %}"
+                   data-search="{{ item.budget.ministry.name|lower }} {{ item.budget|lower }}"
+                   data-date="{% if item.date_released %}{{ item.date_released|date:'Y-m-d' }}{% endif %}">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <strong class="text-truncate" style="max-width: 150px;">{{ item.budget.ministry.name }}</strong>
+                    <span class="badge bg-light text-secondary border fw-normal">{{ item.date_released|date:"M d" }}</span>
+                  </div>
+                  <div class="small text-muted">{{ item.budget }}</div>
+                  <div class="d-flex justify-content-between align-items-end mt-2">
+                    <div class="text-secondary small">
+                      Released: <span class="fw-bold text-dark">₱{{ item.amount|floatformat:0 }}</span>
+                    </div>
+                    <span class="badge bg-warning text-warning-emphasis bg-opacity-10 rounded-pill px-2">
+                      Bal: ₱{{ item.remaining_release_balance|floatformat:0 }}
+                    </span>
+                  </div>
+                </a>
+              {% empty %}
+                <div class="text-center p-5 text-muted">
+                  <i class="bi bi-inbox fs-1 opacity-25"></i>
+                  <p class="small mt-2">All caught up!</p>
+                </div>
+              {% endfor %}
+            </div>
+
+            <div class="search-empty" data-empty-for="pending">
+              <i class="bi bi-search fs-1 opacity-25"></i>
+              <div class="mt-2">No pending release matched your search.</div>
+            </div>
+          </div>
+
+          <div
+            class="tab-pane fade {% if selected_release and selected_release.is_liquidated %}show active{% endif %}"
+            id="history-list"
+            role="tabpanel"
+          >
+            <div class="list-group list-group-flush release-list">
+              {% for item in liquidated_history %}
+                <a href="?release_id={{ item.id }}"
+                   class="list-group-item list-group-item-action list-item-custom searchable-release {% if selected_release and selected_release.id == item.id %}active{% endif %}"
+                   data-search="{{ item.budget.ministry.name|lower }} {{ item.budget|lower }}"
+                   data-date="{% if item.released_at %}{{ item.released_at|date:'Y-m-d' }}{% elif item.date_released %}{{ item.date_released|date:'Y-m-d' }}{% endif %}">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <strong class="text-dark small">{{ item.budget.ministry.name }}</strong>
+                    <i class="bi bi-lock-fill text-success opacity-50"></i>
+                  </div>
+                  <div class="small text-muted">{{ item.budget }}</div>
+                  <div class="d-flex justify-content-between mt-1">
+                    <small class="text-muted">
+                      {% if item.released_at %}{{ item.released_at|date:"M d, Y" }}{% else %}{{ item.date_released|date:"M d, Y" }}{% endif %}
+                    </small>
+                    <small class="text-success fw-bold">Closed</small>
+                  </div>
+                </a>
+              {% empty %}
+                <div class="p-4 text-center text-muted small">No history found.</div>
+              {% endfor %}
+            </div>
+
+            <div class="search-empty" data-empty-for="history">
+              <i class="bi bi-search fs-1 opacity-25"></i>
+              <div class="mt-2">No historical release matched your search.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================== MAIN CONTENT ================== -->
+    <div class="col-lg-9">
+      {% if selected_release %}
+
+        <div class="row g-3 mb-4">
+          <div class="col-md-3">
+            <div class="stat-card p-3 h-100 d-flex align-items-center gap-3">
+              <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                <i class="bi bi-wallet2"></i>
+              </div>
+              <div>
+                <div class="text-secondary text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Total Budget</div>
+                <div class="fs-4 num-font text-dark">₱{{ selected_release.amount|floatformat:2 }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="stat-card p-3 h-100 d-flex align-items-center gap-3">
+              <div class="stat-icon bg-danger bg-opacity-10 text-danger">
+                <i class="bi bi-receipt"></i>
+              </div>
+              <div>
+                <div class="text-secondary text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Expenses</div>
+                <div class="fs-4 num-font text-danger">₱{{ selected_release.total_expenses|floatformat:2 }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="stat-card p-3 h-100 d-flex align-items-center gap-3">
+              {% if selected_release.is_liquidated %}
+                <div class="stat-icon bg-success bg-opacity-10 text-success">
+                  <i class="bi bi-check-lg"></i>
+                </div>
+                <div>
+                  <div class="text-secondary text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Returned Change</div>
+                  <div class="fs-4 num-font text-success">₱{{ selected_release.amount_returned|floatformat:2 }}</div>
+                </div>
+              {% else %}
+                <div class="stat-icon bg-warning bg-opacity-10 text-warning-emphasis">
+                  <i class="bi bi-piggy-bank"></i>
+                </div>
+                <div>
+                  <div class="text-secondary text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Remaining Balance</div>
+                  <div class="fs-4 num-font text-dark">₱{{ selected_release.remaining_release_balance|floatformat:2 }}</div>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="stat-card p-3 h-100 d-flex align-items-center gap-3">
+              <div class="stat-icon bg-info bg-opacity-10 text-info">
+                <i class="bi bi-arrow-left-right"></i>
+              </div>
+              <div>
+                <div class="text-secondary text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Release Source</div>
+                <div class="mt-1">
+                  <span class="source-pill {% if selected_release.deduct_from == 'bank' %}bank{% else %}cash{% endif %}">
+                    {% if selected_release.deduct_from == 'bank' %}
+                      <i class="bi bi-bank"></i> {{ selected_release.deduct_from_label }}
+                    {% else %}
+                      <i class="bi bi-cash-stack"></i> {{ selected_release.deduct_from_label }}
+                    {% endif %}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-clean">
+          <div class="card-header-clean">
+            <div class="d-flex align-items-center gap-2">
+              <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                <i class="bi bi-pencil-fill small"></i>
+              </div>
+
+              {% if selected_release.is_liquidated %}
+                <div>
+                  <h6 class="mb-0 fw-bold text-dark">Edit Receipts (Policy C2)</h6>
+                  <div class="small text-secondary">Edits are allowed only for dates in the open period.</div>
+                </div>
+              {% else %}
+                <div>
+                  <h6 class="mb-0 fw-bold text-dark">Encode / Edit Receipts</h6>
+                  <div class="small text-secondary">Add receipts now, then finalize when complete.</div>
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span class="badge bg-secondary bg-opacity-10 text-secondary border px-3 py-2 rounded-pill">
+                {{ selected_release.budget.ministry.name }}
+              </span>
+
+              {% if selected_release.is_liquidated %}
+                <span class="help-chip text-success">
+                  <i class="bi bi-lock-fill"></i> Closed
+                </span>
+                <span class="source-pill {% if selected_release.return_to == 'bank' %}bank{% else %}cash{% endif %}">
+                  {% if selected_release.return_to == 'bank' %}
+                    <i class="bi bi-bank"></i> Return To: {{ selected_release.return_to_label }}
+                  {% else %}
+                    <i class="bi bi-cash-stack"></i> Return To: {{ selected_release.return_to_label }}
+                  {% endif %}
+                </span>
+              {% else %}
+                <span class="help-chip text-warning-emphasis">
+                  <i class="bi bi-hourglass-split"></i> Pending
+                </span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="card-body p-4">
+            <form method="post" id="expense-form" enctype="multipart/form-data">
+              {% csrf_token %}
+              <input type="hidden" name="release_id" value="{{ selected_release.id }}">
+
+              {{ formset.management_form }}
+
+              {% if formset.non_form_errors %}
+                <div class="alert alert-danger border-0 shadow-sm rounded-3">
+                  {{ formset.non_form_errors }}
+                </div>
+              {% endif %}
+
+              <div class="row g-2 mb-2 px-3 d-none d-md-flex text-secondary fw-bold text-uppercase" style="font-size: 0.75rem;">
+                <div class="col-md-2">Date</div>
+                <div class="col-md-3">Description</div>
+                <div class="col-md-2">Paid From</div>
+                <div class="col-md-2">Receipt Scan</div>
+                <div class="col-md-2 text-end">Amount</div>
+                <div class="col-md-1 text-center">Delete</div>
+              </div>
+
+              <div id="form-container">
+                {% for form in formset %}
+                  <div class="row g-2 mb-3 align-items-center expense-row p-2 shadow-sm mx-0">
+                    {{ form.id }}
+
+                    <div class="col-md-2">
+                      {{ form.date_incurred }}
+                      {% if form.date_incurred.errors %}
+                        <div class="text-danger small mt-1">{{ form.date_incurred.errors }}</div>
+                      {% endif %}
+                      {% if form.non_field_errors %}
+                        <div class="text-danger small mt-1">{{ form.non_field_errors }}</div>
+                      {% endif %}
+                    </div>
+
+                    <div class="col-md-3">
+                      {{ form.description }}
+                      {% if form.description.errors %}
+                        <div class="text-danger small mt-1">{{ form.description.errors }}</div>
+                      {% endif %}
+                    </div>
+
+                    <div class="col-md-2">
+                      {{ form.paid_from }}
+                      {% if form.paid_from.errors %}
+                        <div class="text-danger small mt-1">{{ form.paid_from.errors }}</div>
+                      {% endif %}
+                    </div>
+
+                    <div class="col-md-2">
+                      <div class="input-group input-group-sm">
+                        {{ form.receipt_proof }}
+                        <button type="button" class="btn btn-ai ai-scan-btn rounded-end" title="Auto-fill with AI">
+                          <i class="bi bi-stars"></i> Scan
+                        </button>
+                      </div>
+
+                      {% if form.instance.pk and form.instance.receipt_proof %}
+                        <div class="mt-1">
+                          <a href="{{ form.instance.receipt_proof.url }}" target="_blank"
+                             class="badge bg-light text-primary border text-decoration-none fw-normal py-2 px-3">
+                            <i class="bi bi-paperclip me-1"></i> Current Receipt
+                          </a>
+                        </div>
+                      {% endif %}
+
+                      {% if form.receipt_proof.errors %}
+                        <div class="text-danger small mt-1">{{ form.receipt_proof.errors }}</div>
+                      {% endif %}
+                    </div>
+
+                    <div class="col-md-2">
+                      {{ form.amount }}
+                      {% if form.amount.errors %}
+                        <div class="text-danger small mt-1">{{ form.amount.errors }}</div>
+                      {% endif %}
+                    </div>
+
+                    <div class="col-md-1 text-center">
+                      {% if formset.can_delete %}
+                        <div class="d-none">{{ form.DELETE }}</div>
+                        <button type="button" class="btn btn-link text-danger p-0 remove-form-visual" title="Remove">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      {% endif %}
+                    </div>
+
+                    {% if form.errors and not form.non_field_errors and not form.date_incurred.errors and not form.description.errors and not form.amount.errors and not form.receipt_proof.errors and not form.paid_from.errors %}
+                      <div class="col-12">
+                        <div class="alert alert-danger py-1 px-2 small mb-0 mt-1 rounded-2">
+                          {{ form.errors }}
+                        </div>
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+
+              <div class="mt-4 p-3 rounded-4 border bg-light">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                  <div>
+                    <div class="fw-bold text-dark">Return Destination</div>
+                    <div class="small text-muted">
+                      Choose where the unused balance should be returned when this liquidation is finalized.
+                    </div>
+                  </div>
+                  {% if bank_acct %}
+                    <span class="help-chip">
+                      <i class="bi bi-bank"></i> Bank: ₱{{ bank_acct.current_balance|floatformat:2 }}
+                    </span>
+                  {% else %}
+                    <span class="help-chip text-warning-emphasis">
+                      <i class="bi bi-exclamation-circle"></i> No bank configured
+                    </span>
+                  {% endif %}
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="choice-card d-flex justify-content-between align-items-center mb-0">
+                      <div>
+                        <div class="fw-semibold text-dark"><i class="bi bi-cash-stack me-2 text-success"></i>Physical Cash</div>
+                        <div class="small text-muted">Returned change stays in treasury cash.</div>
+                      </div>
+                      <input
+                        class="form-check-input return-to-option"
+                        type="radio"
+                        name="return_to"
+                        value="cash"
+                        {% if not selected_release.is_liquidated or selected_release.return_to == 'cash' %}checked{% endif %}
+                      >
+                    </label>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="choice-card d-flex justify-content-between align-items-center mb-0 {% if not bank_acct %}disabled{% endif %}">
+                      <div>
+                        <div class="fw-semibold text-dark"><i class="bi bi-bank me-2 text-primary"></i>Bank</div>
+                        <div class="small text-muted">
+                          {% if bank_acct %}
+                            Returned change will be restored to bank balance.
+                          {% else %}
+                            Set up bank first before choosing this option.
+                          {% endif %}
+                        </div>
+                      </div>
+                      <input
+                        class="form-check-input return-to-option"
+                        type="radio"
+                        name="return_to"
+                        value="bank"
+                        {% if selected_release.is_liquidated and selected_release.return_to == 'bank' %}checked{% endif %}
+                        {% if not bank_acct %}disabled{% endif %}
+                      >
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sticky-action-bar d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                <button type="button" id="add-form" class="btn btn-outline-secondary btn-sm fw-semibold rounded-pill px-3">
+                  <i class="bi bi-plus-lg me-1"></i> Add Another Row
+                </button>
+
+                <div class="d-flex gap-2 flex-wrap">
+                  <button type="submit" name="action" value="save"
+                          class="btn btn-primary fw-bold px-4 rounded-pill shadow-sm">
+                    <i class="bi bi-save me-1"></i>
+                    {% if selected_release.is_liquidated %}Save Changes{% else %}Save Receipts{% endif %}
+                  </button>
+
+                  {% if not selected_release.is_liquidated %}
+                    <button type="button"
+                            id="finalize-btn"
+                            class="btn btn-danger fw-bold px-4 rounded-pill shadow-sm">
+                      <i class="bi bi-lock-fill me-1"></i> Finalize & Close
+                    </button>
+                  {% endif %}
+                </div>
+              </div>
+
+              {% if selected_release.is_liquidated %}
+                <div class="mt-4 p-3 rounded-4 border border-success border-opacity-25 bg-success bg-opacity-10 d-flex align-items-center gap-3">
+                  <div class="bg-white border rounded-3 px-3 py-2">
+                    <i class="bi bi-shield-check text-success"></i>
+                  </div>
+                  <div>
+                    <div class="fw-bold text-success">Policy C2 enabled</div>
+                    <p class="small text-muted mb-0">
+                      You may edit receipts, but the system will block changes for entries dated before the lock date.
+                      Saving changes will automatically <strong class="text-dark">recompute Returned Change</strong>,
+                      update <em>Other Income: Budget Return</em>, and resync bank return if <strong>Return Destination</strong> is set to Bank.
+                    </p>
+                  </div>
+                </div>
+              {% else %}
+                <div class="mt-4 p-3 rounded-4 border border-secondary border-opacity-25 bg-light d-flex align-items-center gap-3">
+                  <div class="bg-white border rounded-3 px-3 py-2">
+                    <i class="bi bi-info-circle text-primary"></i>
+                  </div>
+                  <div>
+                    <div class="fw-bold text-dark">Finalize will close this release</div>
+                    <p class="small text-muted mb-0">
+                      It will compute returned change, post it as Other Income: <em>Budget Return</em>,
+                      and if Return Destination is <strong>Bank</strong>, it will also restore the bank balance.
+                    </p>
+                  </div>
+                </div>
+              {% endif %}
+            </form>
+          </div>
+        </div>
+
+        <div class="card card-clean overflow-hidden">
+          <div class="card-header-clean">
+            <h6 class="mb-0 fw-bold text-dark">Recorded Receipts (Preview)</h6>
+            <span class="badge bg-light text-secondary border rounded-pill">{{ existing_expenses.count }} Items</span>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-custom mb-0 table-hover">
+              <thead>
+                <tr>
+                  <th class="ps-4" style="width: 15%;">Date</th>
+                  <th style="width: 28%;">Description</th>
+                  <th style="width: 15%;">Paid From</th>
+                  <th style="width: 18%;">Attachment</th>
+                  <th class="text-end pe-4" style="width: 14%;">Amount</th>
+                  <th class="text-end pe-4" style="width: 10%;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for expense in existing_expenses %}
+                  <tr>
+                    <td class="ps-4 text-nowrap text-dark fw-medium">{{ expense.date_incurred|date:"M d, Y" }}</td>
+                    <td class="text-secondary">{{ expense.description }}</td>
+                    <td>
+                      <span class="source-pill {% if expense.paid_from == 'bank' %}bank{% else %}cash{% endif %}">
+                        {% if expense.paid_from == 'bank' %}
+                          <i class="bi bi-bank"></i> {{ expense.paid_from_label }}
+                        {% else %}
+                          <i class="bi bi-cash-stack"></i> {{ expense.paid_from_label }}
+                        {% endif %}
+                      </span>
+                    </td>
+                    <td>
+                      {% if expense.receipt_proof %}
+                        <a href="{{ expense.receipt_proof.url }}" target="_blank"
+                           class="badge bg-light text-primary border text-decoration-none fw-normal py-2 px-3">
+                          <i class="bi bi-paperclip me-1"></i> Receipt
+                        </a>
+                      {% else %}
+                        <span class="text-muted small opacity-50">No attachment</span>
+                      {% endif %}
+                    </td>
+                    <td class="num-font fw-bold text-dark text-end pe-4">₱{{ expense.amount|floatformat:2 }}</td>
+                    <td class="text-end pe-4">
+                      <span class="text-muted small opacity-50">Use the editor above</span>
+                    </td>
+                  </tr>
+                {% empty %}
+                  <tr>
+                    <td colspan="6" class="text-center py-5">
+                      <div class="mb-2 opacity-25"><i class="bi bi-receipt-cutoff display-4"></i></div>
+                      <p class="text-muted small">No expenses recorded yet.</p>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+
+              {% if existing_expenses %}
+                <tfoot class="bg-light">
+                  <tr>
+                    <td colspan="4" class="text-end fw-bold text-secondary text-uppercase small pt-3">Total Encoded:</td>
+                    <td class="num-font fw-bold text-danger text-end pe-4 pt-3">₱{{ selected_release.total_expenses|floatformat:2 }}</td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              {% endif %}
+            </table>
+          </div>
+        </div>
+
+      {% else %}
+        <div class="h-100 d-flex align-items-center justify-content-center" style="min-height: 500px;">
+          <div class="text-center">
+            <div class="bg-white p-4 rounded-circle shadow-sm d-inline-block mb-4">
+              <i class="bi bi-arrow-left text-primary opacity-50" style="font-size: 3rem;"></i>
+            </div>
+            <h4 class="fw-bold text-dark">Select a Budget Release</h4>
+            <p class="text-secondary mb-0" style="max-width: 350px;">
+              Choose a ministry budget from the sidebar to begin encoding receipts, auditing expenses, or viewing history.
+            </p>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- ================== REUSABLE NOTIFICATION MODAL (replaces alert) ================== -->
+<div class="modal fade modal-notify" id="notifyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="d-flex align-items-center gap-3">
+          <div class="modal-icon-circle" id="notifyModalIcon">
+            <i class="bi bi-info-circle"></i>
+          </div>
+          <h6 class="modal-title fw-bold mb-0" id="notifyModalTitle">Notice</h6>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="notifyModalBody">
+        <!-- dynamic message -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary fw-semibold rounded-pill px-4" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================== FINALIZE CONFIRMATION MODAL (replaces confirm) ================== -->
+<div class="modal fade modal-notify" id="finalizeConfirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="d-flex align-items-center gap-3">
+          <div class="modal-icon-circle bg-danger bg-opacity-10 text-danger">
+            <i class="bi bi-lock-fill"></i>
+          </div>
+          <div>
+            <h6 class="modal-title fw-bold mb-0">Finalize This Release?</h6>
+            <div class="small text-secondary">This action will close the liquidation.</div>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="soft-section p-3 mb-3">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-arrow-return-right text-secondary"></i>
+            <span class="fw-semibold text-dark">Returned change will go to:</span>
+          </div>
+          <div class="fs-5 fw-bold" id="finalizeReturnLabel">—</div>
+        </div>
+        <p class="text-secondary small mb-0">
+          You can still edit receipts later under <strong>Policy C2</strong>, but locked-period rules will apply.
+          The system will compute returned change, post it as <em>Other Income: Budget Return</em>,
+          and restore the bank balance if applicable.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger fw-bold rounded-pill px-4" id="finalizeConfirmYes">
+          <i class="bi bi-lock-fill me-1"></i> Yes, Finalize
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EMPTY FORM TEMPLATE -->
+<div id="empty-form" style="display:none;">
+  <div class="row g-2 mb-3 align-items-center expense-row p-2 shadow-sm mx-0">
+    {{ formset.empty_form.id }}
+    <div class="col-md-2">{{ formset.empty_form.date_incurred }}</div>
+    <div class="col-md-3">{{ formset.empty_form.description }}</div>
+    <div class="col-md-2">{{ formset.empty_form.paid_from }}</div>
+    <div class="col-md-2">
+      <div class="input-group input-group-sm">
+        {{ formset.empty_form.receipt_proof }}
+        <button type="button" class="btn btn-ai ai-scan-btn rounded-end" title="Auto-fill with AI">
+          <i class="bi bi-stars"></i> Scan
+        </button>
+      </div>
+    </div>
+    <div class="col-md-2">{{ formset.empty_form.amount }}</div>
+    <div class="col-md-1 text-center">
+      <div class="d-none">{{ formset.empty_form.DELETE }}</div>
+      <button type="button" class="btn btn-link text-danger p-0 remove-form-visual" title="Remove">
+        <i class="bi bi-trash"></i>
+      </button>
+    </div>
+  </div>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const addBtn = document.getElementById("add-form");
+  const formContainer = document.getElementById("form-container");
+  const totalFormsInput = document.getElementById("id_form-TOTAL_FORMS");
+  const finalizeBtn = document.getElementById("finalize-btn");
+
+  // ===== REUSABLE MODAL HELPERS =====
+  const notifyModalEl = document.getElementById("notifyModal");
+  const notifyModal = new bootstrap.Modal(notifyModalEl);
+
+  /**
+   * Show a styled notification modal (replaces alert()).
+   * @param {string} message  - The body text (HTML allowed).
+   * @param {object} opts     - Optional { title, type }  type = 'warning' | 'danger' | 'info' (default)
+   */
+  function showNotify(message, opts = {}) {
+    const title = opts.title || "Notice";
+    const type  = opts.type  || "info";
+
+    const iconMap = {
+      info:    { icon: "bi-info-circle-fill", bg: "bg-primary bg-opacity-10", text: "text-primary" },
+      warning: { icon: "bi-exclamation-triangle-fill", bg: "bg-warning bg-opacity-10", text: "text-warning-emphasis" },
+      danger:  { icon: "bi-x-circle-fill", bg: "bg-danger bg-opacity-10", text: "text-danger" },
+      success: { icon: "bi-check-circle-fill", bg: "bg-success bg-opacity-10", text: "text-success" },
+    };
+
+    const cfg = iconMap[type] || iconMap.info;
+
+    document.getElementById("notifyModalTitle").textContent = title;
+    document.getElementById("notifyModalBody").innerHTML = message;
+
+    const iconEl = document.getElementById("notifyModalIcon");
+    iconEl.className = `modal-icon-circle ${cfg.bg} ${cfg.text}`;
+    iconEl.innerHTML = `<i class="bi ${cfg.icon}"></i>`;
+
+    notifyModal.show();
+  }
+
+  // ===== FINALIZE CONFIRM MODAL =====
+  const finalizeConfirmModalEl = document.getElementById("finalizeConfirmModal");
+  const finalizeConfirmModal = finalizeConfirmModalEl ? new bootstrap.Modal(finalizeConfirmModalEl) : null;
+  const finalizeConfirmYes = document.getElementById("finalizeConfirmYes");
+
+  // ===== SIDEBAR SEARCH =====
+  const releaseSearchInput = document.getElementById("releaseSearchInput");
+  const releaseSearchDate = document.getElementById("releaseSearchDate");
+  const clearReleaseFilters = document.getElementById("clearReleaseFilters");
+  const releaseSearchStatus = document.getElementById("releaseSearchStatus");
+
+  function normalizeText(value) {
+    return (value || "").toString().trim().toLowerCase();
+  }
+
+  function applyReleaseFilters() {
+    const query = normalizeText(releaseSearchInput ? releaseSearchInput.value : "");
+    const selectedDate = releaseSearchDate ? releaseSearchDate.value : "";
+
+    let totalVisible = 0;
+
+    document.querySelectorAll(".tab-pane").forEach(tabPane => {
+      const listItems = tabPane.querySelectorAll(".searchable-release");
+      let visibleInTab = 0;
+
+      listItems.forEach(item => {
+        const searchableText = normalizeText(item.dataset.search);
+        const itemDate = item.dataset.date || "";
+
+        const matchesText = !query || searchableText.includes(query);
+        const matchesDate = !selectedDate || itemDate === selectedDate;
+
+        const shouldShow = matchesText && matchesDate;
+        item.style.display = shouldShow ? "" : "none";
+
+        if (shouldShow) {
+          visibleInTab++;
+          totalVisible++;
+        }
+      });
+
+      const emptyBlock = tabPane.querySelector(".search-empty");
+      if (emptyBlock) {
+        emptyBlock.classList.toggle("show", listItems.length > 0 && visibleInTab === 0);
+      }
+    });
+
+    if (!query && !selectedDate) {
+      releaseSearchStatus.textContent = "Use the filters above to narrow the list.";
+    } else {
+      releaseSearchStatus.textContent = totalVisible + " release(s) matched your filter.";
+    }
+  }
+
+  if (releaseSearchInput) {
+    releaseSearchInput.addEventListener("input", applyReleaseFilters);
+  }
+
+  if (releaseSearchDate) {
+    releaseSearchDate.addEventListener("change", applyReleaseFilters);
+  }
+
+  if (clearReleaseFilters) {
+    clearReleaseFilters.addEventListener("click", function() {
+      if (releaseSearchInput) releaseSearchInput.value = "";
+      if (releaseSearchDate) releaseSearchDate.value = "";
+      applyReleaseFilters();
+    });
+  }
+
+  // ===== FORMSET REMOVE =====
+  function bindRemoveButtons() {
+    document.querySelectorAll(".remove-form-visual").forEach(btn => {
+      btn.onclick = function(e) {
+        const row = e.target.closest(".expense-row");
+        if (!row) return;
+
+        const checkbox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+        if (checkbox) {
+          checkbox.checked = true;
+          row.style.display = "none";
+        } else {
+          row.remove();
+          updateIndices();
+        }
+      };
+    });
+  }
+
+  function updateIndices() {
+    const rows = formContainer.querySelectorAll(".expense-row");
+    rows.forEach((row, index) => {
+      row.querySelectorAll("input, select, textarea").forEach(input => {
+        if (input.name) input.name = input.name.replace(/form-\d+-/, `form-${index}-`);
+        if (input.id)   input.id   = input.id.replace(/form-\d+-/, `form-${index}-`);
+      });
+    });
+    totalFormsInput.value = rows.length;
+  }
+
+  if (addBtn && formContainer && totalFormsInput) {
+    const emptyFormHtml = document.getElementById("empty-form").innerHTML;
+
+    addBtn.addEventListener("click", function() {
+      const currentFormCount = document.querySelectorAll(".expense-row").length;
+      const newFormHtml = emptyFormHtml.replace(/__prefix__/g, currentFormCount);
+      const div = document.createElement("div");
+      div.innerHTML = newFormHtml;
+      formContainer.appendChild(div.firstElementChild);
+      totalFormsInput.value = currentFormCount + 1;
+      bindRemoveButtons();
+    });
+
+    bindRemoveButtons();
+  }
+
+  // ===== AI OCR =====
+  document.body.addEventListener("click", function(e) {
+    const btn = e.target.closest(".ai-scan-btn");
+    if (!btn) return;
+
+    const row = btn.closest(".expense-row");
+    const fileInput = row.querySelector('input[type="file"]');
+    const dateInput = row.querySelector('input[name$="date_incurred"]');
+    const descInput = row.querySelector('input[name$="description"]');
+    const amountInput = row.querySelector('input[name$="amount"]');
+
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+      showNotify("Please select a receipt image file first before scanning.", {
+        title: "No File Selected",
+        type: "warning"
+      });
+      return;
+    }
+
+    const originalIcon = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    btn.disabled = true;
+
+    const formData = new FormData();
+    formData.append("receipt", fileInput.files[0]);
+    formData.append("action", "OCR");
+    formData.append("csrfmiddlewaretoken", document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+    fetch(window.location.href, {
+      method: "POST",
+      body: formData,
+      headers: { "X-Requested-With": "XMLHttpRequest" }
+    })
+    .then(r => r.json())
+    .then(result => {
+      if (result.success) {
+        const data = result.data || {};
+        if (data.date && dateInput) dateInput.value = data.date;
+        if (data.description && descInput) descInput.value = data.description;
+        if (data.amount && amountInput) amountInput.value = data.amount.toString().replace(/,/g, "");
+
+        row.style.transition = "background-color 0.5s";
+        row.style.backgroundColor = "#dcfce7";
+        setTimeout(() => row.style.backgroundColor = "#fff", 1500);
+      } else {
+        showNotify(
+          "<strong>Scan Failed</strong><br>" + (result.error || "An unknown error occurred while scanning the receipt."),
+          { title: "AI Scan Error", type: "danger" }
+        );
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      showNotify(
+        "A connection error occurred while contacting the server. Please check your network and try again.<br><br><code class='small text-muted'>" + err + "</code>",
+        { title: "Connection Error", type: "danger" }
+      );
+    })
+    .finally(() => {
+      btn.disabled = false;
+      btn.innerHTML = originalIcon;
+    });
+  });
+
+  // ===== FINALIZE FLOW (modal-based) =====
+  if (finalizeBtn && finalizeConfirmModal) {
+    finalizeBtn.addEventListener("click", function(e) {
+      // Validate return destination is selected
+      const selectedReturn = document.querySelector('input[name="return_to"]:checked');
+      if (!selectedReturn) {
+        showNotify(
+          "Please choose where the returned change should go before finalizing.",
+          { title: "Return Destination Required", type: "warning" }
+        );
+        return;
+      }
+
+      // Populate the confirmation modal with the chosen label
+      const label = selectedReturn.value === "bank"
+        ? '<span class="source-pill bank"><i class="bi bi-bank"></i> Bank</span>'
+        : '<span class="source-pill cash"><i class="bi bi-cash-stack"></i> Physical Cash</span>';
+      document.getElementById("finalizeReturnLabel").innerHTML = label;
+
+      // Show the confirmation modal
+      finalizeConfirmModal.show();
+    });
+
+    // When user confirms inside the modal → submit the form
+    if (finalizeConfirmYes) {
+      finalizeConfirmYes.addEventListener("click", function() {
+        finalizeConfirmModal.hide();
+
+        // Create a hidden input for the finalize action and submit the form
+        const form = document.getElementById("expense-form");
+        const hiddenInput = document.createElement("input");
+        hiddenInput.type = "hidden";
+        hiddenInput.name = "finalize";
+        hiddenInput.value = "true";
+        form.appendChild(hiddenInput);
+        form.submit();
+      });
+    }
+  }
+
+  applyReleaseFilters();
+});
+</script>
+</body>
+</html>

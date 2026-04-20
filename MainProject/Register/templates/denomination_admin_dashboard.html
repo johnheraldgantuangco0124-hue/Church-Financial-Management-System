@@ -1,0 +1,604 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Denomination Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root{
+            --primary-1:#1e3c72;
+            --primary-2:#2a5298;
+            --primary-3:#4f8dfd;
+            --bg:#f5f8fc;
+            --text:#16324f;
+            --muted:#6c7a89;
+            --card:#ffffff;
+            --border:#e7eef7;
+            --success:#1f9d63;
+            --warning:#f0ad4e;
+            --danger:#d9534f;
+            --shadow:0 14px 34px rgba(20, 60, 120, 0.10);
+            --radius:20px;
+        }
+
+        *{
+            font-family:'Inter', sans-serif;
+        }
+
+        body{
+            background:
+                radial-gradient(circle at top right, rgba(79,141,253,0.10), transparent 22%),
+                linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+            color:var(--text);
+        }
+
+        .page-wrap{
+            padding: 28px 0 40px;
+        }
+
+        .hero-card{
+            background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
+            color:#fff;
+            border:none;
+            border-radius:28px;
+            box-shadow: var(--shadow);
+            overflow:hidden;
+            position:relative;
+        }
+
+        .hero-card::before{
+            content:"";
+            position:absolute;
+            top:-60px;
+            right:-60px;
+            width:220px;
+            height:220px;
+            border-radius:50%;
+            background:rgba(255,255,255,0.08);
+        }
+
+        .hero-card::after{
+            content:"";
+            position:absolute;
+            bottom:-80px;
+            left:-60px;
+            width:240px;
+            height:240px;
+            border-radius:50%;
+            background:rgba(255,255,255,0.06);
+        }
+
+        .hero-content{
+            position:relative;
+            z-index:1;
+        }
+
+        .hero-title{
+            font-size: clamp(1.6rem, 2.4vw, 2.35rem);
+            font-weight:800;
+            letter-spacing:-0.02em;
+            margin-bottom: .45rem;
+        }
+
+        .hero-subtitle{
+            opacity:.92;
+            max-width: 760px;
+            margin-bottom:0;
+        }
+
+        .section-title{
+            font-size:1.05rem;
+            font-weight:800;
+            color:var(--text);
+            margin-bottom: .95rem;
+        }
+
+        .kpi-link{
+            text-decoration:none;
+            color:inherit;
+            display:block;
+            height:100%;
+        }
+
+        .kpi-card{
+            background:var(--card);
+            border:1px solid var(--border);
+            border-radius:var(--radius);
+            box-shadow: 0 8px 22px rgba(18, 56, 112, 0.06);
+            padding: 1.15rem 1.1rem;
+            height:100%;
+            transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+            position:relative;
+            overflow:hidden;
+        }
+
+        .kpi-card::before{
+            content:"";
+            position:absolute;
+            inset:0 0 auto 0;
+            height:5px;
+            background: linear-gradient(90deg, var(--primary-1), var(--primary-3));
+        }
+
+        .kpi-link:hover .kpi-card{
+            transform: translateY(-4px);
+            box-shadow: 0 18px 30px rgba(18, 56, 112, 0.12);
+            border-color:#d4e3f8;
+        }
+
+        .kpi-top{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+            margin-bottom: 1rem;
+        }
+
+        .kpi-icon{
+            width:54px;
+            height:54px;
+            border-radius:16px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:1.35rem;
+            background: linear-gradient(135deg, rgba(30,60,114,0.12), rgba(79,141,253,0.12));
+            color:var(--primary-2);
+            flex-shrink:0;
+        }
+
+        .kpi-title{
+            font-size:.9rem;
+            font-weight:700;
+            color:var(--muted);
+            margin-bottom:.4rem;
+        }
+
+        .kpi-value{
+            font-size:2rem;
+            font-weight:800;
+            line-height:1;
+            color:var(--text);
+            margin-bottom:.45rem;
+        }
+
+        .kpi-hint{
+            font-size:.85rem;
+            color:var(--muted);
+            margin-bottom:0;
+        }
+
+        .panel-card{
+            background:#fff;
+            border:1px solid var(--border);
+            border-radius:24px;
+            box-shadow: 0 10px 24px rgba(18, 56, 112, 0.06);
+        }
+
+        .panel-header{
+            padding:1.1rem 1.2rem;
+            border-bottom:1px solid var(--border);
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+        }
+
+        .panel-body{
+            padding:1rem 1.2rem 1.2rem;
+        }
+
+        .panel-title{
+            font-weight:800;
+            font-size:1rem;
+            margin:0;
+        }
+
+        .mini-badge{
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            border-radius:999px;
+            padding:.35rem .7rem;
+            font-size:.78rem;
+            font-weight:700;
+            background:#eef4ff;
+            color:var(--primary-2);
+        }
+
+        .table thead th{
+            font-size:.83rem;
+            font-weight:800;
+            color:#4c6480;
+            border-bottom-width:1px;
+        }
+
+        .table tbody td{
+            vertical-align:middle;
+            font-size:.93rem;
+        }
+
+        .empty-state{
+            border:1px dashed #d6e2f2;
+            border-radius:18px;
+            padding:1.2rem;
+            text-align:center;
+            color:var(--muted);
+            background:#fbfdff;
+        }
+
+        .status-badge{
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            border-radius:999px;
+            padding:.35rem .75rem;
+            font-size:.78rem;
+            font-weight:800;
+            letter-spacing:.02em;
+        }
+
+        .status-pending{
+            background:rgba(240,173,78,0.14);
+            color:#b7791f;
+        }
+
+        .status-approved{
+            background:rgba(31,157,99,0.14);
+            color:#1f7a52;
+        }
+
+        .status-rejected{
+            background:rgba(217,83,79,0.14);
+            color:#b6403d;
+        }
+
+        .status-closed{
+            background:rgba(108,122,137,0.14);
+            color:#59697a;
+        }
+
+        .quick-links{
+            display:flex;
+            flex-wrap:wrap;
+            gap:.65rem;
+        }
+
+        .quick-link{
+            display:inline-flex;
+            align-items:center;
+            gap:.5rem;
+            text-decoration:none;
+            border-radius:14px;
+            padding:.8rem 1rem;
+            font-weight:700;
+            border:1px solid #dbe8f8;
+            background:#fff;
+            color:var(--primary-2);
+            transition:all .18s ease;
+        }
+
+        .quick-link:hover{
+            background:#f2f7ff;
+            transform:translateY(-1px);
+        }
+
+        @media (max-width: 991.98px){
+            .hero-card{
+                border-radius:22px;
+            }
+            .kpi-value{
+                font-size:1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+    <div class="container page-wrap">
+        <div class="card hero-card mb-4">
+            <div class="card-body p-4 p-lg-5 hero-content">
+                <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+                    <div>
+                        <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill bg-white bg-opacity-10 mb-3">
+                            <i class="bi bi-diagram-3-fill"></i>
+                            <span class="fw-semibold">Denomination Admin Dashboard</span>
+                        </div>
+                        <h1 class="hero-title mb-2">{{ denomination_name|default:"Denomination" }}</h1>
+                        <p class="hero-subtitle">
+                            Monitor denomination applications, member churches, and liquidation viewing requests in one place.
+                        </p>
+                    </div>
+
+                    <div class="text-lg-end">
+                        <div class="small opacity-75 mb-1">Overview</div>
+                        <div class="fs-5 fw-bold">{{ denomination_name|default:"No Denomination Assigned" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <h2 class="section-title">Summary</h2>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-12 col-md-6 col-xl-4">
+                <a href="{% url 'Church:denomination_applications' %}" class="kpi-link">
+                    <div class="kpi-card">
+                        <div class="kpi-top">
+                            <div>
+                                <div class="kpi-title">Pending Applications</div>
+                                <div class="kpi-value">{{ kpi_pending_applications|default:0|intcomma }}</div>
+                                <p class="kpi-hint mb-0">Click to open denomination applications.</p>
+                            </div>
+                            <div class="kpi-icon">
+                                <i class="bi bi-hourglass-split"></i>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-4">
+                <a href="{% url 'Church:denomination_applications' %}" class="kpi-link">
+                    <div class="kpi-card">
+                        <div class="kpi-top">
+                            <div>
+                                <div class="kpi-title">Revoked Applications</div>
+                                <div class="kpi-value">{{ kpi_revoked_applications|default:0|intcomma }}</div>
+                                <p class="kpi-hint mb-0">Click to review revoked church applications.</p>
+                            </div>
+                            <div class="kpi-icon">
+                                <i class="bi bi-x-octagon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-4">
+                <a href="{% url 'Church:denomination_applications' %}" class="kpi-link">
+                    <div class="kpi-card">
+                        <div class="kpi-top">
+                            <div>
+                                <div class="kpi-title">Active Member Churches</div>
+                                <div class="kpi-value">{{ kpi_active_member_churches|default:0|intcomma }}</div>
+                                <p class="kpi-hint mb-0">Click to view churches under this denomination.</p>
+                            </div>
+                            <div class="kpi-icon">
+                                <i class="bi bi-building"></i>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-6">
+                <a href="{% url 'Church:denomination_finance_overview' %}" class="kpi-link">
+                    <div class="kpi-card">
+                        <div class="kpi-top">
+                            <div>
+                                <div class="kpi-title">Requested for Liquidation Viewing</div>
+                                <div class="kpi-value">{{ kpi_liquidation_requested|default:0|intcomma }}</div>
+                                <p class="kpi-hint mb-0">Click to open the denomination finance overview page.</p>
+                            </div>
+                            <div class="kpi-icon">
+                                <i class="bi bi-file-earmark-lock2"></i>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-6">
+                <a href="{% url 'Church:denomination_finance_overview' %}" class="kpi-link">
+                    <div class="kpi-card">
+                        <div class="kpi-top">
+                            <div>
+                                <div class="kpi-title">Approved for Viewing</div>
+                                <div class="kpi-value">{{ kpi_liquidation_approved|default:0|intcomma }}</div>
+                                <p class="kpi-hint mb-0">Click to view approved liquidation access.</p>
+                            </div>
+                            <div class="kpi-icon">
+                                <i class="bi bi-check2-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-12 col-xl-6">
+                <div class="panel-card h-100">
+                    <div class="panel-header">
+                        <h3 class="panel-title">Recent Pending Applications</h3>
+                        <span class="mini-badge">
+                            <i class="bi bi-hourglass-split"></i>
+                            {{ kpi_pending_applications|default:0|intcomma }} pending
+                        </span>
+                    </div>
+                    <div class="panel-body">
+                        {% if recent_pending_applications %}
+                            <div class="table-responsive">
+                                <table class="table align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Church</th>
+                                            <th>Applied At</th>
+                                            <th class="text-end">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for app in recent_pending_applications %}
+                                            <tr>
+                                                <td class="fw-semibold">
+                                                    {{ app.church.name|default:"Unnamed Church" }}
+                                                </td>
+                                                <td>
+                                                    {{ app.applied_at|date:"M d, Y h:i A" }}
+                                                </td>
+                                                <td class="text-end">
+                                                    <a href="{% url 'Church:denomination_applications' %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                        Open
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                                No pending applications found.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-xl-6">
+                <div class="panel-card h-100">
+                    <div class="panel-header">
+                        <h3 class="panel-title">Recent Revoked Applications</h3>
+                        <span class="mini-badge">
+                            <i class="bi bi-x-octagon"></i>
+                            {{ kpi_revoked_applications|default:0|intcomma }} revoked
+                        </span>
+                    </div>
+                    <div class="panel-body">
+                        {% if recent_revoked_applications %}
+                            <div class="table-responsive">
+                                <table class="table align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Church</th>
+                                            <th>Revoked At</th>
+                                            <th class="text-end">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for app in recent_revoked_applications %}
+                                            <tr>
+                                                <td class="fw-semibold">
+                                                    {{ app.church.name|default:"Unnamed Church" }}
+                                                </td>
+                                                <td>
+                                                    {{ app.decided_at|date:"M d, Y h:i A" }}
+                                                </td>
+                                                <td class="text-end">
+                                                    <a href="{% url 'Church:denomination_applications' %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                        Open
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="bi bi-folder2-open fs-3 d-block mb-2"></i>
+                                No revoked applications found.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3 class="panel-title">Recent Liquidation Access Requests</h3>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="mini-badge"><i class="bi bi-file-earmark-lock2"></i> {{ kpi_liquidation_requested|default:0|intcomma }} requested</span>
+                            <span class="mini-badge"><i class="bi bi-check2-circle"></i> {{ kpi_liquidation_approved|default:0|intcomma }} approved</span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        {% if recent_liquidation_requests %}
+                            <div class="table-responsive">
+                                <table class="table align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Church</th>
+                                            <th>Requested At</th>
+                                            <th>Status</th>
+                                            <th class="text-end">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for req in recent_liquidation_requests %}
+                                            <tr>
+                                                <td class="fw-semibold">
+                                                    {{ req.church.name|default:"Unnamed Church" }}
+                                                </td>
+                                                <td>
+                                                    {{ req.requested_at|date:"M d, Y h:i A" }}
+                                                </td>
+                                                <td>
+                                                    {% if req.status == req.STATUS_APPROVED %}
+                                                        <span class="status-badge status-approved">Approved</span>
+                                                    {% elif req.status == req.STATUS_PENDING %}
+                                                        <span class="status-badge status-pending">Pending</span>
+                                                    {% elif req.status == req.STATUS_REJECTED %}
+                                                        <span class="status-badge status-rejected">Rejected</span>
+                                                    {% elif req.status == req.STATUS_CLOSED %}
+                                                        <span class="status-badge status-closed">Closed</span>
+                                                    {% else %}
+                                                        <span class="status-badge status-closed">{{ req.status }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-end">
+                                                    <a href="{% url 'Church:denomination_finance_overview' %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                        Open
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="bi bi-clipboard-data fs-3 d-block mb-2"></i>
+                                No liquidation access requests found.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3 class="panel-title">Quick Links</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="quick-links">
+                            <a href="{% url 'Church:denomination_applications' %}" class="quick-link">
+                                <i class="bi bi-diagram-2"></i>
+                                Denomination Applications
+                            </a>
+                            <a href="{% url 'Church:denomination_finance_overview' %}" class="quick-link">
+                                <i class="bi bi-bar-chart-line"></i>
+                                Denomination Finance Overview
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

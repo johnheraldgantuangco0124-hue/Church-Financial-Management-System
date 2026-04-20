@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Reference History</title>
+
+  <!-- Bootstrap 4.5 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css"/>
+
+  <style>
+    body { background: #ffffff; }
+    .section-card { border-radius: .75rem; border:1px solid #e5e7eb; }
+    .section-card .card-header { background:#fff; border-bottom:1px solid #e5e7eb; }
+    .thead-light th { background:#f8fafc; }
+    .amount { font-variant-numeric: tabular-nums; }
+    .badge-soft { background:#f3f4f6; color:#374151; font-weight:500; }
+    .toolbar .form-inline > * { margin-right:.5rem; }
+    @media (max-width: 576px) {
+      .toolbar .form-inline > * { margin-bottom:.5rem; width:100%; }
+      .toolbar .form-inline { display:block; }
+    }
+  </style>
+</head>
+<body>
+  {% include 'navbar.html' %}
+
+  <div class="container py-4">
+    <div class="d-flex align-items-baseline justify-content-between flex-wrap">
+      <h2 class="mb-2">Donation Submissions</h2>
+      <small class="text-muted">Today: {{ today|default:None }}</small>
+    </div>
+
+    <!-- Global toolbar: quick search & optional date filter (works client-side) -->
+    <div class="card section-card mb-4">
+      <div class="card-body toolbar">
+        <form class="form-inline" onsubmit="return false;">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">🔎</span>
+            </div>
+            <input id="search" type="search" class="form-control" placeholder="Search by Reference # or Name"/>
+          </div>
+
+          <input id="from" type="date" class="form-control" title="From date"/>
+          <input id="to" type="date" class="form-control" title="To date"/>
+
+          <button id="clear-filters" class="btn btn-outline-secondary">Clear</button>
+        </form>
+        <small class="text-muted d-block mt-2">Tip: Use search to filter both sections at once. Date filter matches the “Date”/“Submitted At” columns.</small>
+      </div>
+    </div>
+
+    <!-- Pending -->
+    <div class="card section-card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>Pending References</strong>
+        {% if pending_items %}
+          {% with total=0 %}
+          {% endwith %}
+        {% endif %}
+      </div>
+
+      {% if pending_items %}
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0" id="pending-table">
+            <thead class="thead-light">
+              <tr>
+                <th>Reference #</th>
+                <th>Name</th>
+                <th>Submitted At</th>
+                <th>Date</th>
+                <th class="text-right">Amount</th>
+                <th>File</th>
+                <th>Submitted By</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in pending_items %}
+                <tr
+                  data-ref="{{ item.reference_number|lower }}"
+                  data-name="{{ item.name|lower }}"
+                  data-date="{{ item.date|default:item.submitted_at }}"
+                >
+                  <td><strong>{{ item.reference_number }}</strong></td>
+                  <td>{{ item.name }}</td>
+                  <td>{{ item.submitted_at }}</td>
+                  <td>{{ item.date }}</td>
+                  <td class="text-right amount">{{ item.amount|default:"—" }}</td>
+                  <td>
+                    {% if item.file %}
+                      <a class="btn btn-sm btn-outline-secondary" href="{{ item.file.url }}" target="_blank" rel="noopener">View</a>
+                    {% else %}
+                      <span class="text-muted">None</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ item.submitted_by }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="p-3 text-muted">No pending references.</div>
+      {% endif %}
+    </div>
+
+    <!-- Approved -->
+    <div class="card section-card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>Approved References</strong>
+        {% if approved_items %}
+          <!-- Show quick total on the client (no server change needed) -->
+          <div> Total: <span class="badge badge-soft amount" id="approved-total">—</span></div>
+        {% endif %}
+      </div>
+
+      {% if approved_items %}
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0" id="approved-table">
+            <thead class="thead-light">
+              <tr>
+                <th>Reference #</th>
+                <th>Name</th>
+                <th>Date</th>
+                <th class="text-right">Amount</th>
+                <th>File</th>
+                <th>Submitted By</th>
+                <th>Approved By</th>
+                <th>Approved At</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in approved_items %}
+                <tr
+                  data-ref="{{ item.reference_number|lower }}"
+                  data-name="{{ item.name|lower }}"
+                  data-date="{{ item.date }}"
+                  data-amount="{{ item.amount }}"
+                >
+                  <td><strong>{{ item.reference_number }}</strong></td>
+                  <td>{{ item.name }}</td>
+                  <td>{{ item.date }}</td>
+                  <td class="text-right amount">{{ item.amount }}</td>
+                  <td>
+                    {% if item.file %}
+                      <a class="btn btn-sm btn-outline-secondary" href="{{ item.file.url }}" target="_blank" rel="noopener">View</a>
+                    {% else %}
+                      <span class="text-muted">None</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ item.submitted_by }}</td>
+                  <td>{{ item.approved_by }}</td>
+                  <td>{{ item.approved_at }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="p-3 text-muted">No approved references.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- jQuery + Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    (function(){
+      const $search = $('#search');
+      const $from = $('#from');
+      const $to = $('#to');
+      const $clear = $('#clear-filters');
+
+      const $pendingRows = $('#pending-table tbody tr');
+      const $approvedRows = $('#approved-table tbody tr');
+
+      function parseDate(d) {
+        // Accept "YYYY-MM-DD" or full datetime strings
+        const dt = new Date(d);
+        return isNaN(dt.getTime()) ? null : dt;
+      }
+
+      function rowMatches($row, term, fromDt, toDt, useSubmittedAt=false) {
+        const ref = ($row.data('ref') || '').toString();
+        const name = ($row.data('name') || '').toString();
+        const dateStr = ($row.data('date') || '').toString();
+        const dt = parseDate(dateStr);
+
+        // text match
+        const matchesText = !term || ref.includes(term) || name.includes(term);
+
+        // date range match
+        let matchesDate = true;
+        if (fromDt && dt) matchesDate = matchesDate && (dt >= fromDt);
+        if (toDt && dt)   matchesDate = matchesDate && (dt <= toDt);
+
+        return matchesText && matchesDate;
+      }
+
+      function filterTables() {
+        const term = ($search.val() || '').trim().toLowerCase();
+        const fromDt = parseDate($from.val());
+        const toDt = parseDate($to.val());
+
+        // Pending
+        $pendingRows.each(function(){
+          const $r = $(this);
+          $r.toggle(rowMatches($r, term, fromDt, toDt, true));
+        });
+
+        // Approved
+        $approvedRows.each(function(){
+          const $r = $(this);
+          $r.toggle(rowMatches($r, term, fromDt, toDt));
+        });
+
+        updateApprovedTotal();
+      }
+
+      function updateApprovedTotal() {
+        const $visibleApproved = $approvedRows.filter(':visible');
+        let sum = 0;
+        $visibleApproved.each(function(){
+          const amt = parseFloat($(this).data('amount'));
+          if (!isNaN(amt)) sum += amt;
+        });
+        const target = document.getElementById('approved-total');
+        if (target) target.textContent = $visibleApproved.length ? sum.toFixed(2) : '—';
+      }
+
+      // Events
+      $search.on('input', filterTables);
+      $from.on('change', filterTables);
+      $to.on('change', filterTables);
+      $clear.on('click', function(){
+        $search.val('');
+        $from.val('');
+        $to.val('');
+        filterTables();
+      });
+
+      // Initial pass
+      filterTables();
+    })();
+  </script>
+</body>
+</html>

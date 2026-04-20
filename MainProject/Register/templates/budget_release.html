@@ -1,0 +1,963 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fund Requests | ChurchSys</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #1e3a8a;
+            --bg-surface: #f1f5f9;
+            --text-main: #020617;
+            --text-secondary: #334155;
+        }
+
+        body {
+            background-color: var(--bg-surface);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+        }
+
+        h1, h2, h3, h4, h5 {
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+        }
+
+        .card-custom {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .card-header-custom {
+            background: #fff;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 1.25rem 1.5rem;
+            font-weight: 800;
+            color: #020617;
+        }
+
+        .stat-card { border-left: 5px solid transparent; }
+        .stat-card.blue { border-left-color: #2563eb; }
+        .stat-card.orange { border-left-color: #d97706; }
+        .stat-card.green { border-left-color: #059669; }
+
+        .stat-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #475569;
+            font-weight: 800;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #0f172a;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .nav-tabs {
+            border-bottom: 2px solid #cbd5e1;
+            padding: 0 1rem;
+            gap: 0.25rem;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            border-radius: 8px 8px 0 0;
+            color: #1e293b !important;
+            font-weight: 700 !important;
+            padding: 0.9rem 1.2rem;
+            transition: all 0.2s;
+            background-color: transparent;
+            margin-bottom: -2px;
+            border-bottom: 3px solid transparent;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: #000 !important;
+            background-color: #e2e8f0;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #0f172a !important;
+            background-color: #fff;
+            border-bottom: 3px solid #1e40af;
+        }
+
+        .nav-link .badge {
+            font-weight: 600;
+            margin-left: 6px;
+        }
+
+        .table-custom th {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #1e293b;
+            font-weight: 800;
+            background-color: #f1f5f9;
+            border-bottom: 2px solid #cbd5e1;
+            padding: 1rem;
+        }
+
+        .table-custom td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #e2e8f0;
+            color: #334155;
+            font-weight: 500;
+        }
+
+        .status-stripe { border-left: 4px solid transparent; }
+        .status-stripe.warning { border-left-color: #d97706; }
+        .status-stripe.success { border-left-color: #059669; }
+        .status-stripe.primary { border-left-color: #2563eb; }
+        .status-stripe.danger { border-left-color: #dc2626; }
+
+        .form-label { color: #1e293b; font-weight: 700; }
+        .form-control, .form-select {
+            border: 1px solid #cbd5e1;
+            font-weight: 500;
+            color: #0f172a;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .num-font { font-family: 'Outfit', sans-serif; }
+
+        .avatar-initials {
+            width: 34px;
+            height: 34px;
+            background: #e2e8f0;
+            color: #0f172a;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.85rem;
+            border: 1px solid #cbd5e1;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+
+        .confirm-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.7rem 0;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+
+        .confirm-row:last-child {
+            border-bottom: 0;
+        }
+
+        .confirm-label {
+            font-size: 0.82rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #475569;
+            letter-spacing: 0.04em;
+            min-width: 120px;
+        }
+
+        .confirm-value {
+            text-align: right;
+            font-weight: 700;
+            color: #0f172a;
+            word-break: break-word;
+        }
+
+        .modal-soft-header {
+            background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+            border-bottom: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+
+{% include 'navbar.html' %}
+
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h3 class="fw-bold mb-1 text-dark">Fund Requests</h3>
+            <p class="text-secondary mb-0 fw-bold">Manage ministry budget requests and liquidations.</p>
+        </div>
+        <div class="btn-group">
+            <a href="{% url 'budgets_manage' %}" class="btn btn-outline-dark btn-sm px-3 fw-bold">
+                <i class="bi bi-calculator me-2"></i>View Budgets
+            </a>
+            {% if request.user.user_type == 'Admin' or request.user.user_type == 'Treasurer' or request.user.user_type == 'ChurchAdmin' %}
+            <a href="{% url 'release_budget' %}" class="btn btn-dark btn-sm px-3 fw-bold">
+                <i class="bi bi-cash-stack me-2"></i>Release Cash
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card-custom stat-card blue p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">To Liquidate</div>
+                        <div class="stat-value text-primary">
+                            {{ to_liquidate.count }} <small class="text-secondary fs-6 fw-bold">items</small>
+                        </div>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary">
+                        <i class="bi bi-wallet2 fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card-custom stat-card orange p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">Pending Approval</div>
+                        <div class="stat-value text-warning" style="color: #d97706 !important;">
+                            {{ pending.count }} <small class="text-secondary fs-6 fw-bold">items</small>
+                        </div>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 p-3 rounded-circle" style="color: #d97706 !important;">
+                        <i class="bi bi-hourglass-split fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card-custom stat-card green p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">Completed</div>
+                        <div class="stat-value text-success" style="color: #059669 !important;">
+                            {{ completed.count }}
+                        </div>
+                    </div>
+                    <div class="bg-success bg-opacity-10 p-3 rounded-circle" style="color: #059669 !important;">
+                        <i class="bi bi-check-lg fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card-custom h-100">
+                <div class="card-header-custom d-flex align-items-center">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width:32px; height:32px;">
+                        <i class="bi bi-plus-lg"></i>
+                    </div>
+                    <span>Create Request</span>
+                </div>
+
+                <div class="card-body p-4">
+                    <form method="post" id="requestForm" novalidate>
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger p-2 small mb-3 rounded-3">
+                                {{ form.non_field_errors|striptags }}
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label class="form-label small text-uppercase">Budget Source</label>
+                            {{ form.budget }}
+                            <div class="form-text small fw-bold">Select active budget.</div>
+                            {% if form.budget.errors %}
+                                <div class="text-danger small mt-1 fw-bold">{{ form.budget.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small text-uppercase">Date Needed</label>
+                            {{ form.date_released }}
+                            {% if form.date_released.errors %}
+                                <div class="text-danger small mt-1 fw-bold">{{ form.date_released.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small text-uppercase">Amount Required</label>
+                            <div class="input-group">
+                                <span class="input-group-text fw-bold bg-light border-secondary">₱</span>
+                                {{ form.amount }}
+                            </div>
+                            {% if form.amount.errors %}
+                                <div class="text-danger small mt-1 fw-bold">{{ form.amount.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-floating">
+                                {{ form.remarks }}
+                                <label for="{{ form.remarks.id_for_label }}" class="text-dark fw-bold">Purpose / Remarks</label>
+                            </div>
+                            {% if form.remarks.errors %}
+                                <div class="text-danger small mt-1 fw-bold">{{ form.remarks.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <button type="button" id="openRequestConfirm" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
+                            Submit Request <i class="bi bi-arrow-right ms-2"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card-custom h-100">
+                <div class="pt-3 px-2 bg-white border-bottom border-light">
+                    <ul class="nav nav-tabs" id="requestTabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button">
+                                Pending
+                                {% if pending %}
+                                    <span class="badge bg-warning text-dark ms-1 rounded-pill small">{{ pending.count }}</span>
+                                {% endif %}
+                            </button>
+                        </li>
+
+                        <li class="nav-item">
+                            <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button">
+                                Approved
+                                {% if approved %}
+                                    <span class="badge bg-info text-dark ms-1 rounded-pill small">{{ approved.count }}</span>
+                                {% endif %}
+                            </button>
+                        </li>
+
+                        <li class="nav-item">
+                            <button class="nav-link" id="liquidate-tab" data-bs-toggle="tab" data-bs-target="#liquidate" type="button">
+                                To Liquidate
+                                {% if to_liquidate %}
+                                    <span class="badge bg-primary text-white ms-1 rounded-pill small">{{ to_liquidate.count }}</span>
+                                {% endif %}
+                            </button>
+                        </li>
+
+                        <li class="nav-item">
+                            <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button">
+                                History
+                            </button>
+                        </li>
+
+                        <li class="nav-item ms-auto">
+                            <button class="nav-link text-danger" id="declined-tab" data-bs-toggle="tab" data-bs-target="#declined" type="button" title="Declined Requests">
+                                <i class="bi bi-archive"></i>
+                                {% if declined %}
+                                    <span class="badge bg-danger text-white ms-1 rounded-pill small">{{ declined.count }}</span>
+                                {% endif %}
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card-body p-0">
+                    <div class="tab-content" id="requestTabsContent">
+
+                        <!-- PENDING TAB -->
+                        <div class="tab-pane fade show active" id="pending" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-custom table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Request Details</th>
+                                            <th>Requester</th>
+                                            <th class="text-end">Amount</th>
+                                            <th class="text-end">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for r in pending %}
+                                        <tr class="status-stripe warning">
+                                            <td>
+                                                <div class="fw-bold text-dark">{{ r.budget.ministry.name }}</div>
+                                                <div class="small text-dark fw-medium mt-1">{{ r.remarks|default:"No remarks"|truncatechars:40 }}</div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    {% if r.requested_by %}
+                                                        <span class="avatar-initials me-2">{{ r.requested_by.username|slice:":1" }}</span>
+                                                        <span class="small fw-bold text-dark">
+                                                            {{ r.requested_by.first_name|default:r.requested_by.username }}
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="small text-muted">Unknown</span>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td class="text-end num-font fw-bold text-dark">₱{{ r.amount|floatformat:2|intcomma }}</td>
+                                            <td class="text-end">
+                                                {% if request.user.user_type == 'Admin' or request.user.user_type == 'ChurchAdmin' or request.user.user_type == 'Treasurer' or request.user.user_type == 'Pastor' %}
+                                                    <a href="{% url 'budget_request_review' r.pk %}" class="btn btn-sm btn-outline-primary fw-bold shadow-sm">
+                                                        <i class="bi bi-search me-1"></i> Review
+                                                    </a>
+                                                {% else %}
+                                                    <span class="badge bg-warning text-dark border border-warning rounded-pill px-3 fw-bold">Pending Review</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="4" class="text-center py-5">
+                                                <i class="bi bi-inbox empty-state-icon"></i>
+                                                <p class="text-dark fw-bold">No pending requests.</p>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- APPROVED TAB -->
+                        <div class="tab-pane fade" id="approved" role="tabpanel">
+                            <div class="alert alert-info border-0 rounded-0 mb-0 d-flex align-items-center text-dark fw-bold">
+                                <i class="bi bi-info-circle-fill me-2"></i>
+                                <span class="small">Approved by church leadership. Waiting for cash release.</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-custom table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Ministry</th>
+                                            <th>Requester</th>
+                                            <th class="text-end">Approved On</th>
+                                            <th class="text-end">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for a in approved %}
+                                        <tr class="status-stripe primary">
+                                            <td>
+                                                <div class="fw-bold text-dark">{{ a.budget.ministry.name }}</div>
+                                            </td>
+                                            <td>
+                                                {% if a.approved_request %}
+                                                    <div class="small text-secondary">
+                                                        Requested by
+                                                        <span class="fw-bold text-dark">
+                                                            {{ a.approved_request.requested_by.get_full_name|default:a.approved_request.requested_by.username }}
+                                                        </span>
+                                                    </div>
+                                                {% else %}
+                                                    <span class="small text-muted fst-italic">Legacy Record (No Link)</span>
+                                                {% endif %}
+
+                                                {% if a.approved_by %}
+                                                    <div class="small text-secondary mt-1">
+                                                        Approved by
+                                                        <span class="fw-bold text-dark">
+                                                            {{ a.approved_by.get_full_name|default:a.approved_by.username }}
+                                                        </span>
+                                                    </div>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end small text-dark fw-bold">{{ a.date_released|date:"M d, Y" }}</td>
+                                            <td class="text-end num-font fw-bold text-primary">₱{{ a.amount|floatformat:2|intcomma }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="4" class="text-center py-5">
+                                                <i class="bi bi-check2-circle empty-state-icon"></i>
+                                                <p class="text-dark fw-bold">No approved items waiting for release.</p>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- TO LIQUIDATE TAB -->
+                        <div class="tab-pane fade" id="liquidate" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-custom table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Released Date</th>
+                                            <th>Details</th>
+                                            <th class="text-end">Cash Received</th>
+                                            <th class="text-end">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for l in to_liquidate %}
+                                        <tr class="status-stripe primary">
+                                            <td>
+                                                <div class="fw-bold text-dark">{{ l.date_released|date:"M d, Y" }}</div>
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold text-dark">{{ l.budget.ministry.name }}</div>
+                                                <div class="small text-dark fw-bold">Ref #{{ l.id }}</div>
+                                                <div class="small text-secondary mt-1">
+                                                    {% if l.approved_request and l.approved_request.approved_by %}
+                                                        Approved by
+                                                        <span class="fw-bold text-dark">
+                                                            {{ l.approved_request.approved_by.get_full_name|default:l.approved_request.approved_by.username }}
+                                                        </span>
+                                                    {% endif %}
+                                                    {% if l.released_by %}
+                                                        {% if l.approved_request and l.approved_request.approved_by %}
+                                                            &nbsp;•&nbsp;
+                                                        {% endif %}
+                                                        Released by
+                                                        <span class="fw-bold text-dark">
+                                                            {{ l.released_by.get_full_name|default:l.released_by.username }}
+                                                        </span>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td class="text-end num-font fw-bold fs-5 text-dark">₱{{ l.amount|floatformat:2|intcomma }}</td>
+                                            <td class="text-end">
+                                                <a href="{% url 'budget_expense' %}?release_id={{ l.id }}" class="btn btn-primary btn-sm px-3 shadow-sm rounded-pill fw-bold">
+                                                    Submit Receipts <i class="bi bi-arrow-right ms-1"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="4" class="text-center py-5">
+                                                <i class="bi bi-wallet2 empty-state-icon"></i>
+                                                <p class="text-dark fw-bold">You have no active funds to liquidate.</p>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- COMPLETED TAB -->
+                        <div class="tab-pane fade" id="completed" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-custom table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Ministry</th>
+                                            <th class="text-end">Total Amount</th>
+                                            <th class="text-end">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for c in completed %}
+                                        <tr class="status-stripe success">
+                                            <td class="small fw-bold text-dark">{{ c.date_released|date:"M d, Y" }}</td>
+                                            <td class="fw-bold text-dark">{{ c.budget.ministry.name }}</td>
+                                            <td class="text-end num-font text-dark fw-bold">₱{{ c.amount|floatformat:2|intcomma }}</td>
+                                            <td class="text-end">
+                                                <div class="small text-secondary">
+                                                    {% if c.approved_request and c.approved_request.approved_by %}
+                                                        Approved by
+                                                        <span class="fw-bold text-dark">
+                                                            {{ c.approved_request.approved_by.get_full_name|default:c.approved_request.approved_by.username }}
+                                                        </span>
+                                                    {% endif %}
+                                                    {% if c.released_by %}
+                                                        {% if c.approved_request and c.approved_request.approved_by %}
+                                                            &nbsp;•&nbsp;
+                                                        {% endif %}
+                                                        Released by
+                                                        <span class="fw-bold text-dark">
+                                                            {{ c.released_by.get_full_name|default:c.released_by.username }}
+                                                        </span>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="mt-2">
+                                                    <span class="badge bg-success bg-opacity-25 text-success-emphasis border border-success border-opacity-25 rounded-pill fw-bold">
+                                                        Liquidated
+                                                    </span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="4" class="text-center py-5">
+                                                <p class="text-dark fw-bold">No history found.</p>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- DECLINED TAB -->
+                        <div class="tab-pane fade" id="declined" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-custom table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Ministry</th>
+                                            <th>Requester</th>
+                                            <th>Declined By</th>
+                                            <th class="text-end">Amount</th>
+                                            <th>Reason</th>
+                                            <th class="text-end">Declined On</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for d in declined %}
+                                        <tr class="status-stripe danger">
+                                            <td>
+                                                <div class="fw-bold text-dark">{{ d.budget.ministry.name }}</div>
+                                                <div class="small text-muted fw-bold">Ref #{{ d.id }}</div>
+                                            </td>
+
+                                            <td>
+                                                {% if d.requested_by %}
+                                                    <span class="small fw-bold text-dark">
+                                                        {{ d.requested_by.get_full_name|default:d.requested_by.username }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="small text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+
+                                            <td>
+                                                {% if d.declined_by %}
+                                                    <span class="small fw-bold text-dark">
+                                                        {{ d.declined_by.get_full_name|default:d.declined_by.username }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="small text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+
+                                            <td class="text-end num-font text-danger fw-bold text-decoration-line-through">
+                                                ₱{{ d.amount|floatformat:2|intcomma }}
+                                            </td>
+
+                                            <td class="small text-dark fw-bold">
+                                                {{ d.declined_reason|default:"No reason provided" }}
+                                            </td>
+
+                                            <td class="text-end small text-dark fw-bold">
+                                                {{ d.declined_at|date:"M d, Y" }}
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="6" class="text-center py-5 text-dark fw-bold">
+                                                No declined requests.
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- REQUEST CONFIRM MODAL -->
+<div class="modal fade" id="requestConfirmModal" tabindex="-1" aria-labelledby="requestConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header modal-soft-header">
+                <h5 class="modal-title fw-bold text-dark" id="requestConfirmLabel">
+                    <i class="bi bi-patch-check-fill text-primary me-2"></i> Confirm Request Submission
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="alert alert-primary border-0 small fw-bold mb-3" style="background:#eff6ff; color:#1e3a8a;">
+                    Please review the request details before submitting.
+                </div>
+
+                <div class="confirm-row">
+                    <div class="confirm-label">Budget Source</div>
+                    <div class="confirm-value" id="confirmBudget">-</div>
+                </div>
+
+                <div class="confirm-row">
+                    <div class="confirm-label">Date Needed</div>
+                    <div class="confirm-value" id="confirmDate">-</div>
+                </div>
+
+                <div class="confirm-row">
+                    <div class="confirm-label">Amount</div>
+                    <div class="confirm-value text-primary fs-5" id="confirmAmount">₱0.00</div>
+                </div>
+
+                <div class="confirm-row">
+                    <div class="confirm-label">Remarks</div>
+                    <div class="confirm-value" id="confirmRemarks">No remarks</div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light border fw-bold px-4" data-bs-dismiss="modal">Back</button>
+                <button type="button" class="btn btn-primary fw-bold px-4" id="confirmSubmitBtn">
+                    Confirm Submit
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PERIOD LOCKED MODAL -->
+<div class="modal fade" id="periodLockedModal" tabindex="-1" aria-labelledby="periodLockedLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 14px;">
+            <div class="modal-header" style="border-bottom: 1px solid #e2e8f0;">
+                <h5 class="modal-title fw-bold text-dark" id="periodLockedLabel">
+                    <i class="bi bi-lock-fill me-2 text-danger"></i> Period Locked
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="alert alert-warning border-0 mb-0 fw-bold" style="background:#fff7ed;">
+                    {{ lock_message|default:"PERIOD LOCKED: You cannot add or edit records in this closed period." }}
+                </div>
+                <div class="small text-secondary fw-bold mt-3">
+                    Please choose a posting date after the locked period, or ask an Admin to adjust the lock date in Accounting Settings.
+                </div>
+            </div>
+
+            <div class="modal-footer" style="border-top: 1px solid #e2e8f0;">
+                <button type="button" class="btn btn-outline-dark fw-bold px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        // =========================================================
+        // APPLY BOOTSTRAP CLASSES TO FORM FIELDS
+        // =========================================================
+        document.querySelectorAll('#id_budget, #id_date_released, #id_amount').forEach(function(el) {
+            if (el.tagName === 'SELECT') {
+                el.classList.add('form-select');
+            } else {
+                el.classList.add('form-control');
+            }
+        });
+
+        const remarks = document.querySelector('#id_remarks');
+        if (remarks) {
+            remarks.classList.add('form-control');
+            remarks.style.height = "100px";
+        }
+
+        // =========================================================
+        // ELEMENT REFERENCES
+        // =========================================================
+        const requestForm = document.getElementById('requestForm');
+        const openConfirmBtn = document.getElementById('openRequestConfirm');
+        const confirmSubmitBtn = document.getElementById('confirmSubmitBtn');
+        const confirmModalEl = document.getElementById('requestConfirmModal');
+
+        const budgetField = document.getElementById('id_budget');
+        const dateField = document.getElementById('id_date_released');
+        const amountField = document.getElementById('id_amount');
+        const remarksField = document.getElementById('id_remarks');
+
+        let bypassModalSubmit = false;
+        let confirmModal = null;
+
+        if (confirmModalEl) {
+            confirmModal = new bootstrap.Modal(confirmModalEl);
+        }
+
+        // =========================================================
+        // FORMAT AMOUNT WITH COMMAS (for display in modal)
+        // =========================================================
+        function formatAmount(value) {
+            const cleaned = (value || '').toString().replace(/,/g, '').trim();
+            const num = Number(cleaned);
+            if (isNaN(num) || cleaned === '') {
+                return '₱0.00';
+            }
+            return '₱' + num.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        // =========================================================
+        // LIVE COMMA FORMATTING ON AMOUNT INPUT
+        // =========================================================
+        if (amountField) {
+            amountField.addEventListener('input', function () {
+                let raw = this.value.replace(/,/g, '').trim();
+
+                // Allow empty, partial decimal like "123." or just digits
+                if (raw === '' || raw === '.' || /^\d+\.$/.test(raw)) {
+                    return;
+                }
+
+                // Split integer and decimal parts
+                const parts = raw.split('.');
+                const intPart = parts[0].replace(/\D/g, '');
+                const decPart = parts.length > 1 ? '.' + parts[1].replace(/\D/g, '') : '';
+
+                if (intPart === '') {
+                    return;
+                }
+
+                // Format integer part with commas
+                const formatted = Number(intPart).toLocaleString('en-US') + decPart;
+
+                // Preserve cursor position
+                const cursorPos = this.selectionStart;
+                const oldLen = this.value.length;
+                this.value = formatted;
+                const newLen = this.value.length;
+                const newPos = cursorPos + (newLen - oldLen);
+                this.setSelectionRange(newPos, newPos);
+            });
+        }
+
+        // =========================================================
+        // POPULATE CONFIRM MODAL
+        // =========================================================
+        function populateConfirmModal() {
+            const budgetText = budgetField && budgetField.selectedOptions.length
+                ? budgetField.selectedOptions[0].text.trim()
+                : '-';
+
+            const dateText = dateField && dateField.value
+                ? dateField.value
+                : '-';
+
+            const amountText = formatAmount(amountField ? amountField.value : '');
+            const remarksText = remarksField && remarksField.value.trim()
+                ? remarksField.value.trim()
+                : 'No remarks';
+
+            document.getElementById('confirmBudget').textContent = budgetText;
+            document.getElementById('confirmDate').textContent = dateText;
+            document.getElementById('confirmAmount').textContent = amountText;
+            document.getElementById('confirmRemarks').textContent = remarksText;
+        }
+
+        // =========================================================
+        // OPEN CONFIRM MODAL
+        // =========================================================
+        if (openConfirmBtn && requestForm) {
+            openConfirmBtn.addEventListener('click', function() {
+                if (!requestForm.checkValidity()) {
+                    requestForm.reportValidity();
+                    return;
+                }
+
+                populateConfirmModal();
+
+                if (confirmModal) {
+                    confirmModal.show();
+                }
+            });
+        }
+
+        // =========================================================
+        // CONFIRM SUBMIT — strip commas and submit
+        // =========================================================
+        if (confirmSubmitBtn && requestForm) {
+            confirmSubmitBtn.addEventListener('click', function() {
+                bypassModalSubmit = true;
+
+                // Strip commas before submit so Django receives clean number
+                if (amountField) {
+                    amountField.value = amountField.value.replace(/,/g, '').trim();
+                }
+
+                if (confirmModal) {
+                    confirmModal.hide();
+                }
+
+                confirmSubmitBtn.disabled = true;
+                confirmSubmitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+
+                requestForm.requestSubmit();
+            });
+        }
+
+        // =========================================================
+        // PREVENT RAW FORM SUBMIT (force modal confirmation)
+        // =========================================================
+        if (requestForm) {
+            requestForm.addEventListener('submit', function(e) {
+                if (!bypassModalSubmit) {
+                    e.preventDefault();
+
+                    if (!requestForm.checkValidity()) {
+                        requestForm.reportValidity();
+                        return;
+                    }
+
+                    populateConfirmModal();
+
+                    if (confirmModal) {
+                        confirmModal.show();
+                    }
+                }
+            });
+        }
+    });
+</script>
+
+{% if show_lock_modal %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const el = document.getElementById("periodLockedModal");
+        if (!el) return;
+
+        const modal = new bootstrap.Modal(el, {
+            backdrop: "static",
+            keyboard: false
+        });
+        modal.show();
+    });
+</script>
+{% endif %}
+
+</body>
+</html>

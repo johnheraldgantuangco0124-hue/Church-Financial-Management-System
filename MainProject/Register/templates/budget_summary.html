@@ -1,0 +1,328 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Master Budget List | ChurchSys</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #0f4c81;
+            --primary-dark: #0b3559;
+            --primary-light: #eaf4ff;
+            --primary-soft: #f4f9ff;
+            --accent: #2f80ed;
+            --success: #198754;
+            --danger: #dc3545;
+            --warning: #f59e0b;
+            --text-main: #14213d;
+            --text-muted: #6c7a89;
+            --border: #d9e6f2;
+            --surface: #ffffff;
+            --bg: linear-gradient(180deg, #f4f8fc 0%, #edf4fb 100%);
+            --shadow-sm: 0 6px 18px rgba(15, 76, 129, 0.06);
+            --shadow-md: 0 14px 32px rgba(15, 76, 129, 0.10);
+        }
+
+        body {
+            background: var(--bg);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: #fff;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-header::before {
+            content: "";
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 180px;
+            height: 180px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+        }
+
+        .page-header::after {
+            content: "";
+            position: absolute;
+            bottom: -50px;
+            right: 80px;
+            width: 140px;
+            height: 140px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+        }
+
+        .page-header h3 {
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.35rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-header p {
+            color: rgba(255,255,255,0.82);
+            margin-bottom: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-manage {
+            background-color: #fff;
+            color: var(--primary);
+            border: none;
+            font-weight: 600;
+            border-radius: 12px;
+            padding: 0.8rem 1.2rem;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+            transition: all 0.2s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-manage:hover {
+            background-color: #f8fbff;
+            color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .summary-card {
+            border: 1px solid rgba(15, 76, 129, 0.08);
+            border-radius: 20px;
+            background: var(--surface);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+
+        .table-wrap {
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background: linear-gradient(180deg, #f8fbff 0%, #eef5fc 100%);
+            color: var(--primary-dark);
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        .table tbody tr {
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8fbff;
+        }
+
+        .table tbody td {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+            border-color: #edf2f7;
+            vertical-align: middle;
+        }
+
+        .year-cell {
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
+        .ministry-cell {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .num-cell {
+            font-family: 'Roboto Mono', monospace;
+            text-align: right;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+        }
+
+        .amount-allocated {
+            color: #1f2937;
+        }
+
+        .amount-spent {
+            color: var(--danger);
+        }
+
+        .amount-unliquidated {
+            color: var(--warning);
+        }
+
+        .amount-remaining {
+            color: var(--success);
+        }
+
+        .custom-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 112px;
+            padding: 0.48rem 0.95rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            border: 1px solid transparent;
+            letter-spacing: 0.02em;
+        }
+
+        .badge-monthly {
+            background: #eaf4ff;
+            color: #0f4c81;
+            border-color: #b8d8f5;
+        }
+
+        .badge-yearly {
+            background: #dbeafe;
+            color: #1d4ed8;
+            border-color: #bfdbfe;
+        }
+
+        .empty-state {
+            padding: 4rem 1rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 3.2rem;
+            color: #9fb8d0;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state .title {
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 0.35rem;
+        }
+
+        .muted-dash {
+            color: #c6d0db;
+            font-weight: 700;
+        }
+
+        @media (max-width: 991.98px) {
+            .page-header {
+                padding: 1.5rem;
+            }
+
+            .btn-manage {
+                width: 100%;
+                margin-top: 1rem;
+            }
+
+            .table thead th,
+            .table tbody td {
+                font-size: 0.92rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+{% include 'navbar.html' %}
+
+<div class="container py-5">
+
+    <div class="page-header mb-4">
+        <div class="row align-items-center g-3">
+            <div class="col-lg-8">
+                <h3>Master Budget Summary</h3>
+                <p>Consolidated view of all ministry allocations per year.</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <a href="{% url 'budgets_manage' %}" class="btn btn-manage">
+                    <i class="bi bi-pencil-square me-2"></i>Manage / Edit Budgets
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="summary-card">
+        <div class="table-responsive table-wrap">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Year</th>
+                        <th>Ministry</th>
+                        <th class="text-center">Budget Type</th>
+                        <th class="text-end">Total Allocation</th>
+                        <th class="text-end">Total Spent</th>
+                        <th class="text-end">Unliquidated</th>
+                        <th class="text-end pe-4">Remaining</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in summary_list %}
+                    <tr>
+                        <td class="ps-4 year-cell">{{ row.year }}</td>
+
+                        <td class="ministry-cell">{{ row.ministry_name }}</td>
+
+                        <td class="text-center">
+                            <span class="custom-badge {% if row.type_label|lower == 'monthly' %}badge-monthly{% else %}badge-yearly{% endif %}">
+                                {{ row.type_label }}
+                            </span>
+                        </td>
+
+                        <td class="num-cell amount-allocated">₱{{ row.total_allocated|floatformat:2|intcomma }}</td>
+                        <td class="num-cell amount-spent">₱{{ row.total_spent|floatformat:2|intcomma }}</td>
+
+                        <td class="num-cell">
+                            {% if row.total_unliquidated > 0 %}
+                                <span class="amount-unliquidated">₱{{ row.total_unliquidated|floatformat:2|intcomma }}</span>
+                            {% else %}
+                                <span class="muted-dash">—</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="num-cell pe-4 amount-remaining">₱{{ row.total_available|floatformat:2|intcomma }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <i class="bi bi-folder2-open"></i>
+                                <div class="title">No budget records found</div>
+                                <div>There are currently no ministry budget summaries to display.</div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

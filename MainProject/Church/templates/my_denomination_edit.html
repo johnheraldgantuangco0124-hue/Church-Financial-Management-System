@@ -1,0 +1,562 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Denomination | Edit Information</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-dark: #172554;
+            --primary-soft: #eff6ff;
+            --success-soft: #ecfdf5;
+            --warning-soft: #fff7ed;
+            --danger-soft: #fef2f2;
+            --border: #e5e7eb;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --card-bg: #ffffff;
+            --page-bg: #f8fafc;
+            --shadow-sm: 0 8px 24px rgba(15, 23, 42, 0.06);
+            --shadow-md: 0 16px 34px rgba(15, 23, 42, 0.08);
+            --radius: 18px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content {
+            flex: 1;
+            padding-top: 40px;
+            padding-bottom: 50px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+            color: var(--text-dark);
+        }
+
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 0.97rem;
+            margin-bottom: 28px;
+        }
+
+        .summary-card,
+        .form-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .summary-top {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #38bdf8 100%);
+            padding: 28px 24px;
+            color: #fff;
+        }
+
+        .summary-icon {
+            width: 62px;
+            height: 62px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.16);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+        }
+
+        .summary-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .summary-subtitle {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.88);
+            font-size: 0.93rem;
+        }
+
+        .summary-body {
+            padding: 22px 24px 24px;
+        }
+
+        .section-label {
+            font-size: 0.78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .info-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px 0;
+            border-bottom: 1px solid #eef2f7;
+        }
+
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+
+        .info-list i {
+            color: var(--primary);
+            width: 18px;
+            text-align: center;
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+
+        .info-label {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .info-value {
+            font-size: 0.96rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            word-break: break-word;
+            white-space: pre-line;
+        }
+
+        .muted-value {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .form-card-header {
+            padding: 24px 26px 14px;
+            border-bottom: 1px solid var(--border);
+            background: #fff;
+        }
+
+        .form-card-title {
+            margin: 0;
+            font-size: 1.18rem;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+
+        .form-card-subtitle {
+            margin: 5px 0 0;
+            color: var(--text-muted);
+            font-size: 0.93rem;
+        }
+
+        .form-card-body {
+            padding: 24px 26px 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 8px;
+            font-size: 0.94rem;
+        }
+
+        .form-control {
+            border-radius: 12px;
+            min-height: 46px;
+            border: 1px solid #dbe2ea;
+            padding: 12px 14px;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            background: #fff;
+        }
+
+        .form-control:focus {
+            border-color: #93c5fd;
+            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.14);
+        }
+
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .helptext,
+        .form-text,
+        small {
+            display: block;
+            margin-top: 6px;
+            color: var(--text-muted);
+            font-size: 0.84rem;
+        }
+
+        .field-error {
+            margin-top: 8px;
+            color: #b91c1c;
+            font-size: 0.86rem;
+            font-weight: 600;
+        }
+
+        .field-error ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        .non-field-errors {
+            background: var(--danger-soft);
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+        .btn-action {
+            border-radius: 12px;
+            font-weight: 700;
+            padding: 11px 18px;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary-soft {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        .btn-primary-soft:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+            color: #fff;
+        }
+
+        .btn-light-soft {
+            background: #fff;
+            border: 1px solid var(--border);
+            color: var(--text-dark);
+        }
+
+        .btn-light-soft:hover {
+            background: #f8fafc;
+            color: var(--text-dark);
+        }
+
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .quick-note {
+            margin-top: 18px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: var(--primary-soft);
+            border: 1px solid #bfdbfe;
+            color: #1d4ed8;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .sticky-side {
+            position: sticky;
+            top: 24px;
+        }
+
+        .alert {
+            border-radius: 14px;
+            border: none;
+            box-shadow: var(--shadow-sm);
+        }
+
+        footer {
+            margin-top: auto;
+            text-align: center;
+            padding: 20px;
+            background: #0f172a;
+            color: #cbd5e1;
+            font-size: 0.92rem;
+        }
+
+        footer a {
+            color: #93c5fd;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        @media (max-width: 991.98px) {
+            .sticky-side {
+                position: static;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .main-content {
+                padding-top: 24px;
+                padding-bottom: 30px;
+            }
+
+            .page-title {
+                font-size: 1.55rem;
+            }
+
+            .summary-top,
+            .summary-body,
+            .form-card-header,
+            .form-card-body {
+                padding-left: 18px !important;
+                padding-right: 18px !important;
+            }
+
+            .button-row .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    {% include 'navbar.html' %}
+
+    <div class="container main-content">
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
+                    <strong class="mr-1">
+                        {% if message.tags == 'success' %}
+                            Success:
+                        {% elif message.tags == 'warning' %}
+                            Warning:
+                        {% elif message.tags == 'error' %}
+                            Error:
+                        {% else %}
+                            Notice:
+                        {% endif %}
+                    </strong>
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="mb-4">
+            <h1 class="page-title">My Denomination</h1>
+            <p class="page-subtitle">Manage and update your assigned denomination information in a secure and organized way.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="sticky-side">
+                    <div class="summary-card">
+                        <div class="summary-top">
+                            <div class="summary-icon">
+                                <i class="fas fa-layer-group"></i>
+                            </div>
+                            <div class="summary-title">
+                                {{ denomination_obj.name|default:"Denomination Record" }}
+                            </div>
+                            <p class="summary-subtitle">
+                                Review the current denomination information before making changes.
+                            </p>
+                        </div>
+
+                        <div class="summary-body">
+                            <div class="section-label">Current Denomination Information</div>
+
+                            <ul class="info-list">
+                                <li>
+                                    <i class="fas fa-signature"></i>
+                                    <div>
+                                        <div class="info-label">Denomination Name</div>
+                                        <div class="info-value">
+                                            {{ denomination_obj.name|default:"Not set" }}
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <i class="fas fa-envelope"></i>
+                                    <div>
+                                        <div class="info-label">Contact Email</div>
+                                        <div class="info-value">
+                                            {% if denomination_obj.contact_email %}
+                                                {{ denomination_obj.contact_email }}
+                                            {% else %}
+                                                <span class="muted-value">Not set</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <i class="fas fa-align-left"></i>
+                                    <div>
+                                        <div class="info-label">Description</div>
+                                        <div class="info-value">
+                                            {% if denomination_obj.description %}
+                                                {{ denomination_obj.description }}
+                                            {% else %}
+                                                <span class="muted-value">Not set</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <i class="fas fa-users"></i>
+                                    <div>
+                                        <div class="info-label">Assigned Users</div>
+                                        <div class="info-value">
+                                            {{ denomination_obj.users.count }}
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <div>
+                                        <div class="info-label">Created At</div>
+                                        <div class="info-value">
+                                            {% if denomination_obj.created_at %}
+                                                {{ denomination_obj.created_at|date:"F j, Y" }}
+                                            {% else %}
+                                                <span class="muted-value">Not available</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+
+                            <div class="quick-note">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Changes made here affect your denomination profile record. Review entries carefully before saving.
+                            </div>
+
+                            <div class="button-row">
+                                <a href="{% url 'user_detail' %}" class="btn btn-light-soft btn-action btn-block">
+                                    <i class="fas fa-arrow-left mr-2"></i>Back to Profile
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 mb-4">
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <h4 class="form-card-title">Edit Denomination Information</h4>
+                        <p class="form-card-subtitle">Update the fields below, then save the latest denomination details.</p>
+                    </div>
+
+                    <div class="form-card-body">
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+
+                            {% if form.non_field_errors %}
+                                <div class="non-field-errors">
+                                    {{ form.non_field_errors }}
+                                </div>
+                            {% endif %}
+
+                            <div class="section-label">Denomination Profile Form</div>
+
+                            {% for field in form %}
+                                <div class="form-group">
+                                    {{ field.label_tag }}
+                                    {{ field }}
+
+                                    {% if field.help_text %}
+                                        <small>{{ field.help_text }}</small>
+                                    {% endif %}
+
+                                    {% if field.errors %}
+                                        <div class="field-error">
+                                            {{ field.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+
+                            <div class="button-row">
+                                <button type="submit" class="btn btn-primary-soft btn-action">
+                                    <i class="fas fa-save mr-2"></i>Save Denomination Info
+                                </button>
+
+                                <a href="{% url 'user_detail' %}" class="btn btn-light-soft btn-action">
+                                    <i class="fas fa-times mr-2"></i>Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p class="mb-0">&copy; 2026 <a href="#">Living Stone Evangelical Free Church</a> Information System</p>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const fields = document.querySelectorAll('input, select, textarea');
+            fields.forEach(function(field) {
+                if (
+                    field.type !== 'hidden' &&
+                    field.type !== 'checkbox' &&
+                    field.type !== 'radio' &&
+                    field.type !== 'file'
+                ) {
+                    field.classList.add('form-control');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

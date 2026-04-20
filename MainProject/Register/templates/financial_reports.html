@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Financial Reports</title>
+  <!-- Bootstrap 4 CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      padding: 24px;
+      background: #f7f9fb;
+    }
+    h1 {
+      margin: 0 0 16px;
+    }
+    h2 {
+      margin: 28px 0 12px;
+    }
+    form.filter {
+      display: flex;
+      gap: 12px;
+      align-items: end;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    label {
+      display:block;
+      font-size: 12px;
+      color:#333;
+      font-weight:600;
+      margin-bottom:4px;
+    }
+    select, input[type="date"] {
+      padding: 8px;
+      border:1px solid #cfd7df;
+      border-radius: 6px;
+      background:#fff;
+      min-width: 160px;
+    }
+    button {
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 6px;
+      background:#0d6efd;
+      color:#fff;
+      cursor:pointer;
+    }
+    button.secondary {
+      background:#198754;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background:#fff;
+      margin-top: 12px;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #ecf0f3;
+      text-align: right;
+    }
+    th:first-child, td:first-child {
+      text-align: left;
+    }
+    tfoot td {
+      font-weight: 700;
+      background:#fbfcfe;
+    }
+    .bar {
+      display: flex;
+      gap: 8px;
+      align-items:center;
+      margin:16px 0;
+    }
+    .muted {
+      color:#6c757d;
+    }
+    .pill {
+      display:inline-block;
+      padding:2px 8px;
+      border-radius: 999px;
+      background:#eef2ff;
+      color:#3843d0;
+      font-size:12px;
+    }
+    .pagination {
+      display:flex;
+      gap:8px;
+      margin-top:12px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .pagination a, .pagination span {
+      padding:6px 10px;
+      border:1px solid #cfd7df;
+      border-radius:6px;
+      background:#fff;
+      text-decoration:none;
+      color:#0d47a1;
+    }
+    .pagination .active {
+      background:#0d6efd;
+      color:#fff;
+      border-color:#0d6efd;
+    }
+    .totals-box {
+      margin-top: 6px;
+      font-size: 14px;
+      color:#333;
+    }
+  </style>
+</head>
+<body>
+  <!-- Include the Navbar -->
+  {% include 'navbar.html' %}
+
+  <h1>Financial Reports</h1>
+
+  <!-- Filter Form -->
+  <form class="filter" method="get">
+    <div>
+      <label for="period">Period</label>
+      <select id="period" name="period">
+        <option value="weekly"{% if period == 'weekly' %} selected{% endif %}>Weekly</option>
+        <option value="monthly"{% if period == 'monthly' %} selected{% endif %}>Monthly</option>
+        <option value="yearly"{% if period == 'yearly' %} selected{% endif %}>Yearly</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="start">Start (optional)</label>
+      <input type="date" id="start" name="start" value="{{ start|default:'' }}">
+    </div>
+
+    <div>
+      <label for="end">End (optional)</label>
+      <input type="date" id="end" name="end" value="{{ end|default:'' }}">
+    </div>
+
+    <div>
+      <button type="submit">Apply Filter</button>
+    </div>
+  </form>
+
+  <!-- Export to Excel -->
+  <div class="bar">
+    <form method="post" style="margin:0;">
+      {% csrf_token %}
+      <input type="hidden" name="download_excel" value="1">
+      <input type="hidden" name="period" value="{{ period }}">
+      <input type="hidden" name="start" value="{{ start }}">
+      <input type="hidden" name="end" value="{{ end }}">
+      <button class="secondary" type="submit">Export Summary to Excel</button>
+    </form>
+    <span class="muted">Summary export respects the filters above.</span>
+  </div>
+
+  <!-- SUMMARY TABLE -->
+  <table>
+    <thead>
+      <tr>
+        <th>{% if period == "weekly" %}Week{% elif period == "yearly" %}Year{% else %}Month{% endif %}</th>
+        <th>Total Tithes</th>
+        <th>Total Offering</th>
+        <th>Total Donations</th>
+        <th>Total Expenses</th>
+        <th>Accumulated</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.label }}</td>
+        <td>{{ r.tithes }}</td>
+        <td>{{ r.offerings }}</td>
+        <td>{{ r.donations }}</td>
+        <td>{{ r.expenses }}</td>
+        <td>{{ r.accumulated }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" style="text-align:center;" class="muted">
+          No summary rows for the selected filters.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td>TOTAL</td>
+        <td>{{ totals.tithes }}</td>
+        <td>{{ totals.offerings }}</td>
+        <td>{{ totals.donations }}</td>
+        <td>{{ totals.expenses }}</td>
+        <td>{{ totals.accumulated }}</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- ALL EXPENSES SECTION -->
+  <h2>All Expenses <span class="pill">{{ expense_page.paginator.count }} items</span></h2>
+  <div class="totals-box">Total amount (in range if filtered): <strong>{{ expense_total }}</strong></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Type</th>
+        <th>Others</th>
+        <th style="text-align:right;">Amount</th>
+        <th>Created By</th>
+        <th>Edited By</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for exp in expense_page.object_list %}
+      <tr>
+        <td>{{ exp.expense_date }}</td>
+        <td>{{ exp.expense_type }}</td>
+        <td>{{ exp.other_expense_type }}</td>
+        <td style="text-align:right;">{{ exp.amount|floatformat:2 }}</td>
+        <td>{% if exp.created_by %}{{ exp.created_by }}{% else %}-{% endif %}</td>
+        <td>{% if exp.edited_by %}{{ exp.edited_by }}{% else %}-{% endif %}</td>
+        <td>
+          {% if exp.file %}
+            {% if exp.file.url %}<a href="{{ exp.file.url }}" target="_blank">View</a>{% else %}{{ exp.file }}{% endif %}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" style="text-align:center;" class="muted">No expense records found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Pagination (expenses) -->
+  {% if expense_page.paginator.num_pages > 1 %}
+  <div class="pagination">
+    {% if expense_page.has_previous %}
+      <a href="?period={{ period }}&start={{ start }}&end={{ end }}&epage={{ expense_page.previous_page_number }}">« Prev</a>
+    {% else %}
+      <span class="muted">« Prev</span>
+    {% endif %}
+
+    {% for num in expense_page.paginator.page_range %}
+      {% if num == expense_page.number %}
+        <span class="active">{{ num }}</span>
+      {% elif num > expense_page.number|add:'-3' and num < expense_page.number|add:'3' %}
+        <a href="?period={{ period }}&start={{ start }}&end={{ end }}&epage={{ num }}">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+
+    {% if expense_page.has_next %}
+      <a href="?period={{ period }}&start={{ start }}&end={{ end }}&epage={{ expense_page.next_page_number }}">Next »</a>
+    {% else %}
+      <span class="muted">Next »</span>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Bootstrap JS and dependencies -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #1e3a5f;
+            --primary-dark: #12263f;
+            --accent: #2f80ed;
+            --accent-soft: #eaf3ff;
+            --success: #28a745;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --bg-soft: #f4f7fb;
+            --white: #ffffff;
+            --shadow-lg: 0 18px 40px rgba(15, 23, 42, 0.10);
+            --shadow-sm: 0 8px 20px rgba(15, 23, 42, 0.06);
+            --radius-xl: 24px;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background:
+                radial-gradient(circle at top left, rgba(47, 128, 237, 0.10), transparent 25%),
+                radial-gradient(circle at bottom right, rgba(30, 58, 95, 0.10), transparent 20%),
+                linear-gradient(180deg, #f8fbff 0%, #eef3f9 100%);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 16px;
+        }
+
+        .register-shell {
+            width: 100%;
+            max-width: 1180px;
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(229, 231, 235, 0.8);
+        }
+
+        .register-side {
+            background: linear-gradient(160deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #fff;
+            padding: 42px 34px;
+            position: relative;
+        }
+
+        .register-side::before {
+            content: "";
+            position: absolute;
+            top: -80px;
+            right: -80px;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .register-side::after {
+            content: "";
+            position: absolute;
+            bottom: -60px;
+            left: -60px;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .side-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #fff;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 22px;
+        }
+
+        .side-title {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 14px;
+        }
+
+        .side-text {
+            color: rgba(255, 255, 255, 0.82);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 28px;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+            color: rgba(255, 255, 255, 0.92);
+            font-size: 0.93rem;
+        }
+
+        .feature-list i {
+            margin-top: 3px;
+            color: #9fd0ff;
+        }
+
+        .register-main {
+            background: #fff;
+            padding: 0;
+        }
+
+        .card-header-custom {
+            padding: 36px 40px 14px 40px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+        }
+
+        .page-title {
+            margin: 0;
+            font-size: 1.95rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            letter-spacing: -0.4px;
+        }
+
+        .page-subtitle {
+            margin: 8px 0 0;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .card-body-custom {
+            padding: 28px 40px 40px 40px;
+        }
+
+        .section-divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 28px 0 18px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .section-divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, rgba(47, 128, 237, 0.25), rgba(229, 231, 235, 0.8));
+        }
+
+        .section-divider i {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #374151;
+        }
+
+        .required-field::after {
+            content: " *";
+            color: #dc3545;
+        }
+
+        input:not([type="hidden"]),
+        select,
+        textarea {
+            width: 100%;
+            min-height: 46px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background: #fbfcfe;
+            padding: 10px 14px;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            transition: all 0.2s ease;
+            box-shadow: none;
+        }
+
+        textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        input:not([type="hidden"]):focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: rgba(47, 128, 237, 0.65);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.12);
+        }
+
+        .form-control,
+        .custom-select {
+            min-height: 46px;
+            border-radius: var(--radius-md);
+            border-color: var(--border);
+            background-color: #fbfcfe;
+        }
+
+        .form-control:focus,
+        .custom-select:focus {
+            border-color: rgba(47, 128, 237, 0.65);
+            box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.12);
+            background-color: #fff;
+        }
+
+        .helptext,
+        .form-note {
+            display: block;
+            margin-top: 7px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .helptext ul {
+            padding-left: 18px;
+            margin: 6px 0 0;
+        }
+
+        .alert-custom {
+            border: 1px solid #f5c6cb;
+            background: #fff5f5;
+            color: #842029;
+            border-radius: var(--radius-lg);
+            padding: 16px 18px;
+            margin-bottom: 24px;
+        }
+
+        .alert-custom h6 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .alert-custom ul {
+            margin-bottom: 0;
+            padding-left: 18px;
+        }
+
+        .alert-custom li + li {
+            margin-top: 4px;
+        }
+
+        .hidden-field {
+            display: none;
+        }
+
+        .register-action {
+            margin-top: 30px;
+        }
+
+        .btn-register {
+            width: 100%;
+            border: none;
+            border-radius: 14px;
+            min-height: 52px;
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent) 0%, #1f6ed4 100%);
+            box-shadow: 0 12px 24px rgba(47, 128, 237, 0.22);
+            transition: all 0.2s ease;
+        }
+
+        .btn-register:hover {
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 16px 28px rgba(47, 128, 237, 0.28);
+        }
+
+        .btn-register:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.18);
+        }
+
+        footer {
+            background: #111827;
+            color: #cbd5e1;
+            text-align: center;
+            padding: 18px 0;
+            font-size: 0.9rem;
+            margin-top: auto;
+        }
+
+        .modal-content {
+            border: none;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+        }
+
+        .modal-body {
+            padding: 36px 20px;
+        }
+
+        @media (max-width: 991.98px) {
+            .register-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .register-side {
+                padding: 32px 26px;
+            }
+
+            .card-header-custom,
+            .card-body-custom {
+                padding-left: 24px;
+                padding-right: 24px;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .main-container {
+                padding: 20px 10px;
+            }
+
+            .page-title {
+                font-size: 1.55rem;
+            }
+
+            .side-title {
+                font-size: 1.6rem;
+            }
+
+            .card-header-custom,
+            .card-body-custom {
+                padding-left: 18px;
+                padding-right: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    {% include 'navbar.html' %}
+
+    <div class="main-container">
+        <div class="register-shell">
+
+            <aside class="register-side">
+                <div class="side-content">
+                    <div class="brand-badge">
+                        <i class="fas fa-church"></i>
+                        Church Financial Management System
+                    </div>
+
+                    <h1 class="side-title">Create a secure and organized church account</h1>
+                    <p class="side-text">
+                        Register users with complete personal, address, and role information in one streamlined form.
+                    </p>
+
+                    <ul class="feature-list">
+                        <li>
+                            <i class="fas fa-user-shield"></i>
+                            <span>Structured account setup for members, treasurers, and other church roles.</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-map-marked-alt"></i>
+                            <span>Accurate Philippine address selection using province, city, and barangay lookup.</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-lock"></i>
+                            <span>Professional registration flow with secure password validation and clean form organization.</span>
+                        </li>
+                    </ul>
+                </div>
+            </aside>
+
+            <section class="register-main">
+                <div class="card-header-custom">
+                    <h2 class="page-title">Create Account</h2>
+                    <p class="page-subtitle">Complete the required information below to register a new user.</p>
+                </div>
+
+                <div class="card-body-custom">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        {{ form.province }}
+                        {{ form.municipality_or_city }}
+                        {{ form.barangay }}
+
+                        {% if form.errors %}
+                            <div class="alert-custom">
+                                <h6><i class="fas fa-exclamation-circle mr-2"></i>Please fix the errors below:</h6>
+                                <ul class="small">
+                                    {% for field, errors in form.errors.items %}
+                                        {% if field == '__all__' %}
+                                            <li>{{ errors|join:", " }}</li>
+                                        {% else %}
+                                            <li><strong>{{ field|capfirst }}:</strong> {{ errors|join:", " }}</li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+
+                        <div class="section-divider">
+                            <i class="fas fa-user"></i>
+                            <span>Personal Information</span>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="col-md-4 mb-3">
+                                <label class="required-field">First Name</label>
+                                {{ form.first_name }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Middle Name</label>
+                                {{ form.middle_name }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="required-field">Last Name</label>
+                                {{ form.last_name }}
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="col-md-12 mb-3">
+                                <label class="required-field">Birthdate</label>
+                                {{ form.birthdate }}
+                                <small class="form-note">Age will be calculated automatically.</small>
+                            </div>
+                        </div>
+
+                        <div class="section-divider">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Address Information</span>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="col-md-6 mb-3">
+                                <label class="required-field">Province</label>
+                                <select id="province_select" class="form-control" required>
+                                    <option value="" disabled selected>Loading provinces...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="required-field">Municipality / City</label>
+                                <select id="city_select" class="form-control" disabled required>
+                                    <option value="" disabled selected>Select province first</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="col-md-6 mb-3">
+                                <label class="required-field">Barangay</label>
+                                <select id="barangay_select" class="form-control" disabled required>
+                                    <option value="" disabled selected>Select city first</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Purok / Street</label>
+                                {{ form.purok }}
+                            </div>
+                        </div>
+
+                        <div class="section-divider">
+                            <i class="fas fa-id-badge"></i>
+                            <span>Account & Role Details</span>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="col-md-6 mb-3">
+                                <label class="required-field">Username</label>
+                                {{ form.username }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="required-field">Email</label>
+                                {{ form.email }}
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="col-md-4 mb-3">
+                                <label class="required-field">User Type</label>
+                                {{ form.user_type }}
+                            </div>
+
+                            <div class="col-md-4 mb-3 hidden-field" id="div_year_term">
+                                <label class="required-field">Year Term (Treasurer)</label>
+                                {{ form.year_term }}
+                            </div>
+
+                            <div class="col-md-4 mb-3 hidden-field" id="div_organization">
+                                <label class="required-field">Organization (Member)</label>
+                                {{ form.organization }}
+                            </div>
+                        </div>
+
+                        <div class="section-divider">
+                            <i class="fas fa-lock"></i>
+                            <span>Security</span>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="col-md-6 mb-3">
+                                <label class="required-field">Password</label>
+                                {{ form.password1 }}
+                                {% if form.password1.help_text %}
+                                    <small class="helptext">{{ form.password1.help_text|safe }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="required-field">Confirm Password</label>
+                                {{ form.password2 }}
+                            </div>
+                        </div>
+
+                        <div class="register-action">
+                            <button type="submit" class="btn btn-register">
+                                <i class="fas fa-user-plus mr-2"></i>Register Account
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <footer>
+        <p class="mb-0">&copy; {% now "Y" %} Church Financial Management System</p>
+    </footer>
+
+    <div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white border-0">
+                    <h5 class="modal-title">Success</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                    <h4 class="text-dark font-weight-bold">Account Created!</h4>
+                    <p class="text-muted mb-0">The user has been registered successfully.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // ------------------------------------------
+            // 0. Apply consistent Bootstrap styling to Django fields
+            // ------------------------------------------
+            $('input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]), textarea').addClass('form-control');
+            $('#id_user_type, #id_year_term, #id_organization').addClass('custom-select');
+            $('#id_birthdate').attr('type', 'date');
+
+            // ------------------------------------------
+            // 1. Success Modal Trigger
+            // ------------------------------------------
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == 'success' %}
+                        $('#successModal').modal('show');
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            // ------------------------------------------
+            // 2. Dynamic Show/Hide Logic for User Roles
+            // ------------------------------------------
+            const $userType = $('#id_user_type');
+            const $yearTermDiv = $('#div_year_term');
+            const $organizationDiv = $('#div_organization');
+
+            function toggleFields() {
+                const selectedType = $userType.val();
+
+                $yearTermDiv.hide();
+                $organizationDiv.hide();
+
+                if (selectedType === 'Treasurer') {
+                    $yearTermDiv.show();
+                } else if (selectedType === 'Member') {
+                    $organizationDiv.show();
+                }
+            }
+
+            toggleFields();
+            $userType.change(toggleFields);
+
+            // ------------------------------------------
+            // 3. Address API Logic (PSGC)
+            // ------------------------------------------
+            const api_base_url = 'https://psgc.gitlab.io/api';
+
+            const $hidden_province = $('[name="province"]');
+            const $hidden_city = $('[name="municipality_or_city"]');
+            const $hidden_barangay = $('[name="barangay"]');
+
+            const $select_province = $('#province_select');
+            const $select_city = $('#city_select');
+            const $select_barangay = $('#barangay_select');
+
+            $.ajax({
+                url: api_base_url + '/provinces',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    data.sort((a, b) => a.name.localeCompare(b.name));
+                    $select_province.empty().append('<option value="" disabled selected>Select Province</option>');
+                    $.each(data, function (index, item) {
+                        $select_province.append($('<option>', {
+                            value: item.code,
+                            text: item.name,
+                            'data-name': item.name
+                        }));
+                    });
+                },
+                error: function () {
+                    $select_province.empty().append('<option value="" disabled selected>Error loading provinces</option>');
+                }
+            });
+
+            $select_province.change(function () {
+                var code = $(this).val();
+                var name = $(this).find('option:selected').data('name');
+
+                $hidden_province.val(name);
+
+                $select_city
+                    .empty()
+                    .append('<option value="" disabled selected>Loading cities...</option>')
+                    .prop('disabled', true);
+
+                $select_barangay
+                    .empty()
+                    .append('<option value="" disabled selected>Select city first</option>')
+                    .prop('disabled', true);
+
+                $hidden_city.val('');
+                $hidden_barangay.val('');
+
+                $.ajax({
+                    url: api_base_url + '/provinces/' + code + '/cities-municipalities',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        data.sort((a, b) => a.name.localeCompare(b.name));
+                        $select_city.empty().append('<option value="" disabled selected>Select City/Municipality</option>');
+                        $.each(data, function (index, item) {
+                            $select_city.append($('<option>', {
+                                value: item.code,
+                                text: item.name,
+                                'data-name': item.name
+                            }));
+                        });
+                        $select_city.prop('disabled', false);
+                    },
+                    error: function () {
+                        $select_city.empty().append('<option value="" disabled selected>Error loading cities</option>');
+                    }
+                });
+            });
+
+            $select_city.change(function () {
+                var code = $(this).val();
+                var name = $(this).find('option:selected').data('name');
+
+                $hidden_city.val(name);
+
+                $select_barangay
+                    .empty()
+                    .append('<option value="" disabled selected>Loading barangays...</option>')
+                    .prop('disabled', true);
+
+                $hidden_barangay.val('');
+
+                $.ajax({
+                    url: api_base_url + '/cities-municipalities/' + code + '/barangays',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        data.sort((a, b) => a.name.localeCompare(b.name));
+                        $select_barangay.empty().append('<option value="" disabled selected>Select Barangay</option>');
+                        $.each(data, function (index, item) {
+                            $select_barangay.append($('<option>', {
+                                value: item.code,
+                                text: item.name
+                            }));
+                        });
+                        $select_barangay.prop('disabled', false);
+                    },
+                    error: function () {
+                        $select_barangay.empty().append('<option value="" disabled selected>Error loading barangays</option>');
+                    }
+                });
+            });
+
+            $select_barangay.change(function () {
+                var name = $(this).find('option:selected').text();
+                $hidden_barangay.val(name);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1218 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Analytics Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-soft: #f4f7fb;
+            --card-bg: #ffffff;
+            --text-main: #24324b;
+            --text-muted: #7c879a;
+            --border-soft: #e9eef5;
+            --shadow-soft: 0 10px 30px rgba(20, 34, 66, 0.08);
+            --shadow-hover: 0 16px 36px rgba(20, 34, 66, 0.12);
+
+            --primary: #4e73df;
+            --success: #1cc88a;
+            --danger: #e74a3b;
+            --warning: #f6c23e;
+            --info: #36b9cc;
+            --secondary: #858796;
+
+            --primary-soft: rgba(78, 115, 223, 0.10);
+            --success-soft: rgba(28, 200, 138, 0.12);
+            --danger-soft: rgba(231, 74, 59, 0.12);
+            --warning-soft: rgba(246, 194, 62, 0.16);
+            --info-soft: rgba(54, 185, 204, 0.12);
+            --secondary-soft: rgba(133, 135, 150, 0.10);
+        }
+
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(78, 115, 223, 0.10), transparent 28%),
+                linear-gradient(180deg, #f8fbff 0%, var(--bg-soft) 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-main);
+        }
+
+        .dashboard-wrapper {
+            padding: 1.5rem 0 2.5rem;
+        }
+
+        .page-hero {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            border-radius: 1.25rem;
+            box-shadow: 0 18px 40px rgba(30, 60, 114, 0.22);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .page-hero::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 85% 20%, rgba(255,255,255,0.14), transparent 20%),
+                radial-gradient(circle at 70% 80%, rgba(255,255,255,0.10), transparent 24%);
+            pointer-events: none;
+        }
+
+        .page-hero .hero-body {
+            position: relative;
+            z-index: 1;
+            padding: 1.75rem 1.75rem;
+        }
+
+        .hero-title {
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.35rem;
+        }
+
+        .hero-subtitle {
+            color: rgba(255,255,255,0.85);
+            margin-bottom: 0.35rem;
+        }
+
+        .hero-meta {
+            color: rgba(255,255,255,0.78);
+            font-size: 0.95rem;
+        }
+
+        .dashboard-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-soft);
+            border-radius: 1rem;
+            box-shadow: var(--shadow-soft);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .dashboard-card .card-header {
+            background: #fff;
+            border-bottom: 1px solid var(--border-soft);
+            border-top-left-radius: 1rem !important;
+            border-top-right-radius: 1rem !important;
+            padding: 1rem 1.15rem;
+        }
+
+        .dashboard-card .card-body {
+            padding: 1.15rem;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        .section-subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.15rem;
+        }
+
+        .filter-panel {
+            background: rgba(255,255,255,0.96);
+            border-radius: 1rem;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid var(--border-soft);
+            padding: 1rem;
+        }
+
+        .filter-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #6c757d;
+            margin-bottom: 0.35rem;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .form-select-sm,
+        .btn-sm {
+            border-radius: 0.75rem;
+        }
+
+        .form-select-sm {
+            border: 1px solid #d7deea;
+            font-weight: 600;
+            color: #485268;
+            min-height: 42px;
+        }
+
+        .form-select-sm:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.15);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3c66dd 0%, #4e73df 100%);
+            border: none;
+            box-shadow: 0 8px 18px rgba(78, 115, 223, 0.18);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #355fd3 0%, #456bd6 100%);
+        }
+
+        .kpi-card {
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .kpi-card::before {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 5px;
+            border-radius: 1rem 0 0 1rem;
+        }
+
+        .kpi-primary::before { background: var(--primary); }
+        .kpi-success::before { background: var(--success); }
+        .kpi-danger::before  { background: var(--danger); }
+        .kpi-info::before    { background: var(--info); }
+        .kpi-warning::before { background: var(--warning); }
+        .kpi-secondary::before { background: var(--secondary); }
+
+        .kpi-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 0.45rem;
+        }
+
+        .kpi-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.15;
+        }
+
+        .kpi-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+        }
+
+        .bg-primary-soft { background: var(--primary-soft); color: var(--primary); }
+        .bg-success-soft { background: var(--success-soft); color: var,--success); }
+        .bg-danger-soft  { background: var(--danger-soft); color: var,--danger); }
+        .bg-info-soft    { background: var(--info-soft); color: var,--info); }
+        .bg-warning-soft { background: var(--warning-soft); color: #b8860b; }
+        .bg-secondary-soft { background: var(--secondary-soft); color: var,--secondary); }
+
+        .mini-stat-card {
+            background: #fff;
+            border: 1px solid var(--border-soft);
+            border-radius: 1rem;
+            padding: 1rem;
+            height: 100%;
+            box-shadow: 0 8px 22px rgba(20, 34, 66, 0.05);
+        }
+
+        .mini-stat-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .mini-stat-title {
+            font-weight: 800;
+            font-size: 0.95rem;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        .mini-stat-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            line-height: 1;
+            color: var(--text-main);
+        }
+
+        .status-inline {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.42rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .status-active {
+            background: var(--success-soft);
+            color: #158f63;
+        }
+
+        .status-inactive {
+            background: var(--danger-soft);
+            color: #c0392b;
+        }
+
+        .summary-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255,255,255,0.14);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 999px;
+            padding: 0.55rem 0.9rem;
+            font-size: 0.86rem;
+            font-weight: 700;
+        }
+
+        .chart-area {
+            position: relative;
+            height: 360px;
+            width: 100%;
+        }
+
+        .chart-pie {
+            position: relative;
+            height: 280px;
+            width: 100%;
+        }
+
+        .muted-caption {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+        }
+
+        .card-note {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .dashboard-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            height: 100%;
+        }
+
+        .clickable-card {
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        }
+
+        .clickable-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 36px rgba(20, 34, 66, 0.12);
+            border-color: #cfd9ea;
+        }
+
+        .clickable-card:active {
+            transform: translateY(-1px);
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                background: #fff !important;
+            }
+
+            .dashboard-card:hover,
+            .mini-stat-card:hover,
+            .clickable-card:hover {
+                transform: none !important;
+                box-shadow: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    {% include 'navbar.html' %}
+
+    <div class="container-fluid dashboard-wrapper">
+        <div class="container-fluid">
+
+            <div class="page-hero mb-4">
+                <div class="hero-body">
+                    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                        <div>
+                            <h1 class="hero-title h3 mb-1">
+                                <i class="fas fa-chart-line me-2"></i>Financial Analytics Dashboard
+                            </h1>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2 no-print">
+                            <span class="summary-chip">
+                                <i class="fas fa-calendar-alt"></i>
+                                {{ filter_label }}
+                            </span>
+                            <button class="btn btn-sm btn-light fw-semibold px-3" onclick="window.print()">
+                                <i class="fas fa-print me-1"></i> Print
+                            </button>
+                            <!-- PDF download button -->
+                            <button id="downloadPdfBtn" class="btn btn-sm btn-primary fw-semibold px-3 ms-2" title="Download dashboard as PDF">
+                                <i class="fas fa-file-pdf me-1"></i> Download PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PDF-only data (hidden by default) -->
+            <div id="pdfData" class="d-none">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">User Account Information</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li><strong>Total users:</strong> {{ kpi_total_users|default:0|intcomma }}</li>
+                            <li><strong>Active users:</strong> {{ kpi_total_active_users|default:0|intcomma }}</li>
+                            <li><strong>Inactive users:</strong> {{ kpi_total_inactive_users|default:0|intcomma }}</li>
+                            <li><strong>Pastors:</strong> {{ kpi_total_pastors|default:0|intcomma }} (Active: {{ kpi_total_active_pastors|default:0|intcomma }}, Inactive: {{ kpi_total_inactive_pastors|default:0|intcomma }})</li>
+                            <li><strong>Treasurers:</strong> {{ kpi_total_treasurers|default:0|intcomma }} (Active: {{ kpi_total_active_treasurers|default:0|intcomma }}, Inactive: {{ kpi_total_inactive_treasurers|default:0|intcomma }})</li>
+                            <li><strong>Members:</strong> {{ kpi_total_members|default:0|intcomma }} (Active: {{ kpi_total_active_members|default:0|intcomma }}, Inactive: {{ kpi_total_inactive_members|default:0|intcomma }})</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Budget Analytics Summary</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li><strong>Total Budget to Release:</strong> ₱{{ kpi_budget_total_to_release|default:0|floatformat:2|intcomma }} ({{ kpi_budget_total_to_release_count|default:0|intcomma }} items)</li>
+                            <li><strong>Total Budget Requests:</strong> ₱{{ kpi_budget_total_request|default:0|floatformat:2|intcomma }} ({{ kpi_budget_total_request_count|default:0|intcomma }} requests)</li>
+                            <li><strong>Unliquidated Budget:</strong> ₱{{ kpi_budget_unliquidated|default:0|floatformat:2|intcomma }} ({{ kpi_budget_unliquidated_count|default:0|intcomma }} items)</li>
+                            <li><strong>Liquidated Budget:</strong> ₱{{ kpi_budget_liquidated|default:0|floatformat:2|intcomma }} ({{ kpi_budget_liquidated_count|default:0|intcomma }} items)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1. USER ACCOUNT -->
+            <div class="dashboard-card mb-4">
+                <div class="card-header">
+                    <h5 class="section-title">
+                        <i class="fas fa-user-shield me-2 text-primary"></i>User Account Analytics
+                    </h5>
+                    <div class="section-subtitle">
+                        Church-scoped account summary by status and role.
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-3">
+                        <div class="col-lg-4">
+                            <a href="{% url 'church-account-list' %}" class="dashboard-link">
+                                <div class="mini-stat-card clickable-card">
+                                    <div class="mini-stat-top">
+                                        <div>
+                                            <p class="mini-stat-title mb-1">Total Users</p>
+                                            <div class="card-note">All users under this church</div>
+                                        </div>
+                                        <div class="kpi-icon bg-primary-soft">
+                                            <i class="fas fa-users"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mini-stat-value">{{ kpi_total_users|default:0|intcomma }}</div>
+                                    <div class="status-inline">
+                                        <span class="status-badge status-active">
+                                            <i class="fas fa-check-circle"></i>
+                                            Active: {{ kpi_total_active_users|default:0|intcomma }}
+                                        </span>
+                                        <span class="status-badge status-inactive">
+                                            <i class="fas fa-user-slash"></i>
+                                            Inactive: {{ kpi_total_inactive_users|default:0|intcomma }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <a href="{% url 'church-account-list' %}" class="dashboard-link">
+                                <div class="mini-stat-card clickable-card">
+                                    <div class="mini-stat-top">
+                                        <div>
+                                            <p class="mini-stat-title mb-1">Pastors</p>
+                                            <div class="card-note">Leadership account count</div>
+                                        </div>
+                                        <div class="kpi-icon bg-warning-soft">
+                                            <i class="fas fa-user-tie"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mini-stat-value">{{ kpi_total_pastors|default:0|intcomma }}</div>
+                                    <div class="status-inline">
+                                        <span class="status-badge status-active">
+                                            <i class="fas fa-check-circle"></i>
+                                            Active: {{ kpi_total_active_pastors|default:0|intcomma }}
+                                        </span>
+                                        <span class="status-badge status-inactive">
+                                            <i class="fas fa-user-slash"></i>
+                                            Inactive: {{ kpi_total_inactive_pastors|default:0|intcomma }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <a href="{% url 'church-account-list' %}" class="dashboard-link">
+                                <div class="mini-stat-card clickable-card">
+                                    <div class="mini-stat-top">
+                                        <div>
+                                            <p class="mini-stat-title mb-1">Treasurers</p>
+                                            <div class="card-note">Finance access holders</div>
+                                        </div>
+                                        <div class="kpi-icon bg-success-soft">
+                                            <i class="fas fa-wallet"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mini-stat-value">{{ kpi_total_treasurers|default:0|intcomma }}</div>
+                                    <div class="status-inline">
+                                        <span class="status-badge status-active">
+                                            <i class="fas fa-check-circle"></i>
+                                            Active: {{ kpi_total_active_treasurers|default:0|intcomma }}
+                                        </span>
+                                        <span class="status-badge status-inactive">
+                                            <i class="fas fa-user-slash"></i>
+                                            Inactive: {{ kpi_total_inactive_treasurers|default:0|intcomma }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-lg-4">
+                            <a href="{% url 'church-account-list' %}" class="dashboard-link">
+                                <div class="mini-stat-card clickable-card">
+                                    <div class="mini-stat-top">
+                                        <div>
+                                            <p class="mini-stat-title mb-1">Members</p>
+                                            <div class="card-note">General church members</div>
+                                        </div>
+                                        <div class="kpi-icon bg-info-soft">
+                                            <i class="fas fa-user-group"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mini-stat-value">{{ kpi_total_members|default:0|intcomma }}</div>
+                                    <div class="status-inline">
+                                        <span class="status-badge status-active">
+                                            <i class="fas fa-check-circle"></i>
+                                            Active: {{ kpi_total_active_members|default:0|intcomma }}
+                                        </span>
+                                        <span class="status-badge status-inactive">
+                                            <i class="fas fa-user-slash"></i>
+                                            Inactive: {{ kpi_total_inactive_members|default:0|intcomma }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="col-lg-8">
+                            <div class="mini-stat-card d-flex flex-column justify-content-center h-100">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <a href="{% url 'church-account-list' %}" class="dashboard-link">
+                                            <div class="p-3 rounded-4 border bg-light h-100 clickable-card">
+                                                <div class="text-muted small fw-bold text-uppercase mb-1">Active Share</div>
+                                                <div class="fs-4 fw-bold text-success">
+                                                    {{ kpi_total_active_users|default:0|intcomma }}
+                                                </div>
+                                                <div class="muted-caption">Accounts currently enabled</div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <a href="{% url 'church-account-list' %}" class="dashboard-link">
+                                            <div class="p-3 rounded-4 border bg-light h-100 clickable-card">
+                                                <div class="text-muted small fw-bold text-uppercase mb-1">Inactive Share</div>
+                                                <div class="fs-4 fw-bold text-danger">
+                                                    {{ kpi_total_inactive_users|default:0|intcomma }}
+                                                </div>
+                                                <div class="muted-caption">Accounts currently disabled</div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <a href="{% url 'church-account-list' %}" class="dashboard-link">
+                                            <div class="p-3 rounded-4 border bg-light h-100 clickable-card">
+                                                <div class="text-muted small fw-bold text-uppercase mb-1">Role Coverage</div>
+                                                <div class="fs-4 fw-bold text-primary">
+                                                    {{ kpi_total_pastors|add:kpi_total_treasurers|add:kpi_total_members|default:0|intcomma }}
+                                                </div>
+                                                <div class="muted-caption">Pastor + Treasurer + Member accounts</div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- 2. BUDGETS -->
+            <div class="dashboard-card mb-4">
+                <div class="card-header">
+                    <h5 class="section-title">
+                        <i class="fas fa-coins me-2 text-warning"></i>Budget Analytics
+                    </h5>
+                    <div class="section-subtitle">
+                        Budget request, release, and liquidation status for the selected period.
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+
+                        <div class="col-xl-3 col-md-6">
+                            <a href="{% url 'release_budget' %}" class="dashboard-link">
+                                <div class="dashboard-card kpi-card kpi-primary h-100 clickable-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center gap-3">
+                                            <div>
+                                                <div class="kpi-label text-primary">Total Budget to Release</div>
+                                                <div class="kpi-value">₱{{ kpi_budget_total_to_release|default:0|floatformat:2|intcomma }}</div>
+                                                <div class="card-note mt-2">
+                                                    <i class="fas fa-paper-plane me-1"></i>
+                                                    {{ kpi_budget_total_to_release_count|default:0|intcomma }} item{{ kpi_budget_total_to_release_count|pluralize }}
+                                                </div>
+                                            </div>
+                                            <div class="kpi-icon bg-primary-soft">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6">
+                            <a href="{% url 'budget_release' %}" class="dashboard-link">
+                                <div class="dashboard-card kpi-card kpi-warning h-100 clickable-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center gap-3">
+                                            <div>
+                                                <div class="kpi-label text-warning">Total Budget Request</div>
+                                                <div class="kpi-value">₱{{ kpi_budget_total_request|default:0|floatformat:2|intcomma }}</div>
+                                                <div class="card-note mt-2">
+                                                    <i class="fas fa-layer-group me-1"></i>
+                                                    {{ kpi_budget_total_request_count|default:0|intcomma }} request{{ kpi_budget_total_request_count|pluralize }}
+                                                </div>
+                                            </div>
+                                            <div class="kpi-icon bg-warning-soft">
+                                                <i class="fas fa-file-invoice-dollar"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6">
+                            <a href="{% url 'budget_expense' %}" class="dashboard-link">
+                                <div class="dashboard-card kpi-card kpi-danger h-100 clickable-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center gap-3">
+                                            <div>
+                                                <div class="kpi-label text-danger">Unliquidated Budget</div>
+                                                <div class="kpi-value">₱{{ kpi_budget_unliquidated|default:0|floatformat:2|intcomma }}</div>
+                                                <div class="card-note mt-2">
+                                                    <i class="fas fa-hourglass-half me-1"></i>
+                                                    {{ kpi_budget_unliquidated_count|default:0|intcomma }} item{{ kpi_budget_unliquidated_count|pluralize }}
+                                                </div>
+                                            </div>
+                                            <div class="kpi-icon bg-danger-soft">
+                                                <i class="fas fa-hourglass-half"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6">
+                            <a href="{% url 'budget_expense' %}" class="dashboard-link">
+                                <div class="dashboard-card kpi-card kpi-success h-100 clickable-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center gap-3">
+                                            <div>
+                                                <div class="kpi-label text-success">Liquidated Budget</div>
+                                                <div class="kpi-value">₱{{ kpi_budget_liquidated|default:0|floatformat:2|intcomma }}</div>
+                                                <div class="card-note mt-2">
+                                                    <i class="fas fa-check-double me-1"></i>
+                                                    {{ kpi_budget_liquidated_count|default:0|intcomma }} item{{ kpi_budget_liquidated_count|pluralize }}
+                                                </div>
+                                            </div>
+                                            <div class="kpi-icon bg-success-soft">
+                                                <i class="fas fa-check-double"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- 3. FILTERS -->
+            <div class="dashboard-card mb-4 no-print">
+                <div class="card-header">
+                    <h5 class="section-title">
+                        <i class="fas fa-filter me-2 text-primary"></i>Dashboard Filters
+                    </h5>
+                    <div class="section-subtitle">
+                        Select the reporting period for the dashboard.
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="filter-panel">
+                        <form method="GET" action="">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-xl-3 col-md-6">
+                                    <label for="periodSelect" class="filter-label">
+                                        <i class="fas fa-filter me-1"></i> View Type
+                                    </label>
+                                    <select id="periodSelect" name="period" class="form-select form-select-sm" onchange="this.form.submit()">
+                                        <option value="yearly" {% if period == 'yearly' %}selected{% endif %}>Yearly</option>
+                                        <option value="monthly" {% if period == 'monthly' %}selected{% endif %}>Monthly</option>
+                                        <option value="weekly" {% if period == 'weekly' %}selected{% endif %}>Weekly</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-xl-3 col-md-6">
+                                    <label for="yearSelect" class="filter-label">
+                                        <i class="fas fa-calendar-alt me-1"></i> Year
+                                    </label>
+                                    <select id="yearSelect" name="year" class="form-select form-select-sm">
+                                        {% for y in available_years %}
+                                            <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                {% if period == 'monthly' %}
+                                <div class="col-xl-3 col-md-6">
+                                    <label for="monthSelect" class="filter-label">
+                                        <i class="fas fa-calendar-day me-1"></i> Month
+                                    </label>
+                                    <select id="monthSelect" name="month" class="form-select form-select-sm">
+                                        {% for value, label in month_options %}
+                                            <option value="{{ value }}" {% if value == selected_month %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                {% endif %}
+
+                                {% if period == 'weekly' %}
+                                <div class="col-xl-3 col-md-6">
+                                    <label for="weekSelect" class="filter-label">
+                                        <i class="fas fa-calendar-week me-1"></i> Week
+                                    </label>
+                                    <select id="weekSelect" name="week" class="form-select form-select-sm">
+                                        {% for w in week_options %}
+                                            <option value="{{ w.value }}" {% if w.value == selected_week %}selected{% endif %}>
+                                                {{ w.label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                {% endif %}
+
+                                <div class="col-xl-3 col-md-6">
+                                    <button type="submit" class="btn btn-primary btn-sm w-100 py-2">
+                                        <i class="fas fa-search me-1"></i> Apply Filter
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- 4. INCOME STATEMENTS -->
+            <div class="dashboard-card mb-4 clickable-card" id="incomeStatementCard" style="cursor: pointer;">
+                <div class="card-header">
+                    <h5 class="section-title">
+                        <i class="fas fa-money-check-dollar me-2 text-success"></i>Income Statement Analytics
+                    </h5>
+                    <div class="section-subtitle">
+                        Current cash position and financial performance for the selected period.
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-xl col-lg-4 col-md-6">
+                            <div class="dashboard-card kpi-card kpi-primary h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center gap-3">
+                                        <div>
+                                            <div class="kpi-label text-primary">Current Cash On Hand</div>
+                                            <div class="kpi-value">₱{{ kpi_cash|default:0|floatformat:2|intcomma }}</div>
+                                            <div class="card-note mt-2">Live physical cash based on your current records</div>
+                                        </div>
+                                        <div class="kpi-icon bg-primary-soft">
+                                            <i class="fas fa-wallet"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl col-lg-4 col-md-6">
+                            <div class="dashboard-card kpi-card kpi-secondary h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center gap-3">
+                                        <div>
+                                            <div class="kpi-label text-secondary">Current Bank Balance</div>
+                                            <div class="kpi-value">₱{{ kpi_bank_balance|default:0|floatformat:2|intcomma }}</div>
+                                            <div class="card-note mt-2">Current recorded bank balance</div>
+                                        </div>
+                                        <div class="kpi-icon bg-secondary-soft">
+                                            <i class="fas fa-building-columns"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl col-lg-4 col-md-6">
+                            <div class="dashboard-card kpi-card kpi-success h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center gap-3">
+                                        <div>
+                                            <div class="kpi-label text-success">Income ({{ filter_label }})</div>
+                                            <div class="kpi-value">₱{{ kpi_income|default:0|floatformat:2|intcomma }}</div>
+                                            <div class="card-note mt-2">Income within the selected filter only</div>
+                                        </div>
+                                        <div class="kpi-icon bg-success-soft">
+                                            <i class="fas fa-arrow-trend-up"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl col-lg-4 col-md-6">
+                            <div class="dashboard-card kpi-card kpi-danger h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center gap-3">
+                                        <div>
+                                            <div class="kpi-label text-danger">Expenses ({{ filter_label }})</div>
+                                            <div class="kpi-value">₱{{ kpi_expense|default:0|floatformat:2|intcomma }}</div>
+                                            <div class="card-note mt-2">Real expenses within the selected filter only</div>
+                                        </div>
+                                        <div class="kpi-icon bg-danger-soft">
+                                            <i class="fas fa-arrow-trend-down"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl col-lg-4 col-md-6">
+                            <div class="dashboard-card kpi-card kpi-info h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center gap-3">
+                                        <div>
+                                            <div class="kpi-label text-info">Net Savings ({{ filter_label }})</div>
+                                            <div class="kpi-value">₱{{ kpi_net|default:0|floatformat:2|intcomma }}</div>
+                                            <div class="card-note mt-2">Selected-period income minus selected-period real expenses</div>
+                                        </div>
+                                        <div class="kpi-icon bg-info-soft">
+                                            <i class="fas fa-piggy-bank"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- 5. GRAPHS -->
+            <div class="dashboard-card mb-4">
+                <div class="card-header">
+                    <h5 class="section-title">
+                        <i class="fas fa-chart-pie me-2 text-info"></i>Financial Graphs
+                    </h5>
+                    <div class="section-subtitle">
+                        Visual analysis of cash flow, expense categories, and fund type distribution.
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-xl-8 col-lg-7">
+                            <div class="dashboard-card h-100">
+                                <div class="card-header d-flex flex-row align-items-center justify-content-between">
+                                    <div>
+                                        <h6 class="section-title mb-1">Cash Flow Trend ({{ filter_label }})</h6>
+                                        <div class="section-subtitle">Income versus expenses over the selected period</div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-area">
+                                        <canvas id="myAreaChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-4 col-lg-5">
+                            <div class="row g-4">
+                                <div class="col-12">
+                                    <div class="dashboard-card">
+                                        <div class="card-header">
+                                            <h6 class="section-title mb-1">Expense Breakdown ({{ filter_label }})</h6>
+                                            <div class="section-subtitle">Spending by expense category</div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="chart-pie">
+                                                <canvas id="myPieChart"></canvas>
+                                            </div>
+                                            <div class="mt-3 text-center muted-caption">
+                                                <i class="fas fa-circle-info me-1"></i> Spending categories
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="dashboard-card">
+                                        <div class="card-header">
+                                            <h6 class="section-title mb-1">Fund Type Distribution</h6>
+                                            <div class="section-subtitle">Restricted vs unrestricted expense mix</div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="chart-pie">
+                                                <canvas id="fundTypePieChart"></canvas>
+                                            </div>
+                                            <div class="mt-3 text-center muted-caption">
+                                                <i class="fas fa-circle-info me-1"></i> Expense allocation by fund type
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- html2pdf: client-side PDF generator -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+
+    <script>
+        (function(){
+            const btn = document.getElementById('downloadPdfBtn');
+            if (!btn) return;
+
+            btn.addEventListener('click', function () {
+                const element = document.querySelector('.container-fluid.dashboard-wrapper');
+                if (!element) {
+                    alert('Dashboard content not found.');
+                    return;
+                }
+
+                // Temporarily hide interactive/no-print elements so they don't appear in PDF
+                // Hide only explicit no-print elements; keep dashboard content (cards) visible
+                const hidden = document.querySelectorAll('.no-print');
+                hidden.forEach(e => e.classList.add('d-none'));
+                // Reveal pdf-only data section so it appears in the PDF
+                const pdfData = document.getElementById('pdfData');
+                if (pdfData) pdfData.classList.remove('d-none');
+
+                const opt = {
+                    margin:       [0.4, 0.4, 0.4, 0.4],
+                    filename:     'financial-dashboard-{{ selected_year }}.pdf',
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { scale: 2, useCORS: true },
+                    jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
+                };
+
+                // generate and save
+                html2pdf().set(opt).from(element).save().then(() => {
+                    // hide the pdf-only section again and restore hidden elements
+                    if (pdfData) pdfData.classList.add('d-none');
+                    hidden.forEach(e => e.classList.remove('d-none'));
+                }).catch((err) => {
+                    if (pdfData) pdfData.classList.add('d-none');
+                    hidden.forEach(e => e.classList.remove('d-none'));
+                    console.error(err);
+                    alert('PDF download failed. You can use the Print button and choose "Save as PDF" as fallback.');
+                });
+            });
+        })();
+    </script>
+
+    <script>
+        const chartLabels = {{ chart_labels|safe }};
+        const incomeData = {{ chart_income|safe }};
+        const expenseData = {{ chart_expense|safe }};
+        const pieLabels = {{ pie_labels|safe }};
+        const pieData = {{ pie_data|safe }};
+        const fundPieLabels = {{ fund_pie_labels|safe }};
+        const fundPieData = {{ fund_pie_data|safe }};
+
+        const ctxArea = document.getElementById("myAreaChart");
+        new Chart(ctxArea, {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [
+                    {
+                        label: "Income",
+                        data: incomeData,
+                        tension: 0.35,
+                        backgroundColor: "rgba(28, 200, 138, 0.08)",
+                        borderColor: "#1cc88a",
+                        pointRadius: 3,
+                        pointBackgroundColor: "#1cc88a",
+                        pointBorderColor: "#ffffff",
+                        pointHoverRadius: 5,
+                        pointHoverBackgroundColor: "#1cc88a",
+                        pointHitRadius: 10,
+                        pointBorderWidth: 2,
+                        fill: true
+                    },
+                    {
+                        label: "Expenses",
+                        data: expenseData,
+                        tension: 0.35,
+                        backgroundColor: "rgba(231, 74, 59, 0.08)",
+                        borderColor: "#e74a3b",
+                        pointRadius: 3,
+                        pointBackgroundColor: "#e74a3b",
+                        pointBorderColor: "#ffffff",
+                        pointHoverRadius: 5,
+                        pointHoverBackgroundColor: "#e74a3b",
+                        pointHitRadius: 10,
+                        pointBorderWidth: 2,
+                        fill: true
+                    }
+                ],
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            color: "#6b7280"
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: "#6b7280",
+                            callback: function(value) {
+                                return '₱' + Number(value).toLocaleString();
+                            },
+                            maxTicksLimit: 6,
+                            padding: 10
+                        },
+                        grid: {
+                            color: "rgb(234, 236, 244)",
+                            drawBorder: false,
+                            borderDash: [3]
+                        }
+                    },
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            usePointStyle: true,
+                            padding: 16
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: "rgb(255,255,255)",
+                        bodyColor: "#4b5563",
+                        titleColor: "#374151",
+                        borderColor: "#e5e7eb",
+                        borderWidth: 1,
+                        xPadding: 14,
+                        yPadding: 14,
+                        displayColors: true,
+                        caretPadding: 10,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += '₱' + Number(context.parsed.y).toLocaleString();
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const ctxPie = document.getElementById("myPieChart");
+        new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: pieLabels,
+                datasets: [{
+                    data: pieData,
+                    backgroundColor: [
+                        '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e',
+                        '#e74a3b', '#858796', '#5a5c69', '#6f42c1',
+                        '#fd7e14', '#20c997', '#0dcaf0', '#198754'
+                    ],
+                    hoverBackgroundColor: [
+                        '#2e59d9', '#17a673', '#2c9faf', '#dda20a',
+                        '#be2617', '#60616f', '#40414f', '#59359c',
+                        '#d96a0b', '#199d7f', '#0aa2c0', '#146c43'
+                    ],
+                    hoverBorderColor: "rgba(234, 236, 244, 1)",
+                    borderWidth: 1
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                cutout: '68%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 14,
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: "rgb(255,255,255)",
+                        bodyColor: "#4b5563",
+                        borderColor: '#e5e7eb',
+                        borderWidth: 1,
+                        xPadding: 14,
+                        yPadding: 14,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                let value = context.parsed || 0;
+                                return label + ': ₱' + Number(value).toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const ctxFundPie = document.getElementById("fundTypePieChart");
+        new Chart(ctxFundPie, {
+            type: 'doughnut',
+            data: {
+                labels: fundPieLabels,
+                datasets: [{
+                    data: fundPieData,
+                    backgroundColor: ['#4e73df', '#f6c23e'],
+                    hoverBackgroundColor: ['#2e59d9', '#dda20a'],
+                    hoverBorderColor: "rgba(234, 236, 244, 1)",
+                    borderWidth: 1
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                cutout: '68%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 14,
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: "rgb(255,255,255)",
+                        bodyColor: "#4b5563",
+                        borderColor: '#e5e7eb',
+                        borderWidth: 1,
+                        xPadding: 14,
+                        yPadding: 14,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                let value = context.parsed || 0;
+                                return label + ': ₱' + Number(value).toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+
+    <script>
+        // Redirect Income Statement Analytics card to financial overview
+        document.addEventListener('DOMContentLoaded', function() {
+            const incomeStatementCard = document.getElementById('incomeStatementCard');
+            if (incomeStatementCard) {
+                incomeStatementCard.addEventListener('click', function(e) {
+                    // Prevent redirect if clicking on child links or interactive elements
+                    if (e.target.tagName === 'A' || e.target.closest('a')) {
+                        return;
+                    }
+                    // Redirect to financial overview page
+                    window.location.href = "{% url 'financial_overview' %}";
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+

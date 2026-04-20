@@ -1,0 +1,2309 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Physical Income Entry</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+  <style>
+    :root{
+      --bg:#f3f7fc;
+      --surface:#ffffff;
+      --surface-2:#f8fbff;
+      --surface-3:#f1f6fd;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e2e8f0;
+      --line-strong:#cbd5e1;
+
+      --primary:#2563eb;
+      --primary-2:#1d4ed8;
+      --primary-3:#1e40af;
+      --primary-soft:#eff6ff;
+
+      --success:#059669;
+      --success-soft:#ecfdf5;
+      --danger:#dc2626;
+      --danger-soft:#fef2f2;
+      --warning:#d97706;
+      --warning-soft:#fffbeb;
+
+      --shadow:0 24px 60px rgba(15,23,42,.08);
+      --shadow-soft:0 12px 30px rgba(15,23,42,.06);
+      --shadow-card:0 8px 20px rgba(15,23,42,.04);
+
+      --radius:22px;
+      --radius-md:18px;
+      --radius-sm:14px;
+      --radius-xs:12px;
+    }
+
+    *{
+      box-sizing:border-box;
+      font-family:"Inter", sans-serif;
+    }
+
+    html, body{
+      height:100%;
+    }
+
+    body{
+      margin:0;
+      color:var(--text);
+      background:
+        radial-gradient(900px 540px at 0% 0%, rgba(37,99,235,.12), transparent 55%),
+        radial-gradient(900px 540px at 100% 0%, rgba(16,185,129,.08), transparent 55%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+    }
+
+    .page-wrap{
+      padding:28px 0 46px;
+    }
+
+    .shell{
+      max-width: 1520px;
+    }
+
+    .hero-card{
+      position:relative;
+      overflow:hidden;
+      border:none;
+      border-radius:28px;
+      background:
+        radial-gradient(circle at top right, rgba(255,255,255,.16), transparent 26%),
+        linear-gradient(135deg, #0b1220 0%, #162338 48%, #1d4ed8 100%);
+      box-shadow:0 28px 70px rgba(37,99,235,.18);
+      color:#fff;
+    }
+
+    .hero-card::before{
+      content:"";
+      position:absolute;
+      right:-90px;
+      top:-80px;
+      width:260px;
+      height:260px;
+      background:radial-gradient(circle, rgba(255,255,255,.18), transparent 68%);
+      pointer-events:none;
+    }
+
+    .hero-card::after{
+      content:"";
+      position:absolute;
+      left:-80px;
+      bottom:-100px;
+      width:300px;
+      height:300px;
+      background:radial-gradient(circle, rgba(255,255,255,.08), transparent 68%);
+      pointer-events:none;
+    }
+
+    .hero-body{
+      position:relative;
+      z-index:2;
+      padding:26px 26px 22px;
+    }
+
+    .hero-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:18px;
+      flex-wrap:wrap;
+    }
+
+    .hero-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      padding:.48rem .9rem;
+      border-radius:999px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      font-size:.8rem;
+      font-weight:800;
+      letter-spacing:.01em;
+      backdrop-filter: blur(10px);
+      white-space:nowrap;
+    }
+
+    .hero-title{
+      font-size: clamp(1.45rem, 2vw, 2rem);
+      font-weight:800;
+      letter-spacing:-.03em;
+      margin:0 0 .45rem;
+      line-height:1.15;
+    }
+
+    .hero-subtitle{
+      margin:0;
+      max-width:900px;
+      color:rgba(255,255,255,.84);
+      font-size:.96rem;
+      line-height:1.65;
+    }
+
+    .hero-meta{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(170px, 1fr));
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .hero-metric{
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:18px;
+      padding:14px 15px;
+      backdrop-filter: blur(10px);
+      min-height:88px;
+    }
+
+    .hero-metric-label{
+      color:rgba(255,255,255,.72);
+      font-size:.77rem;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-weight:800;
+      margin-bottom:.35rem;
+    }
+
+    .hero-metric-value{
+      font-size:1rem;
+      font-weight:800;
+      line-height:1.35;
+    }
+
+    .layout-grid{
+      margin-top:20px;
+    }
+
+    .panel{
+      background:rgba(255,255,255,.96);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow-soft);
+      overflow:hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .panel-header{
+      padding:20px 22px;
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    }
+
+    .panel-title{
+      margin:0;
+      display:flex;
+      align-items:center;
+      gap:.65rem;
+      font-size:1.02rem;
+      font-weight:800;
+      letter-spacing:-.02em;
+      color:#0f172a;
+    }
+
+    .panel-title i{
+      color:var(--primary);
+    }
+
+    .panel-subtitle{
+      margin:.45rem 0 0;
+      color:var(--muted);
+      font-size:.92rem;
+      line-height:1.55;
+    }
+
+    .panel-body{
+      padding:20px;
+    }
+
+    .switcher-wrap{
+      margin-bottom:18px;
+    }
+
+    .entry-switcher{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      padding:6px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    }
+
+    .switch-btn{
+      border:1px solid transparent;
+      background:transparent;
+      color:#334155;
+      border-radius:999px;
+      padding:.8rem 1rem;
+      font-weight:800;
+      font-size:.88rem;
+      transition:.18s ease;
+      white-space:nowrap;
+    }
+
+    .switch-btn:hover{
+      background:#f1f5f9;
+      color:#0f172a;
+    }
+
+    .switch-btn.active{
+      background:linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 100%);
+      color:#fff;
+      border-color:transparent;
+      box-shadow:0 10px 24px rgba(37,99,235,.20);
+    }
+
+    .entry-pane{
+      display:none;
+    }
+
+    .entry-pane.active{
+      display:block;
+      animation:fadeSlide .22s ease;
+    }
+
+    @keyframes fadeSlide{
+      from{
+        opacity:0;
+        transform:translateY(6px);
+      }
+      to{
+        opacity:1;
+        transform:translateY(0);
+      }
+    }
+
+    .section-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      padding:16px;
+      margin-bottom:16px;
+      box-shadow:var(--shadow-card);
+    }
+
+    .section-title{
+      display:flex;
+      align-items:center;
+      gap:.65rem;
+      font-size:.95rem;
+      font-weight:800;
+      margin-bottom:14px;
+      letter-spacing:-.01em;
+      color:#0f172a;
+    }
+
+    .section-title .icon{
+      width:36px;
+      height:36px;
+      border-radius:12px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--primary-soft);
+      color:var(--primary);
+      border:1px solid #dbeafe;
+      flex:0 0 36px;
+      box-shadow:0 6px 16px rgba(37,99,235,.08);
+    }
+
+    .field-card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px 12px 10px;
+      transition:.18s ease;
+      height:100%;
+      box-shadow:0 4px 12px rgba(15,23,42,.02);
+    }
+
+    .field-card:hover{
+      border-color:#d3dbe7;
+      box-shadow:0 10px 24px rgba(15,23,42,.04);
+    }
+
+    .field-card:focus-within{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 4px rgba(37,99,235,.08);
+    }
+
+    .form-label{
+      color:var(--muted);
+      font-size:.74rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:.45rem;
+    }
+
+    .form-control,
+    .form-select{
+      border-radius:12px;
+      border:1px solid #d7e0ea;
+      min-height:46px;
+      font-size:.95rem;
+      color:#0f172a;
+      background:#fff;
+      box-shadow:none !important;
+      transition:.16s ease;
+    }
+
+    textarea.form-control{
+      min-height:110px;
+      resize:vertical;
+    }
+
+    .form-control:focus,
+    .form-select:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 4px rgba(37,99,235,.08) !important;
+    }
+
+    input[type="file"].form-control{
+      padding:.72rem .9rem;
+    }
+
+    .field-errors{
+      margin-top:.45rem;
+      color:var(--danger);
+      font-size:.87rem;
+    }
+
+    .errorlist{
+      margin:0;
+      padding-left:18px;
+      color:var(--danger);
+    }
+
+    .muted-note{
+      color:var(--muted);
+      font-size:.88rem;
+      line-height:1.45;
+    }
+
+    .soft-note{
+      border:1px dashed var(--line-strong);
+      border-radius:16px;
+      padding:14px 15px;
+      background:var(--surface-2);
+      color:var(--muted);
+      font-size:.9rem;
+      line-height:1.6;
+    }
+
+    .status-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      padding:15px;
+      margin-bottom:14px;
+      box-shadow:var(--shadow-card);
+    }
+
+    .status-kicker{
+      color:var(--muted);
+      text-transform:uppercase;
+      font-size:.73rem;
+      font-weight:800;
+      letter-spacing:.08em;
+      margin-bottom:.45rem;
+    }
+
+    .status-value{
+      font-size:1rem;
+      font-weight:800;
+      line-height:1.35;
+      margin-bottom:.35rem;
+      color:#0f172a;
+    }
+
+    .status-help{
+      color:var(--muted);
+      font-size:.88rem;
+      margin:0;
+      line-height:1.5;
+    }
+
+    .summary-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:.42rem;
+      border-radius:999px;
+      padding:.42rem .75rem;
+      font-size:.78rem;
+      font-weight:800;
+      border:1px solid #dbeafe;
+      background:#eff6ff;
+      color:#1d4ed8;
+    }
+
+    .rule-list{
+      list-style:none;
+      padding:0;
+      margin:0;
+    }
+
+    .rule-list li{
+      display:flex;
+      gap:.8rem;
+      align-items:flex-start;
+      padding:.8rem 0;
+      border-bottom:1px dashed var(--line);
+    }
+
+    .rule-list li:last-child{
+      border-bottom:0;
+      padding-bottom:0;
+    }
+
+    .rule-icon{
+      width:34px;
+      height:34px;
+      border-radius:12px;
+      background:#eef2ff;
+      color:#3730a3;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid #e0e7ff;
+      flex:0 0 34px;
+    }
+
+    .rule-title{
+      font-weight:800;
+      margin-bottom:.16rem;
+      font-size:.92rem;
+      color:#0f172a;
+    }
+
+    .rule-desc{
+      color:var(--muted);
+      font-size:.88rem;
+      margin-bottom:0;
+      line-height:1.5;
+    }
+
+    .sticky-col{
+      position:sticky;
+      top:88px;
+    }
+
+    .submit-bar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      margin-top:18px;
+      padding:16px 18px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      box-shadow:var(--shadow-card);
+    }
+
+    .submit-note{
+      color:var(--muted);
+      font-size:.9rem;
+      margin:0;
+      line-height:1.55;
+    }
+
+    .btn{
+      font-weight:700;
+      border-radius:12px;
+    }
+
+    .btn-pill{
+      border-radius:999px;
+      padding:.76rem 1.2rem;
+      font-weight:800;
+      box-shadow:0 10px 22px rgba(15,23,42,.06);
+    }
+
+    .btn-primary{
+      background:linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 100%);
+      border:none;
+    }
+
+    .btn-primary:hover{
+      background:linear-gradient(135deg, #1f5ad8 0%, #1845bb 100%);
+    }
+
+    .btn-outline-primary{
+      border-color:#c7dcff;
+      color:var(--primary-2);
+      background:#fff;
+    }
+
+    .btn-outline-primary:hover{
+      background:#eff6ff;
+      color:var(--primary-3);
+      border-color:#98c1ff;
+    }
+
+    .btn-outline-danger{
+      border-color:#fecaca;
+      color:#b91c1c;
+      background:#fff;
+    }
+
+    .btn-outline-danger:hover{
+      background:#fef2f2;
+      color:#991b1b;
+      border-color:#fca5a5;
+    }
+
+    .btn-outline-secondary{
+      border-color:#d7dee8;
+      color:#475569;
+      background:#fff;
+    }
+
+    .btn-outline-secondary:hover{
+      background:#f8fafc;
+      color:#0f172a;
+      border-color:#cbd5e1;
+    }
+
+    .is-invalid{
+      border-color:#fca5a5 !important;
+      box-shadow:0 0 0 4px rgba(220,38,38,.06) !important;
+    }
+
+    .formset-toolbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:12px;
+      flex-wrap:wrap;
+    }
+
+    .row-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      padding:14px;
+      margin-bottom:12px;
+      box-shadow:var(--shadow-card);
+    }
+
+    .row-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:12px;
+      padding-bottom:10px;
+      border-bottom:1px dashed var(--line);
+      flex-wrap:wrap;
+    }
+
+    .row-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
+      background:#eff6ff;
+      color:#1d4ed8;
+      border:1px solid #dbeafe;
+      border-radius:999px;
+      padding:.38rem .72rem;
+      font-size:.8rem;
+      font-weight:800;
+    }
+
+    .hidden-helper{
+      display:none !important;
+    }
+
+    .ocr-utility-grid{
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:14px;
+      margin-bottom:16px;
+    }
+
+    .ocr-toolbar,
+    .proof-toolbar{
+      padding:14px 16px;
+      border-radius:18px;
+      min-height:100%;
+    }
+
+    .ocr-toolbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      border:1px dashed #bfd8ff;
+      background:linear-gradient(180deg, #f8fbff 0%, #eff6ff 100%);
+    }
+
+    .proof-toolbar{
+      border:1px dashed #cbd5e1;
+      background:linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      box-shadow:var(--shadow-card);
+    }
+
+    .ocr-toolbar-title,
+    .proof-toolbar-title{
+      display:flex;
+      align-items:center;
+      gap:.55rem;
+      font-weight:800;
+      margin-bottom:2px;
+    }
+
+    .ocr-toolbar-title{
+      color:#1e3a8a;
+    }
+
+    .proof-toolbar-title{
+      color:#0f172a;
+    }
+
+    .ocr-toolbar-note,
+    .proof-toolbar-note{
+      color:var(--muted);
+      font-size:.88rem;
+      margin:0;
+      line-height:1.5;
+    }
+
+    .ocr-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .proof-field-wrap{
+      margin-top:12px;
+    }
+
+    .proof-field-wrap .field-card{
+      padding:10px 10px 8px;
+      background:#fff;
+    }
+
+    .ocr-output{
+      display:none;
+      margin-top:12px;
+      margin-bottom:16px;
+      border:1px solid #dbeafe;
+      border-radius:16px;
+      background:#fff;
+      padding:12px 14px;
+      box-shadow:var(--shadow-card);
+    }
+
+    .ocr-output.show{
+      display:block;
+    }
+
+    .ocr-output-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:8px;
+      flex-wrap:wrap;
+    }
+
+    .ocr-output-title{
+      font-weight:800;
+      color:#1d4ed8;
+      margin:0;
+    }
+
+    .ocr-output pre{
+      margin:0;
+      white-space:pre-wrap;
+      word-break:break-word;
+      font-size:.82rem;
+      color:#334155;
+      line-height:1.55;
+    }
+
+    .ocr-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:.35rem;
+      padding:.38rem .72rem;
+      border-radius:999px;
+      background:#dbeafe;
+      color:#1d4ed8;
+      font-size:.78rem;
+      font-weight:800;
+      border:1px solid #bfdbfe;
+    }
+
+    .ocr-row-tools{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .row-proof-box{
+      border:1px dashed #cbd5e1;
+      border-radius:16px;
+      background:linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      padding:12px;
+    }
+
+    .row-proof-box .form-label{
+      margin-bottom:.4rem;
+    }
+
+    .row-proof-box .field-errors{
+      margin-top:.35rem;
+    }
+
+    .proof-inline-tools{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+
+    .proof-inline-tools .row-proof-box{
+      flex:1 1 320px;
+      margin:0;
+    }
+
+    .proof-inline-side{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      justify-content:flex-end;
+      gap:8px;
+      min-width:220px;
+    }
+
+    .ocr-inline-note{
+      color:var(--muted);
+      font-size:.84rem;
+      line-height:1.45;
+      margin:0;
+    }
+
+    .row-form-errors{
+      margin-bottom:12px;
+    }
+
+    .ocr-loading{
+      opacity:.72;
+      pointer-events:none;
+    }
+
+    .alert{
+      border:none;
+      border-radius:16px;
+      box-shadow:var(--shadow-card);
+    }
+
+    @media (max-width: 991.98px){
+      .sticky-col{
+        position:static;
+        top:auto;
+      }
+
+      .ocr-utility-grid{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width: 767.98px){
+      .page-wrap{
+        padding:18px 0 34px;
+      }
+
+      .hero-body{
+        padding:18px;
+      }
+
+      .hero-meta{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .submit-bar{
+        flex-direction:column;
+        align-items:stretch;
+      }
+
+      .submit-actions{
+        width:100%;
+      }
+
+      .submit-actions .btn{
+        width:100%;
+      }
+
+      .entry-switcher{
+        flex-direction:column;
+      }
+
+      .switch-btn{
+        width:100%;
+        text-align:left;
+      }
+
+      .proof-inline-side{
+        min-width:100%;
+      }
+    }
+
+    @media (max-width: 575.98px){
+      .hero-meta{
+        grid-template-columns:1fr;
+      }
+
+      .panel-header,
+      .panel-body{
+        padding:16px;
+      }
+
+      .section-card{
+        padding:14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  {% include 'navbar.html' %}
+
+  <div class="container-fluid page-wrap">
+    <div class="container-xxl shell">
+
+      {% if messages %}
+        <div class="mb-3">
+          {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} mb-2">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="hero-card">
+        <div class="hero-body">
+          <div class="hero-top">
+            <div>
+              <span class="hero-badge">
+                <i class="bi bi-shield-check"></i>
+                Unified finance workflow
+              </span>
+              <h1 class="hero-title mt-3">
+                <i class="bi bi-cash-coin me-1"></i>Physical Income Entry
+              </h1>
+              <p class="hero-subtitle">
+                Enter tithes, offerings, donations, and other income from one professional workspace. Each section keeps its own review flow, backend action, and validation logic while giving users a cleaner and more organized experience.
+              </p>
+            </div>
+
+            <span class="hero-badge">
+              <i class="bi bi-window-stack"></i>
+              One page • Separate review flows
+            </span>
+          </div>
+
+          <div class="hero-meta">
+            <div class="hero-metric">
+              <div class="hero-metric-label">Entry Modes</div>
+              <div class="hero-metric-value">Tithe, Offering, Donations, Other Income</div>
+            </div>
+            <div class="hero-metric">
+              <div class="hero-metric-label">Workflow</div>
+              <div class="hero-metric-value">Draft → Review → Confirm</div>
+            </div>
+            <div class="hero-metric">
+              <div class="hero-metric-label">OCR Support</div>
+              <div class="hero-metric-value">Receipt and proof extraction ready</div>
+            </div>
+            <div class="hero-metric">
+              <div class="hero-metric-label">Goal</div>
+              <div class="hero-metric-value">Faster entry with cleaner audit preparation</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4 layout-grid">
+        <div class="col-lg-8">
+          <div class="panel">
+            <div class="panel-header">
+              <h5 class="panel-title">
+                <i class="bi bi-layout-text-window-reverse"></i>
+                Create draft entry
+              </h5>
+              <p class="panel-subtitle">
+                Choose the income type below. Only one section appears at a time so the page stays focused, but each form still submits to its own Django view and keeps your existing process unchanged.
+              </p>
+            </div>
+
+            <div class="panel-body">
+              <div class="switcher-wrap">
+                <div class="entry-switcher" id="entrySwitcher">
+                  <button type="button" class="switch-btn active" data-target="pane-tithe">
+                    <i class="bi bi-wallet2 me-1"></i>Tithe
+                  </button>
+                  <button type="button" class="switch-btn" data-target="pane-offering-single">
+                    <i class="bi bi-handbag me-1"></i>Offering — Single
+                  </button>
+                  <button type="button" class="switch-btn" data-target="pane-offering-batch">
+                    <i class="bi bi-collection me-1"></i>Offering — Batch
+                  </button>
+                  <button type="button" class="switch-btn" data-target="pane-donations">
+                    <i class="bi bi-heart me-1"></i>Donations
+                  </button>
+                  <button type="button" class="switch-btn" data-target="pane-other-income">
+                    <i class="bi bi-cash-stack me-1"></i>Other Income
+                  </button>
+                </div>
+              </div>
+
+              <!-- TITHE -->
+              <div
+                class="entry-pane active"
+                id="pane-tithe"
+                data-mode-title="Tithe Entry"
+                data-mode-desc="Record one tithe entry and send it to the tithe review step."
+                data-proof-rule="If tithe fraud detection is enabled, a proof file is required."
+                data-flow="Fill in the tithe details, save the draft, then review and confirm the entry."
+              >
+                <form method="post" enctype="multipart/form-data" novalidate action="{% url 'add_tithe' %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="entry_source" value="unified_income_entry">
+                  <input type="hidden" name="active_pane" value="pane-tithe">
+
+                  <div class="ocr-utility-grid">
+                    <div class="ocr-toolbar">
+                      <div>
+                        <div class="ocr-toolbar-title">
+                          <i class="bi bi-camera-fill"></i> OCR Assistant
+                        </div>
+                        <p class="ocr-toolbar-note">Upload a proof file first, then run OCR to extract amount, date, and text.</p>
+                      </div>
+                      <div class="ocr-actions">
+                        <span class="ocr-badge"><i class="bi bi-file-earmark-image"></i> Tithe OCR</span>
+                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill run-ocr-btn" data-scope="form">
+                          <i class="bi bi-magic me-1"></i>Run OCR
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="proof-toolbar">
+                      <div class="proof-toolbar-title">
+                        <i class="bi bi-paperclip"></i> Proof Document
+                      </div>
+                      <p class="proof-toolbar-note">Attach the file here so OCR and review can use the same uploaded proof.</p>
+
+                      <div class="proof-field-wrap">
+                        {% for field in tithe_form.visible_fields %}
+                          {% if field.name == 'proof_file' or field.name == 'proof_document' or field.name == 'receipt_image' or field.name == 'file' %}
+                            <div class="field-card">
+                              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                              {{ field }}
+                              {% if field.help_text %}
+                                <div class="muted-note mt-1">{{ field.help_text }}</div>
+                              {% endif %}
+                              <div class="field-errors">
+                                {% for e in field.errors %}<div>{{ e }}</div>{% endfor %}
+                              </div>
+                            </div>
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="ocr-output">
+                    <div class="ocr-output-head">
+                      <p class="ocr-output-title mb-0">OCR Result</p>
+                      <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill clear-ocr-btn">
+                        <i class="bi bi-x-circle me-1"></i>Clear
+                      </button>
+                    </div>
+                    <pre class="ocr-result-text"></pre>
+                  </div>
+
+                  {% if tithe_form.non_field_errors %}
+                    <div class="alert alert-danger">
+                      {% for e in tithe_form.non_field_errors %}{{ e }}<br>{% endfor %}
+                    </div>
+                  {% endif %}
+
+                  <div class="section-card">
+                    <div class="section-title">
+                      <span class="icon"><i class="bi bi-journal-check"></i></span>
+                      Tithe details
+                    </div>
+
+                    <div class="row g-3">
+                      {% for hidden in tithe_form.hidden_fields %}
+                        {{ hidden }}
+                      {% endfor %}
+
+                      {% for field in tithe_form.visible_fields %}
+                        {% if field.name != 'proof_file' and field.name != 'proof_document' and field.name != 'receipt_image' and field.name != 'file' %}
+                          <div class="{% if 'description' in field.name or 'note' in field.name or 'ocr' in field.name %}col-12{% else %}col-md-6{% endif %}">
+                            <div class="field-card">
+                              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                              {{ field }}
+                              {% if field.help_text %}
+                                <div class="muted-note mt-1">{{ field.help_text }}</div>
+                              {% endif %}
+                              <div class="field-errors">
+                                {% for e in field.errors %}<div>{{ e }}</div>{% endfor %}
+                              </div>
+                            </div>
+                          </div>
+                        {% endif %}
+                      {% endfor %}
+                    </div>
+                  </div>
+
+                  <div class="submit-bar">
+                    <p class="submit-note">
+                      Save the tithe as a draft first, then continue to the review page.
+                    </p>
+                    <div class="submit-actions d-flex flex-wrap gap-2">
+                      <button type="submit" class="btn btn-primary btn-pill">
+                        <i class="bi bi-save2 me-1"></i>Save Draft &amp; Review
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <!-- OFFERING SINGLE -->
+              <div
+                class="entry-pane"
+                id="pane-offering-single"
+                data-mode-title="Single Offering Entry"
+                data-mode-desc="Record one offering entry and send it to the offering review step."
+                data-proof-rule="If offering fraud detection is enabled, upload one proof file."
+                data-flow="Complete the single offering form, save the draft, then review the staged offering."
+              >
+                <form method="post" enctype="multipart/form-data" novalidate action="{% url 'add_offerings' %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="entry_source" value="unified_income_entry">
+                  <input type="hidden" name="active_pane" value="pane-offering-single">
+                  <input type="hidden" name="form_type" value="single">
+
+                  <div class="ocr-utility-grid">
+                    <div class="ocr-toolbar">
+                      <div>
+                        <div class="ocr-toolbar-title">
+                          <i class="bi bi-camera-fill"></i> OCR Assistant
+                        </div>
+                        <p class="ocr-toolbar-note">Use OCR on the uploaded proof to help fill amount, date, and description.</p>
+                      </div>
+                      <div class="ocr-actions">
+                        <span class="ocr-badge"><i class="bi bi-receipt"></i> Offering OCR</span>
+                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill run-ocr-btn" data-scope="form">
+                          <i class="bi bi-magic me-1"></i>Run OCR
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="proof-toolbar">
+                      <div class="proof-toolbar-title">
+                        <i class="bi bi-paperclip"></i> Proof Document
+                      </div>
+                      <p class="proof-toolbar-note">Attach one proof file for this offering entry.</p>
+
+                      <div class="proof-field-wrap">
+                        {% for field in single_form.visible_fields %}
+                          {% if field.name == 'proof_file' or field.name == 'proof_document' or field.name == 'receipt_image' or field.name == 'file' %}
+                            <div class="field-card">
+                              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                              {{ field }}
+                              {% if field.help_text %}
+                                <div class="muted-note mt-1">{{ field.help_text }}</div>
+                              {% endif %}
+                              <div class="field-errors">
+                                {% for e in field.errors %}<div>{{ e }}</div>{% endfor %}
+                              </div>
+                            </div>
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="ocr-output">
+                    <div class="ocr-output-head">
+                      <p class="ocr-output-title mb-0">OCR Result</p>
+                      <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill clear-ocr-btn">
+                        <i class="bi bi-x-circle me-1"></i>Clear
+                      </button>
+                    </div>
+                    <pre class="ocr-result-text"></pre>
+                  </div>
+
+                  {% if single_form.non_field_errors %}
+                    <div class="alert alert-danger">
+                      {% for e in single_form.non_field_errors %}{{ e }}<br>{% endfor %}
+                    </div>
+                  {% endif %}
+
+                  <div class="section-card">
+                    <div class="section-title">
+                      <span class="icon"><i class="bi bi-bag-check"></i></span>
+                      Single offering details
+                    </div>
+
+                    <div class="row g-3">
+                      {% for hidden in single_form.hidden_fields %}
+                        {{ hidden }}
+                      {% endfor %}
+
+                      {% for field in single_form.visible_fields %}
+                        {% if field.name != 'proof_file' and field.name != 'proof_document' and field.name != 'receipt_image' and field.name != 'file' %}
+                          <div class="{% if 'description' in field.name or 'note' in field.name or 'ocr' in field.name %}col-12{% else %}col-md-6{% endif %}">
+                            <div class="field-card">
+                              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                              {{ field }}
+                              {% if field.help_text %}
+                                <div class="muted-note mt-1">{{ field.help_text }}</div>
+                              {% endif %}
+                              <div class="field-errors">
+                                {% for e in field.errors %}<div>{{ e }}</div>{% endfor %}
+                              </div>
+                            </div>
+                          </div>
+                        {% endif %}
+                      {% endfor %}
+                    </div>
+                  </div>
+
+                  <div class="submit-bar">
+                    <p class="submit-note">
+                      Use this for a single offering transaction instead of a grouped batch.
+                    </p>
+                    <div class="submit-actions d-flex flex-wrap gap-2">
+                      <button type="submit" class="btn btn-primary btn-pill">
+                        <i class="bi bi-save2 me-1"></i>Save Draft &amp; Review
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <!-- OFFERING BATCH -->
+              <div
+                class="entry-pane"
+                id="pane-offering-batch"
+                data-mode-title="Batch Offering Entry"
+                data-mode-desc="Record loose offering and multiple envelope rows in one batch."
+                data-proof-rule="If offering fraud detection is enabled, upload one shared proof file for the batch."
+                data-flow="Enter the loose amount, add envelope rows, save the batch, then review all staged offerings."
+              >
+                <form method="post" enctype="multipart/form-data" novalidate action="{% url 'add_offerings' %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="entry_source" value="unified_income_entry">
+                  <input type="hidden" name="active_pane" value="pane-offering-batch">
+                  <input type="hidden" name="form_type" value="batch">
+
+                  <div class="ocr-utility-grid">
+                    <div class="ocr-toolbar">
+                      <div>
+                        <div class="ocr-toolbar-title">
+                          <i class="bi bi-camera-fill"></i> OCR Assistant
+                        </div>
+                        <p class="ocr-toolbar-note">Run OCR on the batch proof before entering the header values.</p>
+                      </div>
+                      <div class="ocr-actions">
+                        <span class="ocr-badge"><i class="bi bi-collection"></i> Batch OCR</span>
+                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill run-ocr-btn" data-scope="form">
+                          <i class="bi bi-magic me-1"></i>Run OCR
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="proof-toolbar">
+                      <div class="proof-toolbar-title">
+                        <i class="bi bi-paperclip"></i> Proof Document
+                      </div>
+                      <p class="proof-toolbar-note">Attach one shared proof file for the batch header and OCR.</p>
+
+                      <div class="proof-field-wrap">
+                        {% for field in loose_form.visible_fields %}
+                          {% if field.name == 'proof_file' or field.name == 'proof_document' or field.name == 'receipt_image' or field.name == 'file' %}
+                            <div class="field-card">
+                              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                              {{ field }}
+                              {% if field.help_text %}
+                                <div class="muted-note mt-1">{{ field.help_text }}</div>
+                              {% endif %}
+                              <div class="field-errors">
+                                {% for e in field.errors %}<div>{{ e }}</div>{% endfor %}
+                              </div>
+                            </div>
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="ocr-output">
+                    <div class="ocr-output-head">
+                      <p class="ocr-output-title mb-0">OCR Result</p>
+                      <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill clear-ocr-btn">
+                        <i class="bi bi-x-circle me-1"></i>Clear
+                      </button>
+                    </div>
+                    <pre class="ocr-result-text"></pre>
+                  </div>
+
+                  {% if loose_form.non_field_errors %}
+                    <div class="alert alert-danger">
+                      {% for e in loose_form.non_field_errors %}{{ e }}<br>{% endfor %}
+                    </div>
+                  {% endif %}
+
+                  {% if batch_formset.non_form_errors %}
+                    <div class="alert alert-danger">
+                      {% for e in batch_formset.non_form_errors %}{{ e }}<br>{% endfor %}
+                    </div>
+                  {% endif %}
+
+                  <div class="section-card">
+                    <div class="section-title">
+                      <span class="icon"><i class="bi bi-cash"></i></span>
+                      Batch header / loose offering
+                    </div>
+
+                    <div class="row g-3">
+                      {% for hidden in loose_form.hidden_fields %}
+                        {{ hidden }}
+                      {% endfor %}
+
+                      {% for field in loose_form.visible_fields %}
+                        {% if field.name != 'proof_file' and field.name != 'proof_document' and field.name != 'receipt_image' and field.name != 'file' %}
+                          <div class="{% if 'description' in field.name or 'note' in field.name or 'ocr' in field.name %}col-12{% else %}col-md-6{% endif %}">
+                            <div class="field-card">
+                              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                              {{ field }}
+                              {% if field.help_text %}
+                                <div class="muted-note mt-1">{{ field.help_text }}</div>
+                              {% endif %}
+                              <div class="field-errors">
+                                {% for e in field.errors %}<div>{{ e }}</div>{% endfor %}
+                              </div>
+                            </div>
+                          </div>
+                        {% endif %}
+                      {% endfor %}
+                    </div>
+                  </div>
+
+                  <div class="section-card">
+                    <div class="section-title">
+                      <span class="icon"><i class="bi bi-people"></i></span>
+                      Envelope rows
+                    </div>
+
+                    <div class="formset-toolbar">
+                      <div class="muted-note">Add one row per envelope/member offering.</div>
+                      <button type="button" class="btn btn-outline-primary btn-sm rounded-pill" id="addEnvelopeRow">
+                        <i class="bi bi-plus-circle me-1"></i>Add Row
+                      </button>
+                    </div>
+
+                    {{ batch_formset.management_form }}
+
+                    <div id="envelopeRows">
+                      {% for form in batch_formset %}
+                        <div class="row-card formset-row" data-formset-prefix="envelope">
+                          <div class="row-header">
+                            <span class="row-badge">
+                              <i class="bi bi-hash"></i>
+                              <span class="row-count">Envelope Row {{ forloop.counter }}</span>
+                            </span>
+                            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill remove-row-btn">
+                              <i class="bi bi-trash3 me-1"></i>Remove
+                            </button>
+                          </div>
+
+                          {% if form.non_field_errors %}
+                            <div class="alert alert-danger row-form-errors">
+                              {% for e in form.non_field_errors %}
+                                <div>{{ e }}</div>
+                              {% endfor %}
+                            </div>
+                          {% endif %}
+
+                          <div class="row g-3">
+                            {% for hidden in form.hidden_fields %}
+                              {{ hidden }}
+                            {% endfor %}
+
+                            {% for field in form.visible_fields %}
+                              <div class="{% if 'description' in field.name or 'note' in field.name or 'ocr' in field.name %}col-12{% else %}col-md-6{% endif %}">
+                                <div class="field-card">
+                                  <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                  {{ field }}
+                                  {% if field.help_text %}
+                                    <div class="muted-note mt-1">{{ field.help_text }}</div>
+                                  {% endif %}
+                                  <div class="field-errors">
+                                    {% for e in field.errors %}<div>{{ e }}</div>{% endfor %}
+                                  </div>
+                                </div>
+                              </div>
+                            {% endfor %}
+                          </div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+
+                  <div class="submit-bar">
+                    <p class="submit-note">
+                      This batch can include a loose total plus multiple envelope entries in one review flow.
+                    </p>
+                    <div class="submit-actions d-flex flex-wrap gap-2">
+                      <button type="submit" class="btn btn-primary btn-pill">
+                        <i class="bi bi-save2 me-1"></i>Save Draft &amp; Review
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <!-- DONATIONS -->
+              <div
+                class="entry-pane"
+                id="pane-donations"
+                data-mode-title="Donation Batch Entry"
+                data-mode-desc="Stage one or more donation rows, then continue to donation confirmation."
+                data-proof-rule="If donation fraud detection is enabled, each row needs a proof file or receipt image."
+                data-flow="Add donation rows, save them to session, then continue to the donation confirmation page."
+              >
+                <form
+                  method="post"
+                  enctype="multipart/form-data"
+                  novalidate
+                  action="{% url 'add_donations' %}"
+                  data-ocr-url="{% url 'add_donations' %}"
+                  data-ocr-file-key="receipt_image"
+                >
+                  {% csrf_token %}
+                  <input type="hidden" name="entry_source" value="unified_income_entry">
+                  <input type="hidden" name="active_pane" value="pane-donations">
+
+                  {% if donation_formset.non_form_errors %}
+                    <div class="alert alert-danger">
+                      {% for e in donation_formset.non_form_errors %}{{ e }}<br>{% endfor %}
+                    </div>
+                  {% endif %}
+
+                  <div class="section-card">
+                    <div class="section-title">
+                      <span class="icon"><i class="bi bi-heart-fill"></i></span>
+                      Donation rows
+                    </div>
+
+                    <div class="formset-toolbar">
+                      <div class="muted-note">Add one or more donation entries in this batch.</div>
+                      <button type="button" class="btn btn-outline-primary btn-sm rounded-pill" id="addDonationRow">
+                        <i class="bi bi-plus-circle me-1"></i>Add Row
+                      </button>
+                    </div>
+
+                    {{ donation_formset.management_form }}
+
+                    <div id="donationRows">
+                      {% for form in donation_formset %}
+                        <div class="row-card formset-row" data-formset-prefix="donation">
+                          <div class="row-header">
+                            <span class="row-badge">
+                              <i class="bi bi-hash"></i>
+                              <span class="row-count">Donation Row {{ forloop.counter }}</span>
+                            </span>
+
+                            <div class="ocr-row-tools">
+                              <button type="button" class="btn btn-outline-danger btn-sm rounded-pill remove-row-btn">
+                                <i class="bi bi-trash3 me-1"></i>Remove
+                              </button>
+                            </div>
+                          </div>
+
+                          {% if form.non_field_errors %}
+                            <div class="alert alert-danger row-form-errors">
+                              {% for e in form.non_field_errors %}
+                                <div>{{ e }}</div>
+                              {% endfor %}
+                            </div>
+                          {% endif %}
+
+                          <div class="proof-inline-tools">
+                            <div class="row-proof-box">
+                              {% for field in form.visible_fields %}
+                                {% if field.name == 'proof_file' or field.name == 'proof_document' or field.name == 'receipt_image' or field.name == 'file' %}
+                                  <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                  {{ field }}
+                                  {% if field.help_text %}
+                                    <div class="muted-note mt-1">{{ field.help_text }}</div>
+                                  {% endif %}
+                                  <div class="field-errors">
+                                    {% for e in field.errors %}<div>{{ e }}</div>{% endfor %}
+                                  </div>
+                                {% endif %}
+                              {% endfor %}
+                            </div>
+
+                            <div class="proof-inline-side">
+                              <button type="button" class="btn btn-outline-primary btn-sm rounded-pill run-ocr-btn" data-scope="row">
+                                <i class="bi bi-magic me-1"></i>Run OCR
+                              </button>
+                              <p class="ocr-inline-note">Extract details from the uploaded receipt (image/PDF).</p>
+                            </div>
+                          </div>
+
+                          <div class="ocr-output">
+                            <div class="ocr-output-head">
+                              <p class="ocr-output-title mb-0">OCR Result</p>
+                              <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill clear-ocr-btn">
+                                <i class="bi bi-x-circle me-1"></i>Clear
+                              </button>
+                            </div>
+                            <pre class="ocr-result-text"></pre>
+                          </div>
+
+                          <div class="row g-3">
+                            {% for hidden in form.hidden_fields %}
+                              {{ hidden }}
+                            {% endfor %}
+
+                            {% for field in form.visible_fields %}
+                              {% if field.name != 'proof_file' and field.name != 'proof_document' and field.name != 'receipt_image' and field.name != 'file' %}
+                                <div class="{% if 'description' in field.name or 'note' in field.name or 'ocr' in field.name or 'other' in field.name %}col-12{% else %}col-md-6{% endif %} donation-field-col">
+                                  <div
+                                    class="field-card donation-field-card"
+                                    data-field-name="{{ field.name }}"
+                                    {% if field.name == 'donor_type' %}
+                                      data-donation-role="donor-type"
+                                    {% elif field.name == 'donor' %}
+                                      data-donation-role="non-member-name"
+                                    {% elif field.name == 'user' %}
+                                      data-donation-role="member-selector"
+                                    {% endif %}
+                                  >
+                                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% if field.help_text %}
+                                      <div class="muted-note mt-1">{{ field.help_text }}</div>
+                                    {% endif %}
+                                    <div class="field-errors">
+                                      {% for e in field.errors %}<div>{{ e }}</div>{% endfor %}
+                                    </div>
+                                  </div>
+                                </div>
+                              {% endif %}
+                            {% endfor %}
+                          </div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+
+                  <div class="submit-bar">
+                    <p class="submit-note">
+                      Donations in this section are staged first, then reviewed on the confirmation page.
+                    </p>
+                    <div class="submit-actions d-flex flex-wrap gap-2">
+                      <button type="submit" class="btn btn-primary btn-pill">
+                        <i class="bi bi-save2 me-1"></i>Save Draft &amp; Continue
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <!-- OTHER INCOME -->
+              <div
+                class="entry-pane"
+                id="pane-other-income"
+                data-mode-title="Other Income Batch Entry"
+                data-mode-desc="Stage one or more other income rows and continue to the review step."
+                data-proof-rule="If other income fraud detection is enabled, each row needs a proof file."
+                data-flow="Add income rows, save them into session, then review all staged other income entries."
+              >
+                <form
+                  method="post"
+                  enctype="multipart/form-data"
+                  novalidate
+                  action="{% url 'add_other_income' %}"
+                  data-ocr-url="{% url 'scan_other_income_api' %}"
+                  data-ocr-file-key="receipt_image"
+                >
+                  {% csrf_token %}
+                  <input type="hidden" name="entry_source" value="unified_income_entry">
+                  <input type="hidden" name="active_pane" value="pane-other-income">
+
+                  {% if other_income_formset.non_form_errors %}
+                    <div class="alert alert-danger">
+                      {% for e in other_income_formset.non_form_errors %}{{ e }}<br>{% endfor %}
+                    </div>
+                  {% endif %}
+
+                  <div class="section-card">
+                    <div class="section-title">
+                      <span class="icon"><i class="bi bi-currency-dollar"></i></span>
+                      Other income rows
+                    </div>
+
+                    <div class="formset-toolbar">
+                      <div class="muted-note">Add one or more other income entries in this batch.</div>
+                      <button type="button" class="btn btn-outline-primary btn-sm rounded-pill" id="addIncomeRow">
+                        <i class="bi bi-plus-circle me-1"></i>Add Row
+                      </button>
+                    </div>
+
+                    {{ other_income_formset.management_form }}
+
+                    <div id="incomeRows">
+                      {% for form in other_income_formset %}
+                        <div class="row-card formset-row" data-formset-prefix="income">
+                          <div class="row-header">
+                            <span class="row-badge">
+                              <i class="bi bi-hash"></i>
+                              <span class="row-count">Income Row {{ forloop.counter }}</span>
+                            </span>
+
+                            <div class="ocr-row-tools">
+                              <button type="button" class="btn btn-outline-danger btn-sm rounded-pill remove-row-btn">
+                                <i class="bi bi-trash3 me-1"></i>Remove
+                              </button>
+                            </div>
+                          </div>
+
+                          {% if form.non_field_errors %}
+                            <div class="alert alert-danger row-form-errors">
+                              {% for e in form.non_field_errors %}
+                                <div>{{ e }}</div>
+                              {% endfor %}
+                            </div>
+                          {% endif %}
+
+                          <div class="proof-inline-tools">
+                            <div class="row-proof-box">
+                              {% for field in form.visible_fields %}
+                                {% if field.name == 'proof_file' or field.name == 'proof_document' or field.name == 'receipt_image' or field.name == 'file' %}
+                                  <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                  {{ field }}
+                                  {% if field.help_text %}
+                                    <div class="muted-note mt-1">{{ field.help_text }}</div>
+                                  {% endif %}
+                                  <div class="field-errors">
+                                    {% for e in field.errors %}<div>{{ e }}</div>{% endfor %}
+                                  </div>
+                                {% endif %}
+                              {% endfor %}
+                            </div>
+
+                            <div class="proof-inline-side">
+                              <button type="button" class="btn btn-outline-primary btn-sm rounded-pill run-ocr-btn" data-scope="row">
+                                <i class="bi bi-magic me-1"></i>Run OCR
+                              </button>
+                              <p class="ocr-inline-note">Extract details from the uploaded receipt (image/PDF).</p>
+                            </div>
+                          </div>
+
+                          <div class="ocr-output">
+                            <div class="ocr-output-head">
+                              <p class="ocr-output-title mb-0">OCR Result</p>
+                              <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill clear-ocr-btn">
+                                <i class="bi bi-x-circle me-1"></i>Clear
+                              </button>
+                            </div>
+                            <pre class="ocr-result-text"></pre>
+                          </div>
+
+                          <div class="row g-3">
+                            {% for hidden in form.hidden_fields %}
+                              {{ hidden }}
+                            {% endfor %}
+
+                            {% for field in form.visible_fields %}
+                              {% if field.name != 'proof_file' and field.name != 'proof_document' and field.name != 'receipt_image' and field.name != 'file' %}
+                                <div class="{% if 'description' in field.name or 'note' in field.name or 'ocr' in field.name %}col-12{% else %}col-md-6{% endif %}">
+                                  <div class="field-card">
+                                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% if field.help_text %}
+                                      <div class="muted-note mt-1">{{ field.help_text }}</div>
+                                    {% endif %}
+                                    <div class="field-errors">
+                                      {% for e in field.errors %}<div>{{ e }}</div>{% endfor %}
+                                    </div>
+                                  </div>
+                                </div>
+                              {% endif %}
+                            {% endfor %}
+                          </div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+
+                  <div class="submit-bar">
+                    <p class="submit-note">
+                      Other income entries are staged first so you can review them before final save.
+                    </p>
+                    <div class="submit-actions d-flex flex-wrap gap-2">
+                      <button type="submit" class="btn btn-primary btn-pill">
+                        <i class="bi bi-save2 me-1"></i>Save Draft &amp; Review
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="sticky-col">
+            <div class="panel mb-3">
+              <div class="panel-header">
+                <h5 class="panel-title">
+                  <i class="bi bi-lightning-charge"></i>
+                  Live summary
+                </h5>
+                <p class="panel-subtitle">
+                  This updates based on the currently selected entry type.
+                </p>
+              </div>
+
+              <div class="panel-body">
+                <div class="status-card">
+                  <div class="status-kicker">Current mode</div>
+                  <div class="status-value" id="currentMode">Tithe Entry</div>
+                  <p class="status-help" id="modeDescription">Record one tithe entry and send it to the tithe review step.</p>
+                </div>
+
+                <div class="status-card">
+                  <div class="status-kicker">Proof rule</div>
+                  <div class="status-value" id="proofRule">If tithe fraud detection is enabled, a proof file is required.</div>
+                  <p class="status-help">Follow the proof requirement of the active section before saving.</p>
+                </div>
+
+                <div class="status-card mb-0">
+                  <div class="status-kicker">Process flow</div>
+                  <div class="status-value" id="flowTitle">Save draft first</div>
+                  <p class="status-help" id="flowDescription">Fill in the tithe details, save the draft, then review and confirm the entry.</p>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                  <span class="summary-badge"><i class="bi bi-window-stack"></i>One page layout</span>
+                  <span class="summary-badge"><i class="bi bi-clipboard2-check"></i>Review-friendly</span>
+                  <span class="summary-badge"><i class="bi bi-shield-check"></i>Audit-ready</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel mb-3">
+              <div class="panel-header">
+                <h5 class="panel-title">
+                  <i class="bi bi-info-circle"></i>
+                  How this page works
+                </h5>
+              </div>
+              <div class="panel-body">
+                <ul class="rule-list">
+                  <li>
+                    <span class="rule-icon"><i class="bi bi-1-circle"></i></span>
+                    <div>
+                      <div class="rule-title">Choose one entry type</div>
+                      <p class="rule-desc">Only one section is visible at a time so the screen stays cleaner and easier to use.</p>
+                    </div>
+                  </li>
+                  <li>
+                    <span class="rule-icon"><i class="bi bi-2-circle"></i></span>
+                    <div>
+                      <div class="rule-title">Keep backend logic separate</div>
+                      <p class="rule-desc">Each section still submits to its own view, so your current business rules remain intact.</p>
+                    </div>
+                  </li>
+                  <li>
+                    <span class="rule-icon"><i class="bi bi-3-circle"></i></span>
+                    <div>
+                      <div class="rule-title">Review before final save</div>
+                      <p class="rule-desc">The layout preserves your draft → review → confirm process for safer financial entry.</p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <h5 class="panel-title">
+                  <i class="bi bi-stars"></i>
+                  Entry tips
+                </h5>
+              </div>
+              <div class="panel-body">
+                <div class="soft-note">
+                  Use readable proof files, complete the correct category fields, and keep descriptions short but clear. That makes review, audit checking, fraud verification, and reporting much easier later.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function byId(id){
+      return document.getElementById(id);
+    }
+
+    function qs(selector, root=document){
+      return root.querySelector(selector);
+    }
+
+    function qsa(selector, root=document){
+      return Array.from(root.querySelectorAll(selector));
+    }
+
+    function enhanceWidgets(){
+      qsa("input, select, textarea").forEach(el => {
+        const type = (el.getAttribute("type") || "").toLowerCase();
+        if (type === "hidden") return;
+        if (el.tagName === "SELECT"){
+          el.classList.add("form-select");
+        } else if (type !== "checkbox" && type !== "radio") {
+          el.classList.add("form-control");
+        }
+      });
+    }
+
+    function markInvalidFields(){
+      qsa(".field-card, .row-proof-box").forEach(card => {
+        const hasError = card.querySelector(".field-errors div, .errorlist li");
+        const input = card.querySelector("input, select, textarea");
+        if (hasError && input){
+          input.classList.add("is-invalid");
+        }
+      });
+    }
+
+    function activatePane(targetId){
+      qsa(".entry-pane").forEach(pane => pane.classList.remove("active"));
+      qsa(".switch-btn").forEach(btn => btn.classList.remove("active"));
+
+      const pane = byId(targetId);
+      const btn = qs('.switch-btn[data-target="' + targetId + '"]');
+
+      if (pane) pane.classList.add("active");
+      if (btn) btn.classList.add("active");
+
+      updateSummaryFromPane(pane);
+    }
+
+    function updateSummaryFromPane(pane){
+      if (!pane) return;
+
+      const title = pane.dataset.modeTitle || "Entry";
+      const desc = pane.dataset.modeDesc || "";
+      const proof = pane.dataset.proofRule || "";
+      const flow = pane.dataset.flow || "";
+
+      byId("currentMode").textContent = title;
+      byId("modeDescription").textContent = desc;
+      byId("proofRule").textContent = proof;
+      byId("flowDescription").textContent = flow;
+    }
+
+    function bindSwitcher(){
+      qsa(".switch-btn").forEach(btn => {
+        btn.addEventListener("click", function(){
+          activatePane(this.dataset.target);
+        });
+      });
+    }
+
+    function paneHasErrors(pane){
+      return !!pane.querySelector(".field-errors div, .errorlist li, .alert-danger");
+    }
+
+    function activateInitialPane(){
+      const initialPane = "{{ active_pane|default:''|escapejs }}";
+      if (initialPane && byId(initialPane)) {
+        activatePane(initialPane);
+        return;
+      }
+
+      const paneWithErrors = qsa(".entry-pane").find(paneHasErrors);
+      if (paneWithErrors){
+        activatePane(paneWithErrors.id);
+      } else {
+        activatePane("pane-tithe");
+      }
+    }
+
+    function escapeRegExp(string){
+      return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    function clearClonedRow(row){
+      qsa("input, select, textarea", row).forEach(el => {
+        const tag = el.tagName.toLowerCase();
+        const type = (el.getAttribute("type") || "").toLowerCase();
+
+        el.classList.remove("is-invalid");
+
+        if (type === "hidden"){
+          if (el.name && (el.name.endsWith("-id") || el.name.includes("-id_"))){
+            el.value = "";
+          }
+          return;
+        }
+
+        if (type === "checkbox" || type === "radio"){
+          el.checked = false;
+          return;
+        }
+
+        if (tag === "select"){
+          el.selectedIndex = 0;
+          return;
+        }
+
+        el.value = "";
+      });
+
+      qsa(".field-errors", row).forEach(box => {
+        box.innerHTML = "";
+      });
+
+      qsa(".errorlist", row).forEach(list => list.remove());
+      qsa(".row-form-errors", row).forEach(alertBox => alertBox.remove());
+
+      const ocrBox = row.querySelector(".ocr-output");
+      if (ocrBox){
+        ocrBox.classList.remove("show");
+        const pre = ocrBox.querySelector(".ocr-result-text");
+        if (pre) pre.textContent = "";
+      }
+    }
+
+    function reindexFormset(containerId, prefix){
+      const container = byId(containerId);
+      if (!container) return;
+
+      const rows = qsa(".formset-row", container);
+      const totalInput = byId("id_" + prefix + "-TOTAL_FORMS");
+      const prefixRegex = new RegExp("(" + escapeRegExp(prefix) + "-)\\d+(-)", "g");
+      const idRegex = new RegExp("(id_" + escapeRegExp(prefix) + "-)\\d+(-)", "g");
+
+      rows.forEach((row, index) => {
+        qsa("[name], [id], label[for]", row).forEach(el => {
+          if (el.name){
+            el.name = el.name.replace(prefixRegex, "$1" + index + "$2");
+          }
+          if (el.id){
+            el.id = el.id.replace(idRegex, "$1" + index + "$2");
+          }
+          if (el.getAttribute("for")){
+            el.setAttribute("for", el.getAttribute("for").replace(idRegex, "$1" + index + "$2"));
+          }
+        });
+
+        const label = qs(".row-count", row);
+        if (label){
+          const rowName =
+            prefix === "envelope" ? "Envelope Row " :
+            prefix === "donation" ? "Donation Row " :
+            "Income Row ";
+          label.textContent = rowName + (index + 1);
+        }
+      });
+
+      if (totalInput){
+        totalInput.value = rows.length;
+      }
+
+      qsa(".remove-row-btn", container).forEach(btn => {
+        btn.disabled = rows.length <= 1;
+      });
+    }
+
+    function getDonationRole(card){
+      return String(card.dataset.donationRole || "").trim();
+    }
+
+    function normalizeValue(value){
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[_-]+/g, " ")
+        .replace(/\s+/g, " ");
+    }
+
+    function isDonationDonorTypeCard(card){
+      return getDonationRole(card) === "donor-type";
+    }
+
+    function isDonationNonMemberCard(card){
+      return getDonationRole(card) === "non-member-name";
+    }
+
+    function isDonationMemberRelatedCard(card){
+      return getDonationRole(card) === "member-selector";
+    }
+
+    function toggleDonationCard(card, shouldShow){
+      if (!card) return;
+
+      const col = card.closest(".donation-field-col") || card.closest('[class*="col-"]') || card.parentElement;
+      if (!col) return;
+
+      const controls = qsa("input, select, textarea", card);
+
+      if (shouldShow){
+        col.classList.remove("hidden-helper");
+        controls.forEach(el => {
+          if (el.type !== "hidden"){
+            el.disabled = false;
+          }
+        });
+      } else {
+        col.classList.add("hidden-helper");
+        controls.forEach(el => {
+          if (el.type === "hidden") return;
+
+          if (el.tagName === "SELECT"){
+            el.selectedIndex = 0;
+          } else if (el.type === "checkbox" || el.type === "radio"){
+            el.checked = false;
+          } else if (el.type === "file"){
+            el.value = "";
+          } else {
+            el.value = "";
+          }
+
+          el.disabled = true;
+        });
+      }
+    }
+
+    function getDonationDonorTypeInput(row){
+      const card = row.querySelector('.donation-field-card[data-donation-role="donor-type"]');
+      return card ? card.querySelector("select, input") : null;
+    }
+
+    function updateDonationRowVisibility(row){
+      if (!row) return;
+
+      const donorTypeInput = getDonationDonorTypeInput(row);
+      if (!donorTypeInput) return;
+
+      const donorType = normalizeValue(donorTypeInput.value);
+
+      const nonMemberCard = row.querySelector('.donation-field-card[data-donation-role="non-member-name"]');
+      const memberCard = row.querySelector('.donation-field-card[data-donation-role="member-selector"]');
+
+      if (!donorType){
+        toggleDonationCard(nonMemberCard, true);
+        toggleDonationCard(memberCard, true);
+        return;
+      }
+
+      if (donorType.includes("anonymous")){
+        toggleDonationCard(nonMemberCard, false);
+        toggleDonationCard(memberCard, false);
+        return;
+      }
+
+      if (donorType.includes("non member")){
+        toggleDonationCard(nonMemberCard, true);
+        toggleDonationCard(memberCard, false);
+        return;
+      }
+
+      if (donorType === "member"){
+        toggleDonationCard(nonMemberCard, false);
+        toggleDonationCard(memberCard, true);
+        return;
+      }
+
+      toggleDonationCard(nonMemberCard, true);
+      toggleDonationCard(memberCard, true);
+    }
+
+    function refreshDonationConditionalFields(){
+      qsa("#donationRows .formset-row").forEach(row => {
+        updateDonationRowVisibility(row);
+      });
+    }
+
+    function bindDonationConditionalFields(){
+      const donationRows = byId("donationRows");
+      if (!donationRows) return;
+
+      donationRows.addEventListener("change", function(e){
+        const row = e.target.closest(".formset-row");
+        if (!row) return;
+
+        if (e.target.name && e.target.name.includes("donor_type")){
+          updateDonationRowVisibility(row);
+        }
+      });
+
+      refreshDonationConditionalFields();
+    }
+
+    function cloneFormsetRow(containerId, prefix){
+      const container = byId(containerId);
+      if (!container) return;
+
+      const rows = qsa(".formset-row", container);
+      if (!rows.length) return;
+
+      const clone = rows[0].cloneNode(true);
+      clearClonedRow(clone);
+      container.appendChild(clone);
+      reindexFormset(containerId, prefix);
+      enhanceWidgets();
+      markInvalidFields();
+
+      if (prefix === "donation"){
+        refreshDonationConditionalFields();
+      }
+    }
+
+    function setupFormset(containerId, prefix, addBtnId){
+      const addBtn = byId(addBtnId);
+      const container = byId(containerId);
+
+      if (addBtn){
+        addBtn.addEventListener("click", function(){
+          cloneFormsetRow(containerId, prefix);
+        });
+      }
+
+      if (container){
+        container.addEventListener("click", function(e){
+          const btn = e.target.closest(".remove-row-btn");
+          if (!btn) return;
+
+          const rows = qsa(".formset-row", container);
+          if (rows.length <= 1) return;
+
+          const row = btn.closest(".formset-row");
+          if (row){
+            row.remove();
+            reindexFormset(containerId, prefix);
+
+            if (prefix === "donation"){
+              refreshDonationConditionalFields();
+            }
+          }
+        });
+
+        reindexFormset(containerId, prefix);
+
+        if (prefix === "donation"){
+          refreshDonationConditionalFields();
+        }
+      }
+    }
+
+    function getCSRFTokenFromForm(form){
+      const csrf = form.querySelector('input[name="csrfmiddlewaretoken"]');
+      return csrf ? csrf.value : "";
+    }
+
+    function findBestFileInput(scopeEl){
+      const receiptImg = scopeEl.querySelector('input[type="file"][name$="receipt_image"]');
+      if (receiptImg && receiptImg.files && receiptImg.files.length) return receiptImg;
+
+      const proofDoc = scopeEl.querySelector('input[type="file"][name$="proof_document"]');
+      if (proofDoc && proofDoc.files && proofDoc.files.length) return proofDoc;
+
+      const proofFile = scopeEl.querySelector('input[type="file"][name$="proof_file"]');
+      if (proofFile && proofFile.files && proofFile.files.length) return proofFile;
+
+      const genericFile = scopeEl.querySelector('input[type="file"][name$="file"], input[type="file"]');
+      if (genericFile && genericFile.files && genericFile.files.length) return genericFile;
+
+      return null;
+    }
+
+    function findFieldBySuffix(root, suffixes){
+      const list = Array.isArray(suffixes) ? suffixes : [suffixes];
+      for (const suffix of list){
+        const el = root.querySelector(`[name$="${suffix}"]`);
+        if (el) return el;
+      }
+      return null;
+    }
+
+    function setValueIfEmpty(el, value){
+      if (!el || value === undefined || value === null || value === "") return;
+      if (!String(el.value || "").trim()){
+        el.value = value;
+      }
+    }
+
+    function applyOCRData(scopeEl, data){
+      const amount = data.amount ?? data.total_amount ?? "";
+      const date = data.date ?? data.transaction_date ?? "";
+      const vendor = data.vendor ?? data.merchant ?? "";
+      const description = data.description ?? "";
+      const rawText = data.raw_text ?? data.ocr_text ?? "";
+      const category = data.category ?? "";
+
+      const amountField = findFieldBySuffix(scopeEl, ["amount", "loose_total"]);
+      const dateField = findFieldBySuffix(scopeEl, ["date", "donations_date"]);
+      const descField = findFieldBySuffix(scopeEl, ["description", "other_donations_type"]);
+      const donorField = findFieldBySuffix(scopeEl, ["donor"]);
+      const ocrTextField = findFieldBySuffix(scopeEl, ["ocr_text"]);
+
+      setValueIfEmpty(amountField, amount);
+      setValueIfEmpty(dateField, date);
+
+      if (descField && !descField.value){
+        descField.value = description || vendor || category || rawText || "";
+      }
+
+      if (donorField && !donorField.value && vendor){
+        donorField.value = vendor;
+      }
+
+      if (ocrTextField){
+        ocrTextField.value = rawText || JSON.stringify(data, null, 2);
+      }
+    }
+
+    async function runOCR(button){
+      const scopeMode = button.dataset.scope || "form";
+      const form = button.closest("form");
+      if (!form) return;
+
+      const scopeEl = scopeMode === "row" ? button.closest(".row-card") : form;
+      if (!scopeEl) return;
+
+      const fileInput = findBestFileInput(scopeEl);
+      if (!fileInput){
+        alert("Please upload a proof file first.");
+        return;
+      }
+
+      const outputBox = scopeEl.querySelector(".ocr-output") || form.querySelector(".ocr-output");
+      const resultPre = outputBox ? outputBox.querySelector(".ocr-result-text") : null;
+
+      const ocrUrl = form.dataset.ocrUrl || form.action;
+      const ocrFileKey = form.dataset.ocrFileKey || "";
+      const submitFileKey = ocrFileKey || fileInput.name || "file";
+
+      const fd = new FormData();
+      fd.append("csrfmiddlewaretoken", getCSRFTokenFromForm(form));
+      fd.append("action", "OCR");
+
+      const file = fileInput.files[0];
+      fd.append(submitFileKey, file, file.name);
+
+      button.classList.add("ocr-loading");
+      button.disabled = true;
+      button.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Running OCR';
+
+      try {
+        const response = await fetch(ocrUrl, {
+          method: "POST",
+          body: fd,
+          headers: {
+            "X-Requested-With": "XMLHttpRequest"
+          }
+        });
+
+        const raw = await response.json();
+
+        let normalized;
+        if (Object.prototype.hasOwnProperty.call(raw, "success")) {
+          normalized = raw;
+        } else if (raw.error) {
+          normalized = { success: false, error: raw.error };
+        } else {
+          normalized = { success: true, data: raw };
+        }
+
+        if (!response.ok || !normalized.success){
+          throw new Error(normalized.error || "OCR failed.");
+        }
+
+        const data = normalized.data || {};
+        applyOCRData(scopeEl, data);
+
+        if (outputBox && resultPre){
+          outputBox.classList.add("show");
+          resultPre.textContent = JSON.stringify(data, null, 2);
+        }
+      } catch (err) {
+        alert(err.message || "OCR failed.");
+      } finally {
+        button.classList.remove("ocr-loading");
+        button.disabled = false;
+        button.innerHTML = '<i class="bi bi-magic me-1"></i>Run OCR';
+      }
+    }
+
+    function bindOCRButtons(){
+      document.addEventListener("click", function(e){
+        const runBtn = e.target.closest(".run-ocr-btn");
+        if (runBtn){
+          runOCR(runBtn);
+          return;
+        }
+
+        const clearBtn = e.target.closest(".clear-ocr-btn");
+        if (clearBtn){
+          const box = clearBtn.closest(".ocr-output");
+          if (box){
+            box.classList.remove("show");
+            const pre = box.querySelector(".ocr-result-text");
+            if (pre) pre.textContent = "";
+          }
+        }
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", function(){
+      enhanceWidgets();
+      markInvalidFields();
+      bindSwitcher();
+      bindOCRButtons();
+      setupFormset("envelopeRows", "envelope", "addEnvelopeRow");
+      setupFormset("donationRows", "donation", "addDonationRow");
+      setupFormset("incomeRows", "income", "addIncomeRow");
+      bindDonationConditionalFields();
+      activateInitialPane();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Income Categories | Church Finance</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-hover: #3a56d4;
+            --bg-color: #f3f4f6;
+            --card-border: #eaecf0;
+            --text-dark: #101828;
+            --text-muted: #667085;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Card Styling */
+        .card {
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(16, 24, 40, 0.1);
+            background: white;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--card-border);
+            padding: 1.25rem 1.5rem;
+        }
+
+        .card-header h6 {
+            color: var(--text-dark);
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin: 0;
+        }
+
+        /* Form Styling */
+        .form-label {
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: #344054;
+        }
+
+        .form-control, .form-check-input {
+            border-radius: 8px;
+            border: 1px solid #d0d5dd;
+            padding: 0.625rem 0.875rem;
+            box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+        }
+
+        .form-control:focus, .form-check-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+        }
+
+        /* Fallback for checkbox visibility */
+        input[type="checkbox"]:not(.form-check-input) {
+            transform: scale(1.2);
+            margin-right: 10px;
+            accent-color: var(--primary-color);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            border-radius: 8px;
+            padding: 0.625rem 1.25rem;
+            font-weight: 500;
+        }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+
+        .btn-light-secondary {
+            background: white;
+            border: 1px solid #d0d5dd;
+            color: #344054;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        .btn-light-secondary:hover { background-color: #f9fafb; color: #101828; }
+
+        /* Table Styling */
+        .table thead th {
+            background-color: #f9fafb;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--card-border);
+            padding: 0.75rem 1.5rem;
+        }
+
+        .table tbody td {
+            padding: 1rem 1.5rem;
+            vertical-align: middle;
+            color: #475467;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        /* Badges */
+        .badge-soft-success {
+            background-color: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+        .badge-soft-danger {
+            background-color: #fef2f2;
+            color: #d92d20;
+            border: 1px solid #fecaca;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        /* Icons */
+        .icon-box {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            margin-right: 12px;
+            font-size: 0.9rem;
+        }
+        .bg-icon-general { background-color: #ecfdf5; color: #059669; }
+        .bg-icon-restricted { background-color: #fef2f2; color: #d92d20; }
+
+        /* Action Buttons */
+        .btn-icon {
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+        .btn-icon:hover { color: var(--primary-color); }
+        .btn-icon-danger:hover { color: #d92d20; }
+    </style>
+</head>
+<body>
+
+    {% include 'navbar.html' %}
+
+    <div class="container-fluid py-5 px-lg-5">
+
+        <div class="row align-items-center mb-5">
+            <div class="col-md-8">
+                <h1 class="h3 fw-bold text-dark mb-2">Income Categories</h1>
+                <p class="text-muted mb-0">Define sources of 'Other Income' (e.g., Bookstore, Grants, Facility Rental).</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{% url 'add_other_income' %}" class="btn btn-light-secondary shadow-sm">
+                    <i class="fas fa-arrow-left fa-sm me-2"></i> Back to Entry
+                </a>
+            </div>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm mb-4" role="alert"
+                     style="border-left: 4px solid {% if message.tags == 'success' %}#198754{% else %}#dc3545{% endif %};">
+                    <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="row g-4">
+
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h6><i class="fas fa-plus-circle me-2 text-primary"></i>Create Category</h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <form method="post">
+                            {% csrf_token %}
+
+                            {% if form.non_field_errors %}
+                                <div class="alert alert-danger small mb-3">
+                                    {{ form.non_field_errors }}
+                                </div>
+                            {% endif %}
+
+                            <div class="mb-3">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">Category Name</label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text text-muted small">E.g., "Hall Rental", "Bookstore"</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label">Description <span class="text-muted fw-normal">(Optional)</span></label>
+                                {{ form.description }}
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="form-check p-3 border rounded bg-light d-flex align-items-start">
+                                    <div class="me-2 mt-1">
+                                        {{ form.is_restricted }}
+                                    </div>
+                                    <div>
+                                        <label class="form-check-label fw-semibold text-dark" for="{{ form.is_restricted.id_for_label }}">
+                                            Restricted Fund?
+                                        </label>
+                                        <div class="form-text small mt-1 text-secondary" style="line-height: 1.4;">
+                                            Funds in this category <strong>cannot</strong> be used for general operations.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">
+                                Save Category
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">Existing Categories</h6>
+                        <span class="badge bg-light text-dark border rounded-pill">{{ categories.count }} Total</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 35%;">Name</th>
+                                    <th style="width: 20%;">Type</th>
+                                    <th style="width: 30%;">Description</th>
+                                    <th class="text-end pe-4" style="width: 15%;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for category in categories %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if category.is_restricted %}
+                                                <div class="icon-box bg-icon-restricted">
+                                                    <i class="fas fa-lock"></i>
+                                                </div>
+                                            {% else %}
+                                                <div class="icon-box bg-icon-general">
+                                                    <i class="fas fa-tag"></i>
+                                                </div>
+                                            {% endif %}
+                                            <span class="fw-semibold text-dark">{{ category.name }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if category.is_restricted %}
+                                            <span class="badge badge-soft-danger">
+                                                <i class="fas fa-lock me-1"></i>Restricted
+                                            </span>
+                                        {% else %}
+                                            <span class="badge badge-soft-success">
+                                                <i class="fas fa-check-circle me-1"></i>General
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted small">
+                                        {{ category.description|default:"-"|truncatechars:40 }}
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <a href="#" class="btn btn-icon me-2" title="Edit">
+                                            <i class="fas fa-pen fa-sm"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-icon btn-icon-danger" title="Delete">
+                                            <i class="fas fa-trash fa-sm"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-5">
+                                        <div class="text-muted opacity-50 mb-3">
+                                            <i class="fas fa-folder-open fa-3x"></i>
+                                        </div>
+                                        <h6 class="text-muted">No categories found</h6>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+</html>

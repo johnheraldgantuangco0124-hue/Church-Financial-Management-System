@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+</head>
+<body>
+    <header>
+        <h1>Welcome to the Home Page</h1>
+        {% if user.is_authenticated %}
+            <p>Hello, {{ user.first_name }} {{ user.last_name }}!</p>
+            <nav>
+                <a href="{% url 'logout' %}">Logout</a>
+            </nav>
+        {% else %}
+            <p>You are not logged in. Please <a href="{% url 'login' %}">login</a> or <a href="{% url 'register' %}">register</a>.</p>
+        {% endif %}
+    </header>
+    <main>
+        <h2>About the Platform</h2>
+        <p>This platform supports two user types:</p>
+        <ul>
+            <li><strong>Members</strong> can select an organization (Mens, Womens, or YoungPeople).</li>
+            <li><strong>Treasurers</strong> can select a term duration (1 or 2 years).</li>
+        </ul>
+    </main>
+    <footer>
+        <p>&copy; 2024 Your Organization. All rights reserved.</p>
+    </footer>
+</body>
+  <footer class="container mt-5 text-center">
+        <p>Living Stone Evangelical Free Church Information System</p>
+    </footer>
+</html>

@@ -1,0 +1,1221 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ report_title|default:"Financial Report" }}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <style>
+        :root{
+            --bg: #f4f7fb;
+            --card: #ffffff;
+            --card-soft: #f8fafc;
+            --text: #0f172a;
+            --muted: #64748b;
+            --line: #e2e8f0;
+
+            --brand: #0b5ed7;
+            --brand-dark: #0f172a;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --info: #0284c7;
+
+            --shadow: 0 16px 40px rgba(15, 23, 42, .08);
+            --shadow-soft: 0 8px 24px rgba(15, 23, 42, .06);
+            --radius: 18px;
+        }
+
+        body{
+            background:
+                radial-gradient(1000px 500px at 10% -10%, rgba(59,130,246,.10), transparent 60%),
+                radial-gradient(900px 500px at 100% 0%, rgba(16,185,129,.08), transparent 60%),
+                var(--bg);
+            color: var(--text);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .page-wrap{
+            padding: 28px 0 42px;
+        }
+
+        .hero-card{
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 48%, #0b5ed7 140%);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .hero-card::before{
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(500px 180px at 15% 0%, rgba(255,255,255,.12), transparent 60%),
+                radial-gradient(500px 180px at 85% 100%, rgba(255,255,255,.10), transparent 60%);
+            pointer-events: none;
+        }
+
+        .hero-content{
+            position: relative;
+            z-index: 1;
+            padding: 24px 24px 20px;
+        }
+
+        .hero-title{
+            font-size: 1.95rem;
+            font-weight: 800;
+            letter-spacing: .2px;
+            margin: 0 0 8px;
+        }
+
+        .hero-subtitle{
+            color: rgba(255,255,255,.80);
+            font-size: .97rem;
+            line-height: 1.5;
+            margin-bottom: 18px;
+            max-width: 900px;
+        }
+
+        .hero-meta{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .hero-pill{
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: .55rem .9rem;
+            border-radius: 999px;
+            background: rgba(255,255,255,.10);
+            border: 1px solid rgba(255,255,255,.14);
+            font-size: .86rem;
+            color: rgba(255,255,255,.92);
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-pill{
+            border-radius: 999px;
+            padding: .6rem 1rem;
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow-soft);
+            background: rgba(255,255,255,.92);
+            backdrop-filter: blur(6px);
+            font-weight: 600;
+        }
+
+        .btn-pill:hover{
+            transform: translateY(-1px);
+        }
+
+        .toolbar{
+            margin-top: 18px;
+        }
+
+        .filter-card,
+        .summary-panel,
+        .report-card,
+        .status-card{
+            background: rgba(255,255,255,.94);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .filter-card{
+            backdrop-filter: blur(8px);
+        }
+
+        .filter-card .form-label{
+            color: var(--muted);
+            font-weight: 800;
+            font-size: .74rem;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .input-group-text{
+            background: #f8fafc;
+            border-color: var(--line);
+        }
+
+        .form-select, .btn{
+            border-radius: 12px;
+        }
+
+        .form-select{
+            border-color: var(--line);
+        }
+
+        .summary-tile{
+            height: 100%;
+            background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.98));
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 18px 18px 16px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .summary-label{
+            font-size: .75rem;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .summary-value{
+            font-size: 1.45rem;
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: .2px;
+            margin-bottom: 4px;
+        }
+
+        .summary-note{
+            color: var(--muted);
+            font-size: .85rem;
+        }
+
+        .section-heading{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .section-title{
+            font-size: .78rem;
+            text-transform: uppercase;
+            letter-spacing: .10em;
+            font-weight: 900;
+            margin: 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e8eef6;
+            display: inline-block;
+        }
+
+        .section-note{
+            display:inline-flex;
+            align-items:center;
+            gap: 8px;
+            padding: .36rem .72rem;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: #f8fafc;
+            color: var(--muted);
+            font-size: .82rem;
+        }
+
+        .table-soft{
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .table thead th{
+            background: #f8fafc;
+            color: var(--muted);
+            font-weight: 900;
+            font-size: .77rem;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--line);
+            vertical-align: middle;
+        }
+
+        .table tbody td{
+            border-color: #eef2f7;
+            vertical-align: middle;
+        }
+
+        .table-hover tbody tr:hover{
+            background: #fafcff;
+        }
+
+        .report-card{
+            overflow: hidden;
+            margin-bottom: 24px;
+            page-break-inside: avoid;
+        }
+
+        .card-head{
+            background: linear-gradient(135deg, #0f172a 0%, #1f2937 55%, #0b5ed7 130%);
+            color: #fff;
+            border-bottom: 1px solid rgba(255,255,255,.10);
+            padding: 16px 20px;
+        }
+
+        .head-left{
+            display:flex;
+            align-items:center;
+            gap: 12px;
+        }
+
+        .head-icon{
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            background: rgba(255,255,255,.14);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size: 1.1rem;
+        }
+
+        .head-title{
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: .2px;
+        }
+
+        .head-sub{
+            color: rgba(255,255,255,.76);
+            font-size: .88rem;
+            margin-top: 3px;
+        }
+
+        .net-badge{
+            border-radius: 16px;
+            padding: .8rem 1rem;
+            font-weight: 700;
+            min-width: 210px;
+            border: 1px solid rgba(255,255,255,.20);
+            background: rgba(255,255,255,.10);
+            backdrop-filter: blur(6px);
+            text-align: right;
+        }
+
+        .net-badge .label{
+            color: rgba(255,255,255,.75);
+            font-size: .78rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .net-badge .value{
+            font-size: 1.15rem;
+            font-weight: 900;
+            letter-spacing: .2px;
+        }
+
+        .balance-card{
+            background: linear-gradient(180deg, rgba(255,255,255,.99), rgba(248,250,252,.97));
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 15px 15px 13px;
+            box-shadow: var(--shadow-soft);
+            height: 100%;
+        }
+
+        .balance-head{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .balance-label{
+            font-size: .74rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--muted);
+            font-weight: 900;
+        }
+
+        .balance-chip{
+            font-size: .72rem;
+            font-weight: 800;
+            padding: .22rem .56rem;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            color: var(--muted);
+            background: #f8fafc;
+            white-space: nowrap;
+        }
+
+        .balance-value{
+            font-size: 1.35rem;
+            font-weight: 900;
+            margin: 4px 0 2px;
+            letter-spacing: .2px;
+        }
+
+        .hint{
+            color: var(--muted);
+            font-size: .84rem;
+            margin-top: 4px;
+        }
+
+        .mini-metrics{
+            border-top: 1px dashed var(--line);
+            margin-top: 12px;
+            padding-top: 11px;
+            font-size: .85rem;
+            color: var(--muted);
+        }
+
+        .mini-metrics strong{
+            color: var(--text);
+        }
+
+        .bg-summary{
+            background: linear-gradient(180deg, #f8fafc, #eef2f7);
+            border: 1px solid var(--line);
+        }
+
+        .stat-row{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .status-card{
+            padding: 18px 18px 14px;
+            margin-bottom: 24px;
+        }
+
+        .muted-small{
+            color: var(--muted);
+            font-size: .86rem;
+        }
+
+        .currency{
+            white-space: nowrap;
+        }
+
+        .empty-box{
+            border: 1px dashed #cbd5e1;
+            border-radius: 16px;
+            background: #f8fafc;
+            padding: 28px 16px;
+            text-align: center;
+            color: var(--muted);
+        }
+
+        .history-trigger{
+            border-radius: 999px;
+            font-size: .78rem;
+            font-weight: 700;
+            padding: .35rem .72rem;
+            white-space: nowrap;
+        }
+
+        .history-balance-cell{
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .modal-content{
+            border: 0;
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 24px 56px rgba(15,23,42,.18);
+        }
+
+        .modal-header.modal-fund-head{
+            background: linear-gradient(135deg, #0f172a 0%, #1f2937 55%, #0b5ed7 130%);
+            color: #fff;
+            border-bottom: 0;
+            padding: 18px 22px;
+        }
+
+        .modal-fund-subtitle{
+            color: rgba(255,255,255,.78);
+            font-size: .9rem;
+            margin-top: 2px;
+        }
+
+        .btn-close-white{
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+        .mini-stat-card{
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            padding: 16px;
+            height: 100%;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .mini-stat-label{
+            font-size: .74rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            font-weight: 800;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .mini-stat-value{
+            font-size: 1.18rem;
+            font-weight: 900;
+            line-height: 1.2;
+        }
+
+        .history-empty{
+            text-align: center;
+            padding: 26px 14px;
+            color: var(--muted);
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 16px;
+        }
+
+        @media (min-width: 992px){
+            .divider-lg{
+                border-right: 1px solid var(--line);
+            }
+        }
+
+        @media (max-width: 767.98px){
+            .hero-title{
+                font-size: 1.55rem;
+            }
+
+            .net-badge{
+                min-width: unset;
+                width: 100%;
+                text-align: left;
+                margin-top: 12px;
+            }
+
+            .card-head{
+                flex-direction: column;
+                align-items: flex-start !important;
+            }
+
+            .history-balance-cell{
+                justify-content: flex-start;
+            }
+        }
+
+        @media print{
+            body{
+                background: white;
+            }
+            .no-print{
+                display: none !important;
+            }
+            .hero-card,
+            .filter-card,
+            .status-card,
+            .report-card,
+            .summary-panel,
+            .balance-card,
+            .summary-tile{
+                box-shadow: none !important;
+                background: white !important;
+                border: 1px solid #cbd5e1 !important;
+            }
+            .card-head{
+                background: #eef2f7 !important;
+                color: #111827 !important;
+            }
+            .head-sub,
+            .net-badge .label{
+                color: #475569 !important;
+            }
+            .net-badge{
+                background: white !important;
+                border: 1px solid #cbd5e1 !important;
+                color: #111827 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+{% include 'navbar.html' %}
+
+<div class="container page-wrap">
+
+    <div class="hero-card mb-4">
+        <div class="hero-content">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
+                <div>
+                    <h1 class="hero-title">{{ report_title|default:"Financial Report" }}</h1>
+                    <div class="hero-subtitle">
+                        Professional financial reporting view for unrestricted income, restricted funds, expenses,
+                        transfers, and period-based balance summaries.
+                    </div>
+
+                    <div class="hero-meta">
+                        <span class="hero-pill">
+                            <i class="bi bi-bar-chart-line-fill"></i>
+                            {{ current_report_type|title }} View
+                        </span>
+
+                        <span class="hero-pill">
+                            <i class="bi bi-calendar-range"></i>
+                            {% if current_filter %}
+                                Filtered: {{ current_filter }}
+                            {% else %}
+                                All Available Periods
+                            {% endif %}
+                        </span>
+
+                        <span class="hero-pill">
+                            <i class="bi bi-collection"></i>
+                            {{ weekly_report|length }} Period{{ weekly_report|length|pluralize }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="toolbar no-print">
+                    <button onclick="window.print()" class="btn btn-pill">
+                        <i class="bi bi-printer-fill me-2"></i>Print Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-card p-3 p-md-4 mb-4 no-print">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Report Perspective</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-graph-up"></i></span>
+                    <select name="report_type" class="form-select" onchange="this.form.submit()">
+                        <option value="weekly" {% if current_report_type == 'weekly' %}selected{% endif %}>Weekly Breakdown</option>
+                        <option value="monthly" {% if current_report_type == 'monthly' %}selected{% endif %}>Monthly Breakdown</option>
+                        <option value="yearly" {% if current_report_type == 'yearly' %}selected{% endif %}>Yearly Breakdown</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <label class="form-label">Filter Period</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                    <select name="date_filter" class="form-select">
+                        <option value="">-- Show All Periods --</option>
+                        {% for period in available_periods %}
+                            <option value="{{ period }}" {% if current_filter == period %}selected{% endif %}>
+                                {{ period }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1" style="border-radius: 999px;">
+                    <i class="bi bi-filter me-1"></i>Apply
+                </button>
+                <a href="?report_type={{ current_report_type }}" class="btn btn-outline-secondary" style="border-radius: 999px;" title="Clear Date Filter">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="status-card">
+        <div class="section-heading">
+            <div>
+                <h6 class="section-title text-warning mb-0" style="border-color:#fbbf24 !important;">
+                    Current Restricted Funds Status
+                </h6>
+                <div class="muted-small mt-1">
+                    Treasurer snapshot of total collected, total spent, and current balance per restricted fund.
+                </div>
+            </div>
+
+            <span class="section-note">
+                <i class="bi bi-shield-lock"></i>
+                Live Restricted Fund Snapshot
+            </span>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-lg-4 col-md-6">
+                <div class="summary-tile">
+                    <div class="summary-label">Total Restricted Collected</div>
+                    <div class="summary-value text-primary currency">
+                        ₱{{ restricted_income_summary.total_collected|default:0|intcomma }}
+                    </div>
+                    <div class="summary-note">Restricted donations and restricted other income combined.</div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="summary-tile">
+                    <div class="summary-label">Total Restricted Spent</div>
+                    <div class="summary-value text-danger currency">
+                        ₱{{ restricted_income_summary.total_spent|default:0|intcomma }}
+                    </div>
+                    <div class="summary-note">Expenses charged against restricted-purpose funds.</div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-12">
+                <div class="summary-tile">
+                    <div class="summary-label">Current Restricted Balance</div>
+                    <div class="summary-value {% if restricted_income_summary.total_balance >= 0 %}text-success{% else %}text-danger{% endif %} currency">
+                        ₱{{ restricted_income_summary.total_balance|default:0|intcomma }}
+                    </div>
+                    <div class="summary-note">Net remaining balance across all restricted categories.</div>
+                </div>
+            </div>
+        </div>
+
+        {% if restricted_income_updates %}
+        <div class="table-responsive table-soft">
+            <table class="table table-sm table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 32%;">Restricted Fund</th>
+                        <th class="text-end">Total Collected</th>
+                        <th class="text-end">Total Spent</th>
+                        <th class="text-end">Current Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in restricted_income_updates %}
+                    <tr>
+                        <td class="fw-semibold">{{ item.category }}</td>
+                        <td class="text-end currency">₱{{ item.total_collected|default:0|intcomma }}</td>
+                        <td class="text-end text-danger currency">
+                            {% if item.total_spent and item.total_spent != 0 %}
+                                (₱{{ item.total_spent|intcomma }})
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="history-balance-cell">
+                                <span class="fw-bold {% if item.current_balance >= 0 %}text-success{% else %}text-danger{% endif %} currency">
+                                    ₱{{ item.current_balance|default:0|intcomma }}
+                                </span>
+
+                                {% if item.history_count %}
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-outline-primary history-trigger no-print"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#restrictedHistoryModal{{ forloop.counter }}"
+                                >
+                                    <i class="bi bi-clock-history me-1"></i>View History
+                                </button>
+                                {% else %}
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-outline-secondary history-trigger no-print"
+                                    disabled
+                                >
+                                    <i class="bi bi-clock-history me-1"></i>No History
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-light fw-bold">
+                        <th>Total</th>
+                        <th class="text-end currency">₱{{ restricted_income_summary.total_collected|default:0|intcomma }}</th>
+                        <th class="text-end text-danger currency">(₱{{ restricted_income_summary.total_spent|default:0|intcomma }})</th>
+                        <th class="text-end {% if restricted_income_summary.total_balance >= 0 %}text-success{% else %}text-danger{% endif %} currency">
+                            ₱{{ restricted_income_summary.total_balance|default:0|intcomma }}
+                        </th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-box">
+            <i class="bi bi-shield-x fs-2 d-block mb-2"></i>
+            No restricted fund updates available yet.
+        </div>
+        {% endif %}
+    </div>
+
+    {% if weekly_report %}
+        {% for item in weekly_report %}
+        <div class="report-card">
+
+            <div class="card-head d-flex justify-content-between align-items-center">
+                <div class="head-left">
+                    <div class="head-icon">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                    <div>
+                        <h5 class="head-title">Period: {{ item.week }}</h5>
+                        <div class="head-sub">{{ current_report_type|title }} Financial Snapshot</div>
+                    </div>
+                </div>
+
+                <div class="net-badge">
+                    <span class="label">Net Fund Flow</span>
+                    <span class="value {% if item.summary.weekly_cash_on_hand|default:0 >= 0 %}text-white{% else %}text-warning{% endif %}">
+                        ₱{{ item.summary.weekly_cash_on_hand|default:0|intcomma }}
+                    </span>
+                    <div style="font-size:.78rem; color: rgba(255,255,255,.72); margin-top:4px;">
+                        Income − Real Expenses only
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-3 p-md-4">
+
+                <div class="row g-3 mb-4">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="balance-card">
+                            <div class="balance-head">
+                                <div class="balance-label"><i class="bi bi-wallet2 me-1"></i>Unrestricted Current Balance</div>
+                                <div class="balance-chip">General Fund</div>
+                            </div>
+                            <div class="balance-value {% if item.balances.unrestricted_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                ₱{{ item.balances.unrestricted_balance|default:0|intcomma }}
+                            </div>
+                            <div class="hint">General fund balance for this period summary.</div>
+
+                            {% if item.balances.unrestricted_income is not None and item.balances.unrestricted_expenses is not None %}
+                            <div class="mini-metrics">
+                                Income: <strong>₱{{ item.balances.unrestricted_income|default:0|intcomma }}</strong><br>
+                                Expenses: <strong class="text-danger">(₱{{ item.balances.unrestricted_expenses|default:0|intcomma }})</strong>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6">
+                        <div class="balance-card">
+                            <div class="balance-head">
+                                <div class="balance-label"><i class="bi bi-shield-lock me-1"></i>Restricted Total Balance</div>
+                                <div class="balance-chip">All Funds</div>
+                            </div>
+                            <div class="balance-value {% if item.balances.total_restricted_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                ₱{{ item.balances.total_restricted_balance|default:0|intcomma }}
+                            </div>
+                            <div class="hint">Sum of all restricted category balances.</div>
+
+                            {% if item.balances.total_restricted_income is not None and item.balances.total_restricted_expenses is not None %}
+                            <div class="mini-metrics">
+                                Income: <strong>₱{{ item.balances.total_restricted_income|default:0|intcomma }}</strong><br>
+                                Expenses: <strong class="text-danger">(₱{{ item.balances.total_restricted_expenses|default:0|intcomma }})</strong>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 col-md-12">
+                        <div class="balance-card">
+                            <div class="balance-head">
+                                <div class="balance-label"><i class="bi bi-layers me-1"></i>Overall Balance</div>
+                                <div class="balance-chip">Unrestricted + Restricted</div>
+                            </div>
+                            <div class="balance-value {% if item.balances.overall_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                ₱{{ item.balances.overall_balance|default:0|intcomma }}
+                            </div>
+                            <div class="hint">Combined unrestricted and restricted balance.</div>
+
+                            {% if item.balances.overall_income is not None and item.balances.overall_expenses is not None %}
+                            <div class="mini-metrics">
+                                Income: <strong>₱{{ item.balances.overall_income|default:0|intcomma }}</strong><br>
+                                Expenses: <strong class="text-danger">(₱{{ item.balances.overall_expenses|default:0|intcomma }})</strong>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {% if item.balances.restricted_funds %}
+                <div class="mb-4">
+                    <div class="section-heading">
+                        <h6 class="section-title text-warning mb-0" style="border-color: #fbbf24 !important;">
+                            Restricted Fund Balances by Category
+                        </h6>
+                        <span class="section-note">
+                            <i class="bi bi-info-circle"></i>
+                            Income − Expenses = Balance
+                        </span>
+                    </div>
+
+                    <div class="table-responsive table-soft">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th class="text-end">Income</th>
+                                    <th class="text-end">Expenses</th>
+                                    <th class="text-end">Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rf in item.balances.restricted_funds %}
+                                <tr>
+                                    <td class="fw-semibold">{{ rf.category }}</td>
+                                    <td class="text-end currency">₱{{ rf.income|default:0|intcomma }}</td>
+                                    <td class="text-end text-danger currency">
+                                        {% if rf.expenses and rf.expenses != 0 %}
+                                            (₱{{ rf.expenses|intcomma }})
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end fw-bold {% if rf.balance >= 0 %}text-success{% else %}text-danger{% endif %} currency">
+                                        ₱{{ rf.balance|default:0|intcomma }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="row g-4">
+
+                    <div class="col-lg-7 col-md-12 divider-lg pe-lg-4">
+
+                        <h6 class="section-title text-primary mb-3">General Income (Unrestricted)</h6>
+                        <div class="table-responsive table-soft mb-4">
+                            <table class="table table-sm table-hover mb-0">
+                                <tbody>
+                                    <tr>
+                                        <td style="width: 70%;">Tithes</td>
+                                        <td class="text-end fw-bold currency">₱{{ item.data.tithes|default:0|intcomma }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sunday Offering</td>
+                                        <td class="text-end fw-bold currency">₱{{ item.data.offering|default:0|intcomma }}</td>
+                                    </tr>
+
+                                    {% for cat in item.data.unres_donations %}
+                                    <tr>
+                                        <td class="text-muted"><small class="fst-italic">Donation: {{ cat.name }}</small></td>
+                                        <td class="text-end text-muted currency">₱{{ cat.amount|default:0|intcomma }}</td>
+                                    </tr>
+                                    {% endfor %}
+
+                                    {% for cat in item.data.unres_other %}
+                                    <tr>
+                                        <td class="text-muted"><small class="fst-italic">Other: {{ cat.name }}</small></td>
+                                        <td class="text-end text-muted currency">₱{{ cat.amount|default:0|intcomma }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-light">
+                                        <th class="text-primary">Total General Income</th>
+                                        <th class="text-end text-primary currency">₱{{ item.summary.total_general_income|default:0|intcomma }}</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <h6 class="section-title text-warning mb-3" style="border-color: #fbbf24 !important;">Restricted Income</h6>
+                        <div class="table-responsive table-soft">
+                            <table class="table table-sm table-hover mb-0">
+                                <tbody>
+                                    {% for cat in item.data.res_donations %}
+                                    <tr>
+                                        <td style="width: 70%;">{{ cat.name }}</td>
+                                        <td class="text-end currency">₱{{ cat.amount|default:0|intcomma }}</td>
+                                    </tr>
+                                    {% empty %}
+                                        {% if not item.data.res_other %}
+                                        <tr><td colspan="2" class="text-muted fst-italic">No restricted income recorded.</td></tr>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% for cat in item.data.res_other %}
+                                    <tr>
+                                        <td>{{ cat.name }}</td>
+                                        <td class="text-end currency">₱{{ cat.amount|default:0|intcomma }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-light">
+                                        <th class="text-warning">Total Restricted Income</th>
+                                        <th class="text-end text-warning currency">₱{{ item.summary.total_restricted_income|default:0|intcomma }}</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-5 col-md-12 ps-lg-4">
+
+                        <h6 class="section-title text-danger mb-3" style="border-color: #ef4444 !important;">Expenses</h6>
+
+                        <div class="mb-3">
+                            <div class="section-heading mb-2">
+                                <strong class="text-dark small text-uppercase">General Expenses</strong>
+                                <span class="section-note"><i class="bi bi-receipt"></i>Outflows</span>
+                            </div>
+                            <div class="table-responsive table-soft">
+                                <table class="table table-sm table-hover mb-0">
+                                    <tbody>
+                                        {% for cat in item.data.gen_expenses %}
+                                        <tr>
+                                            <td class="text-muted">{{ cat.name }}</td>
+                                            <td class="text-end text-danger currency">₱{{ cat.amount|default:0|intcomma }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td class="text-muted fst-italic">None</td><td class="text-end">-</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="section-heading mb-2">
+                                <strong class="text-dark small text-uppercase">Restricted Expenses</strong>
+                                <span class="section-note"><i class="bi bi-shield-lock"></i>Fund Use</span>
+                            </div>
+                            <div class="table-responsive table-soft">
+                                <table class="table table-sm table-hover mb-0">
+                                    <tbody>
+                                        {% for cat in item.data.res_expenses %}
+                                        <tr>
+                                            <td class="text-muted">{{ cat.name }}</td>
+                                            <td class="text-end text-danger currency">₱{{ cat.amount|default:0|intcomma }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td class="text-muted fst-italic">None</td><td class="text-end">-</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center border-top pt-3 mb-3">
+                            <strong class="text-danger">Total Expenses</strong>
+                            <strong class="text-danger currency">(₱{{ item.summary.total_expenses|default:0|intcomma }})</strong>
+                        </div>
+
+                        <h6 class="section-title text-secondary mb-3" style="border-color: #94a3b8 !important;">Bank Transfers (Not Expenses)</h6>
+
+                        <div class="table-responsive table-soft mb-3">
+                            <table class="table table-sm table-hover mb-0">
+                                <tbody>
+                                    <tr>
+                                        <td style="width: 70%;">
+                                            <span class="text-muted">Bank Deposits</span><br>
+                                            <small class="text-muted fst-italic">Cash → Bank</small>
+                                        </td>
+                                        <td class="text-end text-danger fw-bold currency">
+                                            (₱{{ item.bank.deposits|default:0|intcomma }})
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span class="text-muted">Bank Withdrawals</span><br>
+                                            <small class="text-muted fst-italic">Bank → Cash</small>
+                                        </td>
+                                        <td class="text-end text-success fw-bold currency">
+                                            ₱{{ item.bank.withdrawals|default:0|intcomma }}
+                                        </td>
+                                    </tr>
+                                    <tr class="table-light">
+                                        <th class="text-secondary">Net Transfer to Bank</th>
+                                        <th class="text-end {% if item.bank.net_to_bank|default:0 > 0 %}text-danger{% else %}text-success{% endif %} currency">
+                                            ₱{{ item.bank.net_to_bank|default:0|intcomma }}
+                                        </th>
+                                    </tr>
+                                    <tr class="table-light">
+                                        <th class="text-secondary">Net Effect on Physical Cash</th>
+                                        <th class="text-end {% if item.bank.net_to_physical_cash|default:0 >= 0 %}text-success{% else %}text-danger{% endif %} currency">
+                                            ₱{{ item.bank.net_to_physical_cash|default:0|intcomma }}
+                                        </th>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="bg-summary p-3 p-md-4 rounded-4">
+                            <h6 class="fw-bold text-center text-secondary mb-3 text-uppercase small">
+                                {{ current_report_type|title }} Summary
+                            </h6>
+
+                            <div class="stat-row">
+                                <span class="text-muted small">General Income</span>
+                                <span class="fw-bold currency">₱{{ item.summary.total_general_income|default:0|intcomma }}</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="text-muted small">Restricted Income</span>
+                                <span class="fw-bold currency">₱{{ item.summary.total_restricted_income|default:0|intcomma }}</span>
+                            </div>
+
+                            <hr class="my-3">
+
+                            <div class="stat-row">
+                                <span class="fw-bold">Total Gross Income</span>
+                                <span class="fw-bold currency">₱{{ item.summary.total_weekly_income|default:0|intcomma }}</span>
+                            </div>
+
+                            <div class="stat-row">
+                                <span class="text-danger">Less Expenses (Real)</span>
+                                <span class="text-danger currency">(₱{{ item.summary.total_expenses|default:0|intcomma }})</span>
+                            </div>
+
+                            <div class="stat-row">
+                                <span class="text-muted small">Bank Deposits (Cash → Bank)</span>
+                                <span class="text-danger currency">(₱{{ item.summary.total_bank_deposits|default:0|intcomma }})</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="text-muted small">Bank Withdrawals (Bank → Cash)</span>
+                                <span class="text-success currency">₱{{ item.summary.total_bank_withdrawals|default:0|intcomma }}</span>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center bg-white p-3 rounded-4 border mb-2"
+                                 style="border-color: rgba(22,163,74,.35) !important; box-shadow: var(--shadow-soft);">
+                                <span class="fw-bold text-uppercase small" style="color:#0f172a;">
+                                    Net Fund Flow
+                                </span>
+                                <span class="fw-bold {% if item.summary.weekly_cash_on_hand|default:0 >= 0 %}text-success{% else %}text-danger{% endif %} currency">
+                                    ₱{{ item.summary.weekly_cash_on_hand|default:0|intcomma }}
+                                </span>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center bg-white p-3 rounded-4 border"
+                                 style="border-color: rgba(59,130,246,.25) !important; box-shadow: var(--shadow-soft);">
+                                <span class="fw-bold text-uppercase small" style="color:#0f172a;">
+                                    Physical Cash Change
+                                </span>
+                                <span class="fw-bold {% if item.summary.weekly_physical_cash_change|default:0 >= 0 %}text-success{% else %}text-danger{% endif %} currency">
+                                    ₱{{ item.summary.weekly_physical_cash_change|default:0|intcomma }}
+                                </span>
+                            </div>
+
+                            <div class="text-muted small mt-2" style="line-height:1.35;">
+                                Physical Cash Change = Net Fund Flow − Deposits + Withdrawals
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="summary-panel p-4 p-md-5 text-center">
+            <i class="bi bi-info-circle display-4 mb-3 d-block text-info"></i>
+            <h4 class="mb-2">No financial data found.</h4>
+            <p class="text-muted mb-3">There are no transactions recorded for the selected filter or period.</p>
+            <a href="?report_type={{ current_report_type }}" class="btn btn-outline-info rounded-pill px-4">Clear Filters</a>
+        </div>
+    {% endif %}
+
+</div>
+
+{% if restricted_income_updates %}
+    {% for item in restricted_income_updates %}
+    <div class="modal fade" id="restrictedHistoryModal{{ forloop.counter }}" tabindex="-1" aria-labelledby="restrictedHistoryLabel{{ forloop.counter }}" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header modal-fund-head">
+                    <div>
+                        <h5 class="modal-title mb-1" id="restrictedHistoryLabel{{ forloop.counter }}">
+                            <i class="bi bi-clock-history me-2"></i>Restricted Fund History
+                        </h5>
+                        <div class="modal-fund-subtitle">{{ item.category }}</div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="mini-stat-card">
+                                <div class="mini-stat-label">Current Balance</div>
+                                <div class="mini-stat-value {% if item.current_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    ₱{{ item.current_balance|default:0|intcomma }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mini-stat-card">
+                                <div class="mini-stat-label">Total Collected</div>
+                                <div class="mini-stat-value text-primary">
+                                    ₱{{ item.total_collected|default:0|intcomma }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mini-stat-card">
+                                <div class="mini-stat-label">Total Spent</div>
+                                <div class="mini-stat-value text-danger">
+                                    ₱{{ item.total_spent|default:0|intcomma }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if item.history %}
+                    <div class="table-responsive table-soft">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Period</th>
+                                    <th class="text-end">Income</th>
+                                    <th class="text-end">Expenses</th>
+                                    <th class="text-end">Ending Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in item.history %}
+                                <tr>
+                                    <td class="fw-semibold">{{ row.period_label }}</td>
+                                    <td class="text-end text-success currency">₱{{ row.income|default:0|intcomma }}</td>
+                                    <td class="text-end text-danger currency">
+                                        {% if row.expenses and row.expenses != 0 %}
+                                            (₱{{ row.expenses|intcomma }})
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end fw-bold {% if row.balance >= 0 %}text-success{% else %}text-danger{% endif %} currency">
+                                        ₱{{ row.balance|default:0|intcomma }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="history-empty">
+                        <i class="bi bi-clock-history fs-2 d-block mb-2"></i>
+                        No history available for this restricted fund.
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
+
+</body>
+</html>

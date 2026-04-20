@@ -1,0 +1,794 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donation History | Church IS</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #183153;
+            --primary-dark: #10233a;
+            --accent: #2563eb;
+            --accent-soft: #eaf2ff;
+            --success: #16a34a;
+            --success-soft: #ecfdf3;
+            --warning: #f59e0b;
+            --warning-soft: #fff7ed;
+            --danger-soft: #fef2f2;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --panel: #ffffff;
+            --panel-soft: #f8fafc;
+            --shadow-sm: 0 8px 18px rgba(15, 23, 42, 0.06);
+            --shadow-md: 0 16px 34px rgba(15, 23, 42, 0.10);
+            --radius-xl: 24px;
+            --radius-lg: 18px;
+            --radius-md: 14px;
+            --radius-sm: 10px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            background:
+                radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 20%),
+                radial-gradient(circle at bottom right, rgba(22, 163, 74, 0.06), transparent 18%),
+                linear-gradient(180deg, #f8fbff 0%, #edf3f9 100%);
+            min-height: 100vh;
+        }
+
+        .page-shell { padding: 36px 16px 48px; }
+        .history-wrapper { max-width: 1280px; margin: 0 auto; }
+
+        .hero-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--radius-xl);
+            padding: 32px 34px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #fff;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 22px;
+        }
+
+        .hero-card::before,
+        .hero-card::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.07);
+        }
+
+        .hero-card::before {
+            width: 200px;
+            height: 200px;
+            top: -70px;
+            right: -60px;
+        }
+
+        .hero-card::after {
+            width: 150px;
+            height: 150px;
+            bottom: -60px;
+            left: -40px;
+        }
+
+        .hero-content { position: relative; z-index: 1; }
+        .hero-top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+
+        .hero-icon {
+            width: 62px;
+            height: 62px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.16);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.16);
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .hero-title {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        .hero-subtitle {
+            margin: 10px 0 0;
+            color: rgba(255,255,255,0.88);
+            max-width: 760px;
+            font-size: 0.97rem;
+            line-height: 1.7;
+        }
+
+        .panel-card {
+            background: var(--panel);
+            border: 1px solid rgba(229, 231, 235, 0.88);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .panel-header {
+            padding: 20px 22px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(180deg, #ffffff 0%, #f9fbfd 100%);
+        }
+
+        .panel-title {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 750;
+            color: var(--text-main);
+        }
+
+        .panel-subtitle {
+            margin: 6px 0 0;
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+
+        .panel-body { padding: 20px 22px; }
+
+        .toolbar-layout {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 18px;
+            align-items: end;
+        }
+
+        .toolbar-title {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 750;
+            color: var(--text-main);
+        }
+
+        .toolbar-subtitle {
+            margin: 4px 0 0;
+            color: var(--text-muted);
+            font-size: 0.92rem;
+        }
+
+        .filter-chip-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: #fff;
+            color: #334155;
+            font-size: 0.88rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: 0.18s ease;
+        }
+
+        .filter-chip:hover {
+            background: var(--accent-soft);
+            border-color: #bfd4ff;
+            color: var(--accent);
+        }
+
+        .filter-chip.active {
+            background: linear-gradient(135deg, var(--accent) 0%, #1f6ed4 100%);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 10px 22px rgba(37, 99, 235, 0.18);
+        }
+
+        .search-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .search-form .form-control { min-width: 260px; }
+
+        .form-control {
+            min-height: 46px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: #fbfcfe;
+            padding: 10px 14px;
+            box-shadow: none;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus {
+            border-color: rgba(37, 99, 235, 0.65);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+        }
+
+        .btn {
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 10px 16px;
+        }
+
+        .btn-search {
+            background: linear-gradient(135deg, var(--accent) 0%, #1f6ed4 100%);
+            border: none;
+            color: #fff;
+        }
+
+        .btn-search:hover {
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, var(--success) 0%, #22c55e 100%);
+            border: none;
+            color: #fff;
+            box-shadow: 0 10px 22px rgba(34, 197, 94, 0.18);
+        }
+
+        .btn-add:hover {
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .btn-print {
+            border: 1px solid #b7e4c7;
+            color: var(--success);
+            background: #fff;
+            font-weight: 600;
+        }
+
+        .btn-print:hover {
+            background: var(--success-soft);
+            color: #0f7a34;
+            border-color: #9ed7b3;
+        }
+
+        .btn-disabled-link {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .stat-card {
+            border: 1px solid var(--border);
+            background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+            border-radius: var(--radius-lg);
+            padding: 18px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-label {
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1.2;
+        }
+
+        .stat-sub {
+            margin-top: 6px;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        .table-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border);
+            background: #f9fbfd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .table-title {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 750;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .table-title i {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        .table-meta {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            font-weight: 500;
+        }
+
+        .table-responsive { overflow-x: auto; }
+        .table { margin-bottom: 0; }
+
+        .table thead th {
+            background: #f7f9fc;
+            color: #475569;
+            font-size: 0.78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid var(--border);
+            padding: 15px 16px;
+            white-space: nowrap;
+        }
+
+        .table tbody td {
+            padding: 16px;
+            vertical-align: middle;
+            border-color: #eef2f7;
+            background: #fff;
+        }
+
+        .table tbody tr:hover td { background: #fbfdff; }
+
+        .donor-block {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .donor-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #eef6ff;
+            color: var(--accent);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1rem;
+        }
+
+        .donor-name {
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        .donor-sub {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .badge-type {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8fafc;
+            color: #334155;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .amount-text {
+            font-weight: 800;
+            color: var(--success);
+            font-size: 1rem;
+            white-space: nowrap;
+        }
+
+        .date-text {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .date-sub {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 56px 20px;
+        }
+
+        .empty-icon {
+            width: 84px;
+            height: 84px;
+            margin: 0 auto 18px;
+            border-radius: 50%;
+            background: #f8fafc;
+            color: #9ca3af;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        .subtle-note {
+            padding: 14px 16px;
+            border-radius: var(--radius-md);
+            background: var(--panel-soft);
+            border: 1px dashed #d7e0eb;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 991.98px) {
+            .toolbar-layout { grid-template-columns: 1fr; }
+            .search-form { justify-content: flex-start; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 575.98px) {
+            .page-shell { padding: 22px 10px 34px; }
+            .hero-card { padding: 22px 18px; }
+            .panel-header, .panel-body, .table-header {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+            .hero-title { font-size: 1.55rem; }
+            .search-form { width: 100%; }
+            .search-form .form-control,
+            .search-form .btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    {% include 'navbar.html' %}
+
+    <div class="page-shell">
+        <div class="history-wrapper">
+
+            <div class="hero-card">
+                <div class="hero-content">
+                    <div class="hero-top">
+                        <div class="hero-icon">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <div class="hero-badge">
+                            <i class="bi bi-shield-check"></i>
+                            Donations Archive
+                        </div>
+                    </div>
+
+                    <h1 class="hero-title">Donation History</h1>
+                    <p class="hero-subtitle">
+                        View recorded donations, monitor donor contribution totals, and print official receipts
+                        from a clean, organized archive.
+                    </p>
+                </div>
+            </div>
+
+            <div class="panel-card">
+                <div class="panel-header">
+                    <h3 class="panel-title">Filter and summary controls</h3>
+                    <p class="panel-subtitle">
+                        Switch between weekly, monthly, yearly, or full totals, then search donor names without losing the selected period.
+                    </p>
+                </div>
+                <div class="panel-body">
+                    <div class="toolbar-layout">
+                        <div>
+                            <h4 class="toolbar-title">Summary period</h4>
+                            <p class="toolbar-subtitle">{{ summary_period_label|default:"Donation summary" }}</p>
+
+                            <div class="filter-chip-group mt-3">
+                                <a href="?period=weekly{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+                                   class="filter-chip {% if summary_period == 'weekly' %}active{% endif %}">
+                                    <i class="bi bi-calendar-week"></i> Weekly
+                                </a>
+                                <a href="?period=monthly{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+                                   class="filter-chip {% if summary_period == 'monthly' %}active{% endif %}">
+                                    <i class="bi bi-calendar-month"></i> Monthly
+                                </a>
+                                <a href="?period=yearly{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+                                   class="filter-chip {% if summary_period == 'yearly' %}active{% endif %}">
+                                    <i class="bi bi-calendar-range"></i> Yearly
+                                </a>
+                                <a href="?period=all{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+                                   class="filter-chip {% if summary_period == 'all' %}active{% endif %}">
+                                    <i class="bi bi-collection"></i> All
+                                </a>
+                            </div>
+                        </div>
+
+                        <div>
+                            <form method="get" class="search-form">
+                                <input type="hidden" name="period" value="{{ summary_period|default:'monthly' }}">
+                                <input
+                                    type="text"
+                                    name="q"
+                                    class="form-control"
+                                    placeholder="Search donor name or type..."
+                                    value="{{ search_query }}"
+                                >
+                                <button type="submit" class="btn btn-search">
+                                    <i class="bi bi-search me-1"></i> Search
+                                </button>
+                                <a href="?period={{ summary_period|default:'monthly' }}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                                </a>
+                                <a href="{% url 'add_donations' %}" class="btn btn-add d-inline-flex align-items-center">
+                                    <i class="bi bi-plus-lg me-2"></i> New Entry
+                                </a>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Grand Total</div>
+                            <div class="stat-value">₱{{ grand_total|floatformat:2|intcomma }}</div>
+                            <div class="stat-sub">Total amount for the selected period</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Donation Count</div>
+                            <div class="stat-value">{{ grand_donation_count|default:0 }}</div>
+                            <div class="stat-sub">Number of donations in this filter</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Unique Donors</div>
+                            <div class="stat-value">{{ donor_totals|length }}</div>
+                            <div class="stat-sub">Grouped by donor name</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-card">
+                <div class="table-header">
+                    <h4 class="table-title">
+                        <i class="bi bi-bar-chart-line"></i>
+                        Donor Totals Summary
+                    </h4>
+                    <div class="table-meta">
+                        {% if donor_totals %}
+                            {{ donor_totals|length }} donor{{ donor_totals|length|pluralize }} found for {{ summary_period_label|default:"selected period" }}
+                        {% else %}
+                            No donor totals available
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Donor Name</th>
+                                <th>Total Donations</th>
+                                <th>Donation Count</th>
+                                <th>Last Donation Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in donor_totals %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="donor-block">
+                                        <div class="donor-avatar">
+                                            <i class="bi bi-person-heart"></i>
+                                        </div>
+                                        <div>
+                                            <p class="donor-name mb-0">{{ item.donor_name }}</p>
+                                            <div class="donor-sub">Summary by donor</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="amount-text">₱{{ item.total_amount|floatformat:2|intcomma }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge-type">
+                                        <i class="bi bi-123"></i>
+                                        {{ item.donation_count }} donation{{ item.donation_count|pluralize }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="date-text">
+                                        {% if item.last_donation_date %}
+                                            {{ item.last_donation_date|date:"M d, Y" }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </div>
+                                    <div class="date-sub">Most recent in filter</div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4">
+                                    <div class="empty-state">
+                                        <div class="empty-icon">
+                                            <i class="bi bi-bar-chart"></i>
+                                        </div>
+                                        <h5 class="fw-bold text-dark mb-2">No donor totals found</h5>
+                                        <p class="text-muted mb-0">
+                                            Try another period or search keyword.
+                                        </p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel-card">
+                <div class="table-header">
+                    <h4 class="table-title">
+                        <i class="bi bi-table"></i>
+                        Donation Records
+                    </h4>
+                    <div class="table-meta">
+                        {% if filtered_donations %}
+                            Showing {{ filtered_donations|length }} filtered record{{ filtered_donations|length|pluralize }}
+                        {% elif donations %}
+                            Showing {{ donations|length }} record{{ donations|length|pluralize }}
+                        {% else %}
+                            No records available
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="panel-body">
+                    <div class="subtle-note">
+                        The table below lists individual donation entries. It reflects the selected period from the summary section. Use the donor totals above for grouped reporting, and this table for detailed record review and receipt printing.
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Date</th>
+                                <th>Donor Name</th>
+                                <th>Donation Type</th>
+                                <th>Amount</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for donation in filtered_donations %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="date-text">
+                                        {% if donation.donations_date %}
+                                            {{ donation.donations_date|date:"M d, Y" }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </div>
+                                    <div class="date-sub">Recorded donation</div>
+                                </td>
+
+                                <td>
+                                    <div class="donor-block">
+                                        <div class="donor-avatar">
+                                            <i class="bi bi-person"></i>
+                                        </div>
+                                        <div>
+                                            <p class="donor-name mb-0">{{ donation.donor_display|default:"Anonymous" }}</p>
+                                            <div class="donor-sub">
+                                                {% if donation.donor_type %}
+                                                    {{ donation.donor_type|title }}
+                                                {% else %}
+                                                    Donor record
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="badge-type">
+                                        <i class="bi bi-tag"></i>
+                                        {{ donation.category_name|default:"Unspecified" }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="amount-text">₱{{ donation.amount|floatformat:2|intcomma }}</span>
+                                </td>
+
+                                <td class="text-end pe-4">
+                                    {% if donation.id %}
+                                        <a href="{% url 'donation_receipt_print' donation.id %}" target="_blank" class="btn btn-sm btn-print">
+                                            <i class="bi bi-printer-fill me-1"></i> Print Receipt
+                                        </a>
+                                    {% else %}
+                                        <span class="btn btn-sm btn-outline-secondary btn-disabled-link">
+                                            <i class="bi bi-exclamation-circle me-1"></i> No Receipt ID
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5">
+                                    <div class="empty-state">
+                                        <div class="empty-icon">
+                                            <i class="bi bi-inbox"></i>
+                                        </div>
+                                        <h5 class="fw-bold text-dark mb-2">No donations found</h5>
+                                        <p class="text-muted mb-3">
+                                            Try a different search term or create a new donation entry.
+                                        </p>
+                                        <a href="{% url 'add_donations' %}" class="btn btn-add">
+                                            <i class="bi bi-plus-lg me-2"></i> Add New Donation
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

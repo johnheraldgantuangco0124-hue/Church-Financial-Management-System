@@ -1,0 +1,19 @@
+<!-- templates/members/member_confirm_delete.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delete Member</title>
+</head>
+<body>
+    <h1>Confirm Deletion</h1>
+    <p>Are you sure you want to delete {{ object.first_name }} {{ object.last_name }}?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Yes, Delete</button>
+        <a href="{% url 'member-list' %}">Cancel</a>
+    </form>
+</body>
+  <footer class="container mt-5 text-center">
+        <p>Living Stone Evangelical Free Church Information System</p>
+    </footer>
+</html>

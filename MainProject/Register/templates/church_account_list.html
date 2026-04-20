@@ -1,0 +1,773 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Church Account Management</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #dbeafe;
+            --success-soft: #dcfce7;
+            --warning-soft: #fef3c7;
+            --danger-soft: #fee2e2;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-soft: #e2e8f0;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --page-bg-1: #eff6ff;
+            --page-bg-2: #f8fafc;
+            --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.08);
+            --shadow-card: 0 8px 24px rgba(15, 23, 42, 0.08);
+            --radius-xl: 22px;
+            --radius-lg: 18px;
+            --radius-md: 14px;
+        }
+
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(37, 99, 235, 0.10), transparent 28%),
+                radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 24%),
+                linear-gradient(180deg, var(--page-bg-1), var(--page-bg-2));
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        .page-wrap {
+            padding: 2rem 0 3rem;
+        }
+
+        .hero-card {
+            background: linear-gradient(135deg, #1e3a8a, #2563eb 55%, #3b82f6);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: 0 18px 45px rgba(37, 99, 235, 0.25);
+            position: relative;
+        }
+
+        .hero-card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 85% 20%, rgba(255,255,255,0.18), transparent 18%),
+                radial-gradient(circle at 70% 80%, rgba(255,255,255,0.12), transparent 25%);
+            pointer-events: none;
+        }
+
+        .hero-card .card-body {
+            position: relative;
+            z-index: 1;
+            padding: 2rem;
+        }
+
+        .hero-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero-subtitle {
+            max-width: 780px;
+            color: rgba(255,255,255,0.88);
+            margin-bottom: 0;
+        }
+
+        .stats-row {
+            margin-top: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.35);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            height: 100%;
+        }
+
+        .stat-card .card-body {
+            padding: 1.25rem 1.2rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+        }
+
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.1;
+        }
+
+        .section-card {
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .section-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        .section-subtitle {
+            font-size: 0.93rem;
+            color: var(--text-muted);
+            margin-top: 0.2rem;
+        }
+
+        .toolbar {
+            gap: 0.75rem;
+        }
+
+        .toolbar .form-control,
+        .toolbar .form-select {
+            min-height: 48px;
+            border-radius: 14px;
+            border: 1px solid var(--border-soft);
+            box-shadow: none;
+        }
+
+        .toolbar .form-control:focus,
+        .toolbar .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.12);
+        }
+
+        .table-wrap {
+            border: 1px solid var(--border-soft);
+            border-radius: 18px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background: #f8fafc;
+            color: #334155;
+            font-size: 0.84rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid var(--border-soft);
+            padding: 1rem 1rem;
+            white-space: nowrap;
+        }
+
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-color: #eef2f7;
+        }
+
+        .table tbody tr:hover {
+            background: #f8fbff;
+        }
+
+        .user-block {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            min-width: 240px;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: linear-gradient(135deg, #bfdbfe, #dbeafe);
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1rem;
+            flex-shrink: 0;
+            border: 2px solid #e0ecff;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-name {
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.1rem;
+        }
+
+        .user-meta {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        .badge-role {
+            background: #eff6ff;
+            color: #1d4ed8;
+            padding: 0.5rem 0.75rem;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.78rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .badge-status {
+            padding: 0.55rem 0.8rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.38rem;
+        }
+
+        .status-active {
+            background: var(--success-soft);
+            color: #166534;
+        }
+
+        .status-inactive {
+            background: var(--danger-soft);
+            color: #991b1b;
+        }
+
+        .inactive-days {
+            font-weight: 700;
+        }
+
+        .inactive-warning {
+            color: #b45309;
+        }
+
+        .inactive-danger {
+            color: #b91c1c;
+        }
+
+        .last-login-muted {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .action-group {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-soft-primary {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #dbeafe;
+            font-weight: 700;
+        }
+
+        .btn-soft-primary:hover {
+            background: #dbeafe;
+            color: #1e40af;
+            border-color: #bfdbfe;
+        }
+
+        .btn-soft-warning {
+            background: #fff7ed;
+            color: #b45309;
+            border: 1px solid #fed7aa;
+            font-weight: 700;
+        }
+
+        .btn-soft-warning:hover {
+            background: #ffedd5;
+            color: #92400e;
+            border-color: #fdba74;
+        }
+
+        .btn-soft-success {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #bbf7d0;
+            font-weight: 700;
+        }
+
+        .btn-soft-success:hover {
+            background: #d1fae5;
+            color: #065f46;
+            border-color: #86efac;
+        }
+
+        .empty-state {
+            padding: 3rem 1.5rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 2.3rem;
+            margin-bottom: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .small-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .top-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .results-info {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 991.98px) {
+            .hero-title {
+                font-size: 1.5rem;
+            }
+
+            .section-card .card-body,
+            .hero-card .card-body {
+                padding: 1.2rem;
+            }
+
+            .table thead {
+                display: none;
+            }
+
+            .table,
+            .table tbody,
+            .table tr,
+            .table td {
+                display: block;
+                width: 100%;
+            }
+
+            .table tbody tr {
+                border-bottom: 1px solid var(--border-soft);
+                padding: 1rem 0;
+            }
+
+            .table tbody td {
+                border: none;
+                padding: 0.45rem 0;
+            }
+
+            .table tbody td::before {
+                content: attr(data-label);
+                display: block;
+                font-size: 0.76rem;
+                font-weight: 800;
+                color: #64748b;
+                text-transform: uppercase;
+                margin-bottom: 0.25rem;
+            }
+
+            .action-group {
+                justify-content: flex-start;
+                margin-top: 0.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    {% include 'navbar.html' %}
+
+    <div class="container-fluid page-wrap">
+        <div class="container">
+
+            <div class="card hero-card mb-4">
+                <div class="card-body">
+                    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                        <div>
+                            <h1 class="hero-title">Church Account Management</h1>
+                            <p class="hero-subtitle">
+                                Manage Treasurer, Pastor, and Member accounts in one professional workspace.
+                                You can search, filter, review account activity, and enable or disable access quickly.
+                            </p>
+                        </div>
+                        <div class="text-lg-end">
+                            <div class="small text-white-50 mb-1">System Access Control</div>
+                            <div class="fw-bold fs-5">Unified User Administration</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 stats-row">
+                        <div class="col-md-6 col-xl-3">
+                            <div class="card stat-card border-0">
+                                <div class="card-body">
+                                    <div class="stat-label">Total Accounts</div>
+                                    <div class="stat-value" id="totalAccounts">{{ accounts|length }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-xl-3">
+                            <div class="card stat-card border-0">
+                                <div class="card-body">
+                                    <div class="stat-label">Active Accounts</div>
+                                    <div class="stat-value" id="activeAccounts">
+                                        {% with active_count=0 %}
+                                            {{ active_count }}
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-xl-3">
+                            <div class="card stat-card border-0">
+                                <div class="card-body">
+                                    <div class="stat-label">Inactive Accounts</div>
+                                    <div class="stat-value" id="inactiveAccounts">
+                                        {% with inactive_count=0 %}
+                                            {{ inactive_count }}
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-xl-3">
+                            <div class="card stat-card border-0">
+                                <div class="card-body">
+                                    <div class="stat-label">Near 100-Day Limit</div>
+                                    <div class="stat-value" id="warningAccounts">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm rounded-4 border-0" role="alert">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-info-circle-fill"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="card section-card border-0">
+                <div class="card-body">
+                    <div class="top-actions mb-4">
+                        <div>
+                            <h2 class="section-title">User Directory</h2>
+                            <p class="section-subtitle">View and manage Treasurer, Pastor, and Member accounts.</p>
+                        </div>
+                        <div class="results-info">
+                            <span id="visibleResults">{{ accounts|length }}</span> account(s) shown
+                        </div>
+                    </div>
+
+                    <div class="row g-3 toolbar mb-4">
+                        <div class="col-lg-5">
+                            <input
+                                type="text"
+                                id="searchInput"
+                                class="form-control"
+                                placeholder="Search by name, username, email, or role..."
+                            >
+                        </div>
+                        <div class="col-md-4 col-lg-3">
+                            <select id="roleFilter" class="form-select">
+                                <option value="">All Roles</option>
+                                <option value="Treasurer">Treasurer</option>
+                                <option value="Pastor">Pastor</option>
+                                <option value="Member">Member</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 col-lg-2">
+                            <select id="statusFilter" class="form-select">
+                                <option value="">All Statuses</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 col-lg-2">
+                            <button type="button" id="resetFilters" class="btn btn-outline-secondary w-100 h-100 rounded-4 fw-semibold">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-wrap">
+                        <div class="table-responsive">
+                            <table class="table" id="accountsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Account Holder</th>
+                                        <th>Role</th>
+                                        <th>Email</th>
+                                        <th>Status</th>
+                                        <th>Last Login</th>
+                                        <th>Inactive Days</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in accounts %}
+                                        <tr
+                                            class="account-row"
+                                            data-search="{{ user.first_name }} {{ user.middle_name }} {{ user.last_name }} {{ user.username }} {{ user.email }} {{ user.user_type }}"
+                                            data-role="{{ user.user_type }}"
+                                            data-status="{{ user.status }}"
+                                            data-inactive-days="{{ user.computed_inactive_days|default:0 }}"
+                                        >
+                                            <td data-label="Account Holder">
+                                                <div class="user-block">
+                                                    <div class="avatar">
+                                                        {% if user.profile_picture %}
+                                                            <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}">
+                                                        {% else %}
+                                                            {{ user.first_name|default:user.username|slice:":1"|upper }}
+                                                        {% endif %}
+                                                    </div>
+                                                    <div>
+                                                        <div class="user-name">
+                                                            {{ user.first_name }}{% if user.middle_name %} {{ user.middle_name }}{% endif %} {{ user.last_name }}
+                                                        </div>
+                                                        <div class="user-meta">@{{ user.username }}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <td data-label="Role">
+                                                <span class="badge-role">
+                                                    <i class="bi bi-person-badge"></i>
+                                                    {{ user.get_user_type_display }}
+                                                </span>
+                                            </td>
+
+                                            <td data-label="Email">
+                                                {% if user.email %}
+                                                    <div class="fw-semibold text-break">{{ user.email }}</div>
+                                                {% else %}
+                                                    <span class="text-muted">No email provided</span>
+                                                {% endif %}
+                                            </td>
+
+                                            <td data-label="Status">
+                                                {% if user.status == "Active" %}
+                                                    <span class="badge-status status-active">
+                                                        <i class="bi bi-check-circle-fill"></i> Active
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge-status status-inactive">
+                                                        <i class="bi bi-slash-circle-fill"></i> Inactive
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+
+                                            <td data-label="Last Login">
+                                                {% if user.last_login %}
+                                                    <div class="fw-semibold">{{ user.last_login|date:"M d, Y" }}</div>
+                                                    <div class="small-label">{{ user.last_login|date:"h:i A" }}</div>
+                                                {% else %}
+                                                    <span class="last-login-muted">Never logged in</span>
+                                                {% endif %}
+                                            </td>
+
+                                            <td data-label="Inactive Days">
+                                                <span class="inactive-days
+                                                    {% if user.computed_inactive_days >= 100 %}
+                                                        inactive-danger
+                                                    {% elif user.computed_inactive_days >= 80 %}
+                                                        inactive-warning
+                                                    {% endif %}
+                                                ">
+                                                    {{ user.computed_inactive_days|default:0 }} day{{ user.computed_inactive_days|pluralize }}
+                                                </span>
+                                            </td>
+
+                                            <td data-label="Actions" class="text-end">
+                                                <div class="action-group">
+                                                    {% if user.user_type == "Pastor" %}
+                                                        <a href="{% url 'pastor-edit' user.pk %}" class="btn btn-sm btn-soft-primary rounded-4 px-3">
+                                                            <i class="bi bi-pencil-square me-1"></i> Edit
+                                                        </a>
+                                                    {% elif user.user_type == "Treasurer" %}
+                                                        <a href="{% url 'treasurer-edit' user.pk %}" class="btn btn-sm btn-soft-primary rounded-4 px-3">
+                                                            <i class="bi bi-pencil-square me-1"></i> Edit
+                                                        </a>
+                                                    {% elif user.user_type == "Member" %}
+                                                        <a href="{% url 'member-edit' user.pk %}" class="btn btn-sm btn-soft-primary rounded-4 px-3">
+                                                            <i class="bi bi-pencil-square me-1"></i> Edit
+                                                        </a>
+                                                    {% endif %}
+
+                                                    <form method="post" action="{% url 'toggle-church-account-status' user.pk %}" class="d-inline">
+                                                        {% csrf_token %}
+                                                        {% if user.status == "Active" %}
+                                                            <input type="hidden" name="action" value="disable">
+                                                            <button
+                                                                type="submit"
+                                                                class="btn btn-sm btn-soft-warning rounded-4 px-3"
+                                                                onclick="return confirm('Are you sure you want to disable this account?')"
+                                                            >
+                                                                <i class="bi bi-person-x-fill me-1"></i> Disable
+                                                            </button>
+                                                        {% else %}
+                                                            <input type="hidden" name="action" value="enable">
+                                                            <button
+                                                                type="submit"
+                                                                class="btn btn-sm btn-soft-success rounded-4 px-3"
+                                                                onclick="return confirm('Are you sure you want to enable this account?')"
+                                                            >
+                                                                <i class="bi bi-person-check-fill me-1"></i> Enable
+                                                            </button>
+                                                        {% endif %}
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="7">
+                                                <div class="empty-state">
+                                                    <i class="bi bi-people"></i>
+                                                    <h5 class="fw-bold mb-2">No accounts found</h5>
+                                                    <p class="mb-0">There are currently no Treasurer, Pastor, or Member accounts to display.</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="noFilteredResults" class="empty-state d-none">
+                        <i class="bi bi-search"></i>
+                        <h5 class="fw-bold mb-2">No matching accounts</h5>
+                        <p class="mb-0">Try adjusting your search text or filters.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchInput = document.getElementById("searchInput");
+            const roleFilter = document.getElementById("roleFilter");
+            const statusFilter = document.getElementById("statusFilter");
+            const resetFilters = document.getElementById("resetFilters");
+            const table = document.getElementById("accountsTable");
+            const rows = table ? Array.from(table.querySelectorAll(".account-row")) : [];
+            const noFilteredResults = document.getElementById("noFilteredResults");
+            const visibleResults = document.getElementById("visibleResults");
+            const totalAccounts = document.getElementById("totalAccounts");
+            const activeAccounts = document.getElementById("activeAccounts");
+            const inactiveAccounts = document.getElementById("inactiveAccounts");
+            const warningAccounts = document.getElementById("warningAccounts");
+
+            function updateStats() {
+                const allRows = rows;
+                const visibleRows = rows.filter(row => row.style.display !== "none");
+
+                const activeCount = allRows.filter(row => row.dataset.status === "Active").length;
+                const inactiveCount = allRows.filter(row => row.dataset.status === "Inactive").length;
+                const nearLimitCount = allRows.filter(row => parseInt(row.dataset.inactiveDays || "0") >= 80).length;
+
+                if (totalAccounts) totalAccounts.textContent = allRows.length;
+                if (activeAccounts) activeAccounts.textContent = activeCount;
+                if (inactiveAccounts) inactiveAccounts.textContent = inactiveCount;
+                if (warningAccounts) warningAccounts.textContent = nearLimitCount;
+                if (visibleResults) visibleResults.textContent = visibleRows.length;
+            }
+
+            function filterRows() {
+                const searchValue = (searchInput.value || "").toLowerCase().trim();
+                const roleValue = roleFilter.value;
+                const statusValue = statusFilter.value;
+
+                let shown = 0;
+
+                rows.forEach(row => {
+                    const searchableText = (row.dataset.search || "").toLowerCase();
+                    const role = row.dataset.role || "";
+                    const status = row.dataset.status || "";
+
+                    const matchesSearch = !searchValue || searchableText.includes(searchValue);
+                    const matchesRole = !roleValue || role === roleValue;
+                    const matchesStatus = !statusValue || status === statusValue;
+
+                    if (matchesSearch && matchesRole && matchesStatus) {
+                        row.style.display = "";
+                        shown++;
+                    } else {
+                        row.style.display = "none";
+                    }
+                });
+
+                if (noFilteredResults) {
+                    noFilteredResults.classList.toggle("d-none", shown !== 0 || rows.length === 0);
+                }
+
+                updateStats();
+            }
+
+            if (searchInput) searchInput.addEventListener("input", filterRows);
+            if (roleFilter) roleFilter.addEventListener("change", filterRows);
+            if (statusFilter) statusFilter.addEventListener("change", filterRows);
+
+            if (resetFilters) {
+                resetFilters.addEventListener("click", function () {
+                    searchInput.value = "";
+                    roleFilter.value = "";
+                    statusFilter.value = "";
+                    filterRows();
+                });
+            }
+
+            updateStats();
+        });
+    </script>
+</body>
+</html>

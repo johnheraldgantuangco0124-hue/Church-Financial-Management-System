@@ -1,0 +1,1220 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bank Movement | Create</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+  <style>
+    :root{
+      --bg:#f4f7fb;
+      --surface:#ffffff;
+      --surface-2:#f8fafc;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e2e8f0;
+      --line-strong:#cbd5e1;
+      --primary:#2563eb;
+      --primary-2:#1d4ed8;
+      --success:#059669;
+      --danger:#dc2626;
+      --warning:#d97706;
+      --info:#0284c7;
+      --shadow:0 18px 45px rgba(15,23,42,.08);
+      --shadow-soft:0 10px 25px rgba(15,23,42,.05);
+      --radius:18px;
+      --radius-sm:14px;
+    }
+
+    html, body { height: 100%; }
+
+    body{
+      background:
+        radial-gradient(900px 500px at 0% 0%, rgba(37,99,235,.12), transparent 55%),
+        radial-gradient(900px 500px at 100% 0%, rgba(16,185,129,.10), transparent 55%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      color: var(--text);
+      font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .page-wrap{
+      padding: 24px 0 40px;
+    }
+
+    .hero-card{
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 52%, #2563eb 125%);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: calc(var(--radius) + 2px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero-card::after{
+      content:"";
+      position:absolute;
+      inset:auto -60px -60px auto;
+      width:220px;
+      height:220px;
+      background: radial-gradient(circle, rgba(255,255,255,.14) 0%, transparent 65%);
+      pointer-events:none;
+    }
+
+    .hero-body{
+      padding: 22px 22px 18px;
+    }
+
+    .hero-title{
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin-bottom: .35rem;
+      letter-spacing: -.02em;
+    }
+
+    .hero-subtitle{
+      color: rgba(255,255,255,.82);
+      font-size: .95rem;
+      margin-bottom: 0;
+      max-width: 900px;
+      line-height: 1.5;
+    }
+
+    .hero-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.16);
+      color:#fff;
+      border-radius:999px;
+      padding:.42rem .8rem;
+      font-size:.8rem;
+      font-weight:700;
+      backdrop-filter: blur(8px);
+      white-space: nowrap;
+    }
+
+    .content-grid{
+      margin-top: 18px;
+    }
+
+    .panel{
+      background: rgba(255,255,255,.94);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+    }
+
+    .panel-header{
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    }
+
+    .panel-title{
+      margin:0;
+      font-size:1rem;
+      font-weight:800;
+      letter-spacing:-.01em;
+      display:flex;
+      align-items:center;
+      gap:.55rem;
+    }
+
+    .panel-subtitle{
+      color: var(--muted);
+      font-size: .9rem;
+      margin-top: .35rem;
+      margin-bottom: 0;
+    }
+
+    .panel-body{
+      padding: 18px;
+    }
+
+    .message-stack{
+      display: grid;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .message-card{
+      display:flex;
+      align-items:flex-start;
+      gap:.85rem;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      box-shadow: 0 8px 24px rgba(15,23,42,.04);
+      background: #fff;
+    }
+
+    .message-icon{
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 1rem;
+      flex: 0 0 40px;
+    }
+
+    .message-content{
+      min-width: 0;
+      flex: 1;
+    }
+
+    .message-title{
+      font-size: .92rem;
+      font-weight: 800;
+      margin-bottom: .2rem;
+    }
+
+    .message-text{
+      color: #334155;
+      font-size: .93rem;
+      line-height: 1.45;
+      margin: 0;
+      word-break: break-word;
+    }
+
+    .message-success{
+      border-color: #bbf7d0;
+      background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);
+    }
+    .message-success .message-icon{
+      background: #dcfce7;
+      color: #15803d;
+    }
+    .message-success .message-title{
+      color: #166534;
+    }
+
+    .message-danger{
+      border-color: #fecaca;
+      background: linear-gradient(180deg, #ffffff 0%, #fef2f2 100%);
+    }
+    .message-danger .message-icon{
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .message-danger .message-title{
+      color: #991b1b;
+    }
+
+    .message-warning{
+      border-color: #fde68a;
+      background: linear-gradient(180deg, #ffffff 0%, #fffbeb 100%);
+    }
+    .message-warning .message-icon{
+      background: #fef3c7;
+      color: #b45309;
+    }
+    .message-warning .message-title{
+      color: #92400e;
+    }
+
+    .message-info{
+      border-color: #bae6fd;
+      background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%);
+    }
+    .message-info .message-icon{
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+    .message-info .message-title{
+      color: #075985;
+    }
+
+    .section-card{
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .section-title{
+      display:flex;
+      align-items:center;
+      gap:.55rem;
+      font-size:.92rem;
+      font-weight:800;
+      margin-bottom: 14px;
+      letter-spacing: -.01em;
+    }
+
+    .section-title .icon{
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background: #eff6ff;
+      color: var(--primary);
+      border: 1px solid #dbeafe;
+      flex: 0 0 34px;
+    }
+
+    .field-card{
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 12px 10px;
+      transition: .18s ease;
+      height: 100%;
+    }
+
+    .field-card:hover{
+      border-color: #cfd8e3;
+      box-shadow: 0 8px 20px rgba(15,23,42,.04);
+    }
+
+    .field-card:focus-within{
+      border-color: #93c5fd;
+      box-shadow: 0 0 0 4px rgba(37,99,235,.08);
+    }
+
+    .form-label{
+      color: var(--muted);
+      font-size: .76rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: .45rem;
+    }
+
+    .req{
+      color: var(--danger);
+      font-weight: 900;
+      margin-left: 2px;
+    }
+
+    .muted-note{
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    .field-errors{
+      margin-top: .4rem;
+      color: var(--danger);
+      font-size: .9rem;
+    }
+
+    .errorlist{
+      margin: 0;
+      padding-left: 18px;
+      color: var(--danger);
+    }
+
+    .inline-error-box{
+      border: 1px solid #fecaca;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #fef2f2 100%);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+
+    .inline-error-box h6{
+      font-weight: 800;
+      margin-bottom: .6rem;
+      color: #991b1b;
+    }
+
+    .inline-error-box ul{
+      margin-bottom: 0;
+      padding-left: 1.1rem;
+    }
+
+    .soft-note{
+      border: 1px dashed var(--line-strong);
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: var(--surface-2);
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.45;
+    }
+
+    .rule-list{
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .rule-list li{
+      display:flex;
+      gap:.75rem;
+      align-items:flex-start;
+      padding:.7rem 0;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    .rule-list li:last-child{
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .rule-icon{
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: #eef2ff;
+      color: #3730a3;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border: 1px solid #e0e7ff;
+      flex: 0 0 32px;
+    }
+
+    .rule-title{
+      font-weight: 800;
+      margin-bottom: .1rem;
+      font-size: .92rem;
+    }
+
+    .rule-desc{
+      color: var(--muted);
+      font-size: .88rem;
+      margin-bottom: 0;
+      line-height: 1.4;
+    }
+
+    .status-card{
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: #fff;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .status-kicker{
+      color: var(--muted);
+      text-transform: uppercase;
+      font-size: .74rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+      margin-bottom: .45rem;
+    }
+
+    .status-value{
+      font-size: 1rem;
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: .35rem;
+    }
+
+    .status-help{
+      color: var(--muted);
+      font-size: .88rem;
+      margin: 0;
+    }
+
+    .sticky-col{
+      position: sticky;
+      top: 88px;
+    }
+
+    .summary-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:.4rem;
+      border-radius: 999px;
+      padding: .38rem .72rem;
+      font-size: .78rem;
+      font-weight: 800;
+      border: 1px solid #dbeafe;
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .submit-bar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 14px;
+      margin-top: 18px;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    }
+
+    .submit-note{
+      color: var(--muted);
+      font-size: .9rem;
+      margin: 0;
+    }
+
+    .btn-pill{
+      border-radius: 999px;
+      padding: .72rem 1.18rem;
+      font-weight: 700;
+      box-shadow: 0 8px 18px rgba(15,23,42,.06);
+    }
+
+    .conditional-section.hide,
+    .field-block.hide{
+      display: none !important;
+    }
+
+    .is-invalid{
+      border-color: #fca5a5 !important;
+      box-shadow: 0 0 0 4px rgba(220,38,38,.06) !important;
+    }
+
+    @media (max-width: 991.98px){
+      .sticky-col{
+        position: static;
+        top: auto;
+      }
+    }
+
+    @media (max-width: 767.98px){
+      .hero-body{
+        padding: 18px;
+      }
+
+      .submit-bar{
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .submit-actions{
+        width: 100%;
+      }
+
+      .submit-actions .btn{
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  {% include 'navbar.html' %}
+
+  <div class="container page-wrap">
+
+    {% if messages %}
+      <div class="message-stack">
+        {% for message in messages %}
+          {% if 'success' in message.tags %}
+            <div class="message-card message-success">
+              <div class="message-icon"><i class="bi bi-check-circle-fill"></i></div>
+              <div class="message-content">
+                <div class="message-title">Success</div>
+                <p class="message-text">{{ message }}</p>
+              </div>
+            </div>
+          {% elif 'error' in message.tags or 'danger' in message.tags %}
+            <div class="message-card message-danger">
+              <div class="message-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+              <div class="message-content">
+                <div class="message-title">Action Failed</div>
+                <p class="message-text">{{ message }}</p>
+              </div>
+            </div>
+          {% elif 'warning' in message.tags %}
+            <div class="message-card message-warning">
+              <div class="message-icon"><i class="bi bi-exclamation-circle-fill"></i></div>
+              <div class="message-content">
+                <div class="message-title">Warning</div>
+                <p class="message-text">{{ message }}</p>
+              </div>
+            </div>
+          {% else %}
+            <div class="message-card message-info">
+              <div class="message-icon"><i class="bi bi-info-circle-fill"></i></div>
+              <div class="message-content">
+                <div class="message-title">Notice</div>
+                <p class="message-text">{{ message }}</p>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="hero-card">
+      <div class="hero-body d-flex justify-content-between align-items-start gap-3 flex-wrap">
+        <div>
+          <div class="hero-title">
+            <i class="bi bi-bank2 me-1"></i>Bank Movement Entry
+          </div>
+          <p class="hero-subtitle">
+            Record direct bank income and bank-paid expenses in one guided form. Upload proof, review the draft, then confirm the transaction.
+          </p>
+        </div>
+        <span class="hero-chip">
+          <i class="bi bi-shield-check"></i>
+          Church-scoped • Review before confirm
+        </span>
+      </div>
+    </div>
+
+    <div class="row g-4 content-grid">
+      <div class="col-lg-8">
+        <div class="panel">
+          <div class="panel-header">
+            <h5 class="panel-title">
+              <i class="bi bi-pencil-square"></i>
+              Create draft entry
+            </h5>
+            <p class="panel-subtitle">
+              Fill in the transaction details below. The form will show only the fields needed for the selected direction, source type, and donor type.
+            </p>
+          </div>
+
+          <div class="panel-body">
+            <form method="post" enctype="multipart/form-data" novalidate id="bmForm">
+              {% csrf_token %}
+
+              {% if form.non_field_errors %}
+                <div class="inline-error-box">
+                  <h6><i class="bi bi-exclamation-triangle me-1"></i>General validation issues</h6>
+                  {% for e in form.non_field_errors %}
+                    <div>{{ e }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+              {% if form.errors %}
+                <div class="inline-error-box">
+                  <h6><i class="bi bi-list-check me-1"></i>Please fix the following</h6>
+                  <ul>
+                    {% for field in form %}
+                      {% for e in field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ e }}</li>
+                      {% endfor %}
+                    {% endfor %}
+                    {% for e in form.non_field_errors %}
+                      <li><strong>General:</strong> {{ e }}</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
+
+              <div class="section-card">
+                <div class="section-title">
+                  <span class="icon"><i class="bi bi-calendar-event"></i></span>
+                  Transaction details
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-md-6 field-block" id="blk_date">
+                    <div class="field-card">
+                      <label class="form-label" for="{{ form.date.id_for_label }}">Date<span class="req">*</span></label>
+                      {{ form.date }}
+                      {% if form.date.help_text %}<div class="muted-note mt-1">{{ form.date.help_text }}</div>{% endif %}
+                      <div class="field-errors">
+                        {% for e in form.date.errors %}<div>{{ e }}</div>{% endfor %}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6 field-block" id="blk_amount">
+                    <div class="field-card">
+                      <label class="form-label" for="{{ form.amount.id_for_label }}">Amount<span class="req">*</span></label>
+                      {{ form.amount }}
+                      {% if form.amount.help_text %}<div class="muted-note mt-1">{{ form.amount.help_text }}</div>{% endif %}
+                      <div class="field-errors">
+                        {% for e in form.amount.errors %}<div>{{ e }}</div>{% endfor %}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6 field-block" id="blk_direction">
+                    <div class="field-card">
+                      <label class="form-label" for="{{ form.direction.id_for_label }}">Direction<span class="req">*</span></label>
+                      {{ form.direction }}
+                      <div class="muted-note mt-1">Choose the type of bank transaction you want to record.</div>
+                      <div class="field-errors">
+                        {% for e in form.direction.errors %}<div>{{ e }}</div>{% endfor %}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6 field-block" id="blk_source_type">
+                    <div class="field-card">
+                      <label class="form-label" for="{{ form.source_type.id_for_label }}" data-label-for="source_type">
+                        Source type
+                      </label>
+                      {{ form.source_type }}
+                      <div class="muted-note mt-1">This determines which category fields will appear below.</div>
+                      <div class="field-errors">
+                        {% for e in form.source_type.errors %}<div>{{ e }}</div>{% endfor %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="section-card">
+                <div class="section-title">
+                  <span class="icon"><i class="bi bi-file-earmark-arrow-up"></i></span>
+                  Support and reference
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-md-6 field-block" id="blk_proof_file">
+                    <div class="field-card">
+                      <label class="form-label" for="{{ form.proof_file.id_for_label }}" data-label-for="proof_file">
+                        Proof file
+                      </label>
+                      {{ form.proof_file }}
+                      <div class="muted-note mt-1">Accepted: PDF, JPG, JPEG, PNG</div>
+                      <div class="field-errors">
+                        {% for e in form.proof_file.errors %}<div>{{ e }}</div>{% endfor %}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6 field-block" id="blk_reference_no">
+                    <div class="field-card">
+                      <label class="form-label" for="{{ form.reference_no.id_for_label }}">Reference no.</label>
+                      {{ form.reference_no }}
+                      <div class="muted-note mt-1">Optional transaction number, deposit slip, or receipt reference.</div>
+                      <div class="field-errors">
+                        {% for e in form.reference_no.errors %}<div>{{ e }}</div>{% endfor %}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-12 field-block" id="blk_memo">
+                    <div class="field-card">
+                      <label class="form-label" for="{{ form.memo.id_for_label }}">Memo / notes</label>
+                      {{ form.memo }}
+                      <div class="muted-note mt-1">Add useful context for review and audit trail.</div>
+                      <div class="field-errors">
+                        {% for e in form.memo.errors %}<div>{{ e }}</div>{% endfor %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="section-card conditional-section hide" id="section_donation">
+                <div class="section-title">
+                  <span class="icon"><i class="bi bi-heart"></i></span>
+                  Donation details
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-md-6 field-block" id="blk_donations_type">
+                    <div class="field-card">
+                      <label class="form-label" for="{{ form.donations_type.id_for_label }}">Donation category</label>
+                      {{ form.donations_type }}
+                      <div class="field-errors">
+                        {% for e in form.donations_type.errors %}<div>{{ e }}</div>{% endfor %}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6 field-block" id="blk_donor_type">
+                    <div class="field-card">
+                      <label class="form-label" for="{{ form.donor_type.id_for_label }}">Donor type</label>
+                      {{ form.donor_type }}
+                      <div class="muted-note mt-1">Choose Member, Non-member, or Anonymous.</div>
+                      <div class="field-errors">
+                        {% for e in form.donor_type.errors %}<div>{{ e }}</div>{% endfor %}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6 field-block hide" id="blk_donor">
+                    <div class="field-card">
+                      <label class="form-label" for="{{ form.donor.id_for_label }}" id="donorLabel">Donor name</label>
+                      {{ form.donor }}
+                      <div class="muted-note mt-1" id="donorHelp">Enter the non-member donor name.</div>
+                      <div class="field-errors">
+                        {% for e in form.donor.errors %}<div>{{ e }}</div>{% endfor %}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-12 field-block" id="blk_other_donations_type">
+                    <div class="field-card">
+                      <label class="form-label" for="{{ form.other_donations_type.id_for_label }}">Other donation description</label>
+                      {{ form.other_donations_type }}
+                      <div class="field-errors">
+                        {% for e in form.other_donations_type.errors %}<div>{{ e }}</div>{% endfor %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="section-card conditional-section hide" id="section_member">
+                <div class="section-title">
+                  <span class="icon"><i class="bi bi-person-badge"></i></span>
+                  <span id="memberSectionTitle">Member / Pastor / Treasurer</span>
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-md-8 field-block" id="blk_donation_member">
+                    <div class="field-card">
+                      <label class="form-label" for="{{ form.donation_member.id_for_label }}" id="memberFieldLabel">
+                        Member / Pastor / Treasurer
+                      </label>
+                      {{ form.donation_member }}
+                      <div class="muted-note mt-1" id="memberFieldHelp">
+                        Select the church member, pastor, or treasurer linked to this donation.
+                      </div>
+                      <div class="field-errors">
+                        {% for e in form.donation_member.errors %}<div>{{ e }}</div>{% endfor %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="section-card conditional-section hide" id="section_income">
+                <div class="section-title">
+                  <span class="icon"><i class="bi bi-cash-stack"></i></span>
+                  Other income details
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-md-6 field-block" id="blk_income_type">
+                    <div class="field-card">
+                      <label class="form-label" for="{{ form.income_type.id_for_label }}">Income category</label>
+                      {{ form.income_type }}
+                      <div class="field-errors">
+                        {% for e in form.income_type.errors %}<div>{{ e }}</div>{% endfor %}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6 field-block" id="blk_income_description">
+                    <div class="field-card">
+                      <label class="form-label" for="{{ form.income_description.id_for_label }}">Income description</label>
+                      {{ form.income_description }}
+                      <div class="field-errors">
+                        {% for e in form.income_description.errors %}<div>{{ e }}</div>{% endfor %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="section-card conditional-section hide" id="section_expense">
+                <div class="section-title">
+                  <span class="icon"><i class="bi bi-receipt-cutoff"></i></span>
+                  Expense details
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-md-6 field-block" id="blk_expense_category">
+                    <div class="field-card">
+                      <label class="form-label" for="{{ form.expense_category.id_for_label }}">Expense category</label>
+                      {{ form.expense_category }}
+                      <div class="field-errors">
+                        {% for e in form.expense_category.errors %}<div>{{ e }}</div>{% endfor %}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6 field-block" id="blk_expense_description">
+                    <div class="field-card">
+                      <label class="form-label" for="{{ form.expense_description.id_for_label }}">Expense description</label>
+                      {{ form.expense_description }}
+                      <div class="field-errors">
+                        {% for e in form.expense_description.errors %}<div>{{ e }}</div>{% endfor %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="submit-bar">
+                <p class="submit-note">
+                  Draft is saved first. You will review and confirm it on the next screen.
+                </p>
+
+                <div class="submit-actions d-flex flex-wrap gap-2">
+                  <a href="{% url 'bank_movement_history' %}" class="btn btn-outline-secondary btn-pill">
+                    <i class="bi bi-clock-history me-1"></i>History
+                  </a>
+                  <button type="submit" class="btn btn-primary btn-pill">
+                    <i class="bi bi-save2 me-1"></i>Save Draft &amp; Review
+                  </button>
+                </div>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="sticky-col">
+          <div class="panel mb-3">
+            <div class="panel-header">
+              <h5 class="panel-title">
+                <i class="bi bi-lightning-charge"></i>
+                Live summary
+              </h5>
+              <p class="panel-subtitle">
+                This updates automatically based on the selected direction and source type.
+              </p>
+            </div>
+            <div class="panel-body">
+              <div class="status-card">
+                <div class="status-kicker">Current effect</div>
+                <div class="status-value" id="effectText">Select Direction to see what will happen.</div>
+                <p class="status-help" id="effectSubtext">This panel helps the user understand the accounting effect before saving.</p>
+              </div>
+
+              <div class="status-card">
+                <div class="status-kicker">Proof requirement</div>
+                <div class="status-value" id="proofState">Waiting for selection</div>
+                <p class="status-help" id="proofNote">A proof file is used during AI verification in the review flow.</p>
+              </div>
+
+              <div class="d-flex flex-wrap gap-2">
+                <span class="summary-badge"><i class="bi bi-shield-check"></i>AI-supported review</span>
+                <span class="summary-badge"><i class="bi bi-clipboard2-check"></i>Audit-friendly draft</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel mb-3">
+            <div class="panel-header">
+              <h5 class="panel-title">
+                <i class="bi bi-info-circle"></i>
+                How this works
+              </h5>
+            </div>
+            <div class="panel-body">
+              <ul class="rule-list">
+                <li>
+                  <span class="rule-icon"><i class="bi bi-arrow-down-right"></i></span>
+                  <div>
+                    <div class="rule-title">Direct to Bank (Income)</div>
+                    <p class="rule-desc">Records income that goes straight into the bank. No physical cash movement is involved.</p>
+                  </div>
+                </li>
+                <li>
+                  <span class="rule-icon"><i class="bi bi-arrow-up-right"></i></span>
+                  <div>
+                    <div class="rule-title">Paid from Bank (Expense)</div>
+                    <p class="rule-desc">Records an expense that is settled directly from the bank account.</p>
+                  </div>
+                </li>
+                <li>
+                  <span class="rule-icon"><i class="bi bi-eye"></i></span>
+                  <div>
+                    <div class="rule-title">Review first</div>
+                    <p class="rule-desc">Nothing is finalized immediately. The form saves a draft and sends you to the review screen.</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h5 class="panel-title">
+                <i class="bi bi-stars"></i>
+                Entry tips
+              </h5>
+            </div>
+            <div class="panel-body">
+              <div class="soft-note">
+                Use clear reference numbers, upload readable proof files, and add short notes when the transaction needs extra context. This makes review and audit much easier later.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function byId(id){ return document.getElementById(id); }
+
+    function normalizeKey(v){
+      return (v || "")
+        .toString()
+        .trim()
+        .toUpperCase()
+        .replace(/[^A-Z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "")
+        .replace(/_+/g, "_");
+    }
+
+    function setSelectValue(selectEl, value){
+      if (!selectEl) return;
+      const wanted = normalizeKey(value);
+      for (const opt of selectEl.options){
+        if (normalizeKey(opt.value) === wanted){
+          selectEl.value = opt.value;
+          return;
+        }
+      }
+    }
+
+    function showEl(id){
+      const el = byId(id);
+      if (el) el.classList.remove("hide");
+    }
+
+    function hideEl(id){
+      const el = byId(id);
+      if (el) el.classList.add("hide");
+    }
+
+    function hideConditionalSections(){
+      ["section_donation","section_member","section_income","section_expense"].forEach(hideEl);
+    }
+
+    function markInvalidFields(){
+      document.querySelectorAll(".field-card").forEach(card => {
+        const hasError = card.querySelector(".field-errors div, .errorlist li");
+        const input = card.querySelector("input, select, textarea");
+        if (hasError && input){
+          input.classList.add("is-invalid");
+        }
+      });
+    }
+
+    function revealErrorSections(){
+      const map = {
+        "blk_donations_type": "section_donation",
+        "blk_donor_type": "section_donation",
+        "blk_donor": "section_donation",
+        "blk_other_donations_type": "section_donation",
+        "blk_donation_member": "section_member",
+        "blk_income_type": "section_income",
+        "blk_income_description": "section_income",
+        "blk_expense_category": "section_expense",
+        "blk_expense_description": "section_expense"
+      };
+
+      Object.entries(map).forEach(([fieldId, sectionId]) => {
+        const blk = byId(fieldId);
+        if (!blk) return;
+        const hasError = blk.querySelector(".field-errors div, .errorlist li");
+        if (hasError){
+          showEl(sectionId);
+          showEl(fieldId);
+        }
+      });
+    }
+
+    const DIR = {
+      DIRECT_BANK_RECEIPT: "DIRECT_BANK_RECEIPT",
+      BANK_PAID_EXPENSE: "BANK_PAID_EXPENSE",
+    };
+
+    const SOURCE = {
+      DONATION: "DONATION",
+      OTHER_INCOME: "OTHER_INCOME",
+      TITHE: "TITHE",
+      OFFERING: "OFFERING",
+      EXPENSE: "EXPENSE",
+    };
+
+    const DONOR = {
+      MEMBER: "MEMBER",
+      NON_MEMBER: "NON_MEMBER",
+      ANONYMOUS: "ANONYMOUS",
+    };
+
+    const proofRequiredDirections = new Set([
+      DIR.DIRECT_BANK_RECEIPT,
+      DIR.BANK_PAID_EXPENSE,
+    ]);
+
+    function restrictSourceTypeOptions(directionKey){
+      const st = byId("id_source_type");
+      if (!st) return;
+
+      for (const opt of st.options){ opt.hidden = false; }
+
+      if (directionKey === DIR.BANK_PAID_EXPENSE){
+        setSelectValue(st, SOURCE.EXPENSE);
+        hideEl("blk_source_type");
+        return;
+      }
+
+      if (directionKey === DIR.DIRECT_BANK_RECEIPT){
+        showEl("blk_source_type");
+        const allowed = new Set([
+          SOURCE.DONATION,
+          SOURCE.OTHER_INCOME,
+          SOURCE.TITHE,
+          SOURCE.OFFERING
+        ]);
+
+        for (const opt of st.options){
+          if (!allowed.has(normalizeKey(opt.value))){
+            opt.hidden = true;
+          }
+        }
+
+        if (!allowed.has(normalizeKey(st.value))){
+          setSelectValue(st, SOURCE.DONATION);
+        }
+        return;
+      }
+
+      showEl("blk_source_type");
+    }
+
+    function updateSummary(directionKey){
+      const effectText = byId("effectText");
+      const effectSubtext = byId("effectSubtext");
+      const proofState = byId("proofState");
+      const proofNote = byId("proofNote");
+
+      const effectMap = {
+        [DIR.DIRECT_BANK_RECEIPT]: {
+          title: "Bank balance will increase from income received directly into the bank.",
+          sub: "Use Donation, Other Income, Tithe, or Offering as the source type."
+        },
+        [DIR.BANK_PAID_EXPENSE]: {
+          title: "Bank balance will decrease and an expense entry will be created.",
+          sub: "Expense category is required for bank-paid expenses."
+        }
+      };
+
+      if (effectText && effectSubtext){
+        if (effectMap[directionKey]){
+          effectText.textContent = effectMap[directionKey].title;
+          effectSubtext.textContent = effectMap[directionKey].sub;
+        } else {
+          effectText.textContent = "Select Direction to see what will happen.";
+          effectSubtext.textContent = "This panel helps the user understand the accounting effect before saving.";
+        }
+      }
+
+      if (proofState && proofNote){
+        if (proofRequiredDirections.has(directionKey)){
+          proofState.textContent = "Proof file required";
+          proofNote.textContent = "A readable proof file is required and will be checked during AI verification.";
+        } else {
+          proofState.textContent = "Proof file optional";
+          proofNote.textContent = "The form will still work, but proof is strongly recommended when available.";
+        }
+      }
+    }
+
+    function applyVisibility(){
+      hideConditionalSections();
+      hideEl("blk_donor");
+
+      const dirEl = byId("id_direction");
+      const stEl = byId("id_source_type");
+      const donorTypeEl = byId("id_donor_type");
+      const proofEl = byId("id_proof_file");
+
+      const dirKey = dirEl ? normalizeKey(dirEl.value) : "";
+      restrictSourceTypeOptions(dirKey);
+
+      const sourceKey = stEl ? normalizeKey(stEl.value) : "";
+      const donorTypeKey = donorTypeEl ? normalizeKey(donorTypeEl.value) : DONOR.ANONYMOUS;
+
+      if (dirKey === DIR.DIRECT_BANK_RECEIPT){
+        if (sourceKey === SOURCE.DONATION){
+          showEl("section_donation");
+
+          if (donorTypeKey === DONOR.MEMBER){
+            showEl("section_member");
+          } else if (donorTypeKey === DONOR.NON_MEMBER){
+            showEl("blk_donor");
+          }
+        } else if (sourceKey === SOURCE.OTHER_INCOME){
+          showEl("section_income");
+        }
+      }
+
+      if (dirKey === DIR.BANK_PAID_EXPENSE){
+        showEl("section_expense");
+      }
+
+      if (proofEl){
+        proofEl.setAttribute("accept", ".pdf,.jpg,.jpeg,.png");
+        proofEl.required = proofRequiredDirections.has(dirKey);
+
+        const proofLabel = document.querySelector('[data-label-for="proof_file"]');
+        if (proofLabel){
+          let star = proofLabel.querySelector(".req");
+          if (proofEl.required && !star){
+            star = document.createElement("span");
+            star.className = "req";
+            star.textContent = "*";
+            proofLabel.appendChild(star);
+          }
+          if (!proofEl.required && star){
+            star.remove();
+          }
+        }
+      }
+
+      updateSummary(dirKey);
+      revealErrorSections();
+    }
+
+    function attachSubmitGuard(){
+      const form = byId("bmForm");
+      if (!form) return;
+
+      form.addEventListener("submit", function(e){
+        const dirEl = byId("id_direction");
+        const proofEl = byId("id_proof_file");
+        const dirKey = dirEl ? normalizeKey(dirEl.value) : "";
+
+        if (proofEl && proofRequiredDirections.has(dirKey) && !proofEl.files.length){
+          e.preventDefault();
+          alert("Proof file is required for this transaction.");
+          proofEl.focus();
+        }
+      });
+    }
+
+    function enhanceWidgets(){
+      document.querySelectorAll(".field-card input, .field-card select, .field-card textarea").forEach(el => {
+        const type = (el.getAttribute("type") || "").toLowerCase();
+        if (type === "hidden") return;
+        if (el.tagName === "SELECT"){
+          el.classList.add("form-select");
+        } else if (type !== "checkbox" && type !== "radio") {
+          el.classList.add("form-control");
+        }
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", function(){
+      enhanceWidgets();
+      markInvalidFields();
+      revealErrorSections();
+      applyVisibility();
+      attachSubmitGuard();
+
+      const dirEl = byId("id_direction");
+      const stEl = byId("id_source_type");
+      const donorTypeEl = byId("id_donor_type");
+
+      if (dirEl) dirEl.addEventListener("change", applyVisibility);
+      if (stEl) stEl.addEventListener("change", applyVisibility);
+      if (donorTypeEl) donorTypeEl.addEventListener("change", applyVisibility);
+    });
+  </script>
+</body>
+</html>

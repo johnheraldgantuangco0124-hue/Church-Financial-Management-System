@@ -1,0 +1,747 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record Tithe | Church IS</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #0f766e;
+            --primary-dark: #115e59;
+            --primary-light: #14b8a6;
+            --secondary: #f8fafc;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --success-soft: #ecfdf5;
+            --danger-soft: #fef2f2;
+            --warning-soft: #fffbeb;
+            --shadow-lg: 0 20px 50px rgba(15, 23, 42, 0.12);
+            --shadow-sm: 0 8px 25px rgba(15, 23, 42, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(20, 184, 166, 0.10), transparent 30%),
+                radial-gradient(circle at bottom right, rgba(15, 118, 110, 0.10), transparent 28%),
+                linear-gradient(180deg, #f8fafc 0%, #eefbf8 100%);
+            min-height: 100vh;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page-shell {
+            flex: 1;
+            padding: 40px 16px 56px;
+        }
+
+        .record-wrap {
+            max-width: 980px;
+            margin: 0 auto;
+        }
+
+        .record-card {
+            border: 1px solid rgba(255,255,255,0.65);
+            border-radius: 28px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(14px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .record-header {
+            position: relative;
+            padding: 34px 34px 24px;
+            background:
+                linear-gradient(135deg, rgba(15, 118, 110, 0.96), rgba(20, 184, 166, 0.88)),
+                url("{% static 'images/pattern.png' %}");
+            color: #fff;
+        }
+
+        .record-header::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to right, rgba(255,255,255,0.04), transparent);
+            pointer-events: none;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .header-icon {
+            width: 76px;
+            height: 76px;
+            border-radius: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.16);
+            border: 1px solid rgba(255,255,255,0.22);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
+            font-size: 30px;
+            flex-shrink: 0;
+        }
+
+        .header-title {
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .header-subtitle {
+            margin: 6px 0 0;
+            color: rgba(255,255,255,0.88);
+            font-size: 0.95rem;
+        }
+
+        .header-badges {
+            margin-top: 14px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .soft-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.22);
+            font-size: 0.82rem;
+            font-weight: 500;
+        }
+
+        .record-body {
+            padding: 30px 34px 34px;
+        }
+
+        .top-note {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px 18px;
+            background: #f8fffe;
+            border: 1px solid #ccfbf1;
+            border-radius: 16px;
+            margin-bottom: 24px;
+        }
+
+        .top-note i {
+            color: var(--primary);
+            margin-top: 2px;
+        }
+
+        .section-card {
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            background: #ffffff;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .section-head {
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        }
+
+        .section-head h5 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .section-head p {
+            margin: 4px 0 0;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        .section-body {
+            padding: 22px;
+        }
+
+        .field-block {
+            margin-bottom: 18px;
+        }
+
+        .field-block:last-child {
+            margin-bottom: 0;
+        }
+
+        .field-label {
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .required-star {
+            color: #dc2626;
+        }
+
+        .form-control,
+        .form-select,
+        textarea.form-control {
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            padding: 0.84rem 1rem;
+            min-height: 50px;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            background-color: #fff;
+            transition: all 0.2s ease;
+            box-shadow: none;
+        }
+
+        textarea.form-control {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: rgba(20, 184, 166, 0.65);
+            box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.12);
+        }
+
+        .form-text {
+            font-size: 0.82rem;
+            color: var(--text-muted) !important;
+            margin-top: 6px;
+        }
+
+        .field-error {
+            font-size: 0.83rem;
+            color: #dc2626;
+            margin-top: 6px;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        .ocr-panel {
+            margin-top: 22px;
+            border: 1px dashed #99f6e4;
+            border-radius: 18px;
+            background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 100%);
+            padding: 18px;
+        }
+
+        .ocr-panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .ocr-title {
+            margin: 0;
+            font-weight: 700;
+            font-size: 0.96rem;
+            color: var(--primary-dark);
+        }
+
+        .ocr-subtitle {
+            margin: 2px 0 0;
+            font-size: 0.83rem;
+            color: var(--text-muted);
+        }
+
+        .ocr-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-ocr,
+        .btn-submit,
+        .btn-reset {
+            border: none;
+            border-radius: 14px;
+            padding: 12px 18px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            transition: all 0.2s ease;
+        }
+
+        .btn-ocr {
+            background: #ecfeff;
+            color: var(--primary-dark);
+            border: 1px solid #a5f3fc;
+        }
+
+        .btn-ocr:hover {
+            background: #cffafe;
+            color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: #fff;
+            min-width: 180px;
+            box-shadow: 0 10px 24px rgba(20, 184, 166, 0.22);
+        }
+
+        .btn-submit:hover {
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 14px 28px rgba(20, 184, 166, 0.28);
+        }
+
+        .btn-reset {
+            background: #f8fafc;
+            color: #475569;
+            border: 1px solid var(--border);
+        }
+
+        .btn-reset:hover {
+            background: #f1f5f9;
+            color: #334155;
+        }
+
+        .ocr-status {
+            display: none;
+            margin-top: 14px;
+            border-radius: 14px;
+            padding: 12px 14px;
+            font-size: 0.88rem;
+        }
+
+        .ocr-status.info {
+            display: block;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+        }
+
+        .ocr-status.success {
+            display: block;
+            background: var(--success-soft);
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .ocr-status.error {
+            display: block;
+            background: var(--danger-soft);
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        .ocr-result-box {
+            display: none;
+            margin-top: 14px;
+            border-radius: 14px;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            padding: 14px;
+        }
+
+        .ocr-result-box.show {
+            display: block;
+        }
+
+        .ocr-result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .ocr-chip {
+            border: 1px solid #dbeafe;
+            background: #f8fbff;
+            border-radius: 14px;
+            padding: 12px;
+        }
+
+        .ocr-chip .label {
+            font-size: 0.77rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .ocr-chip .value {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--text-main);
+            word-break: break-word;
+        }
+
+        .actions-bar {
+            margin-top: 26px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .alert {
+            border: none;
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        footer {
+            background: #0f172a;
+            color: #94a3b8;
+            text-align: center;
+            padding: 18px 0;
+            margin-top: auto;
+            font-size: 0.88rem;
+        }
+
+        footer a {
+            color: #5eead4;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .record-header,
+            .record-body {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+
+            .section-body {
+                padding: 18px;
+            }
+
+            .actions-bar {
+                flex-direction: column;
+            }
+
+            .btn-submit,
+            .btn-reset {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+    <div class="page-shell">
+        <div class="record-wrap">
+            <div class="record-card">
+
+                <div class="record-header">
+                    <div class="header-content">
+                        <div class="header-icon">
+                            <i class="fas fa-hand-holding-heart"></i>
+                        </div>
+
+                        <div>
+                            <h2 class="header-title">Record Tithe</h2>
+                            <p class="header-subtitle">
+                                Enter tithe details accurately, upload proof if available, and review before final confirmation.
+                            </p>
+
+                            <div class="header-badges">
+                                <span class="soft-badge">
+                                    <i class="fas fa-shield-heart"></i> Secure Entry
+                                </span>
+                                <span class="soft-badge">
+                                    <i class="fas fa-file-invoice"></i> OCR Ready
+                                </span>
+                                <span class="soft-badge">
+                                    <i class="fas fa-magnifying-glass-dollar"></i> Fraud Check Aware
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="record-body">
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <div class="top-note">
+                        <i class="fas fa-circle-info"></i>
+                        <div>
+                            <strong>Before you submit:</strong>
+                            Make sure the amount, date, and description are correct. You may scan the receipt first to auto-fill supported fields.
+                        </div>
+                    </div>
+
+                    <form method="POST" enctype="multipart/form-data" id="titheForm">
+                        {% csrf_token %}
+
+                        <div class="section-card">
+                            <div class="section-head">
+                                <h5>Tithe Information</h5>
+                                <p>Complete the required details below.</p>
+                            </div>
+
+                            <div class="section-body">
+                                <div class="row g-3">
+                                    {% for field in tithe_form %}
+                                        <div class="col-12 {% if field.name == 'description' %}col-lg-12{% else %}col-lg-6{% endif %}">
+                                            <div class="field-block">
+                                                <label for="{{ field.id_for_label }}" class="field-label">
+                                                    {{ field.label }}
+                                                    {% if field.field.required %}
+                                                        <span class="required-star">*</span>
+                                                    {% endif %}
+                                                </label>
+
+                                                {{ field }}
+
+                                                {% if field.help_text %}
+                                                    <div class="form-text">{{ field.help_text }}</div>
+                                                {% endif %}
+
+                                                {% if field.errors %}
+                                                    <div class="field-error">
+                                                        <i class="fas fa-exclamation-circle mt-1"></i>
+                                                        <span>{{ field.errors.0 }}</span>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="ocr-panel" id="ocrPanel">
+                                    <div class="ocr-panel-head">
+                                        <div>
+                                            <h6 class="ocr-title">
+                                                <i class="fas fa-wand-magic-sparkles me-2"></i>Receipt OCR Assistant
+                                            </h6>
+                                            <p class="ocr-subtitle">
+                                                Upload an image or PDF proof, then scan to extract supported receipt details.
+                                            </p>
+                                        </div>
+
+                                        <div class="ocr-actions">
+                                            <button type="button" class="btn btn-ocr" id="scanReceiptBtn">
+                                                <i class="fas fa-camera me-2"></i>Scan Receipt
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div id="ocrStatus" class="ocr-status"></div>
+
+                                    <div id="ocrResultBox" class="ocr-result-box">
+                                        <div class="ocr-result-grid" id="ocrResultGrid"></div>
+                                    </div>
+                                </div>
+
+                                <div class="actions-bar">
+                                    <button type="reset" class="btn btn-reset">
+                                        <i class="fas fa-rotate-left me-2"></i>Reset Form
+                                    </button>
+
+                                    <button type="submit" class="btn btn-submit">
+                                        <i class="fas fa-check-circle me-2"></i>Submit Tithe
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p class="mb-0">&copy; 2024 <a href="#">Living Stone Evangelical Free Church</a> Information System</p>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("titheForm");
+            const scanBtn = document.getElementById("scanReceiptBtn");
+            const ocrStatus = document.getElementById("ocrStatus");
+            const ocrResultBox = document.getElementById("ocrResultBox");
+            const ocrResultGrid = document.getElementById("ocrResultGrid");
+
+            const allInputs = document.querySelectorAll("input, select, textarea");
+            allInputs.forEach(function (input) {
+                if (input.type === "checkbox") {
+                    input.classList.add("form-check-input");
+                } else if (input.type !== "hidden" && input.type !== "file") {
+                    input.classList.add("form-control");
+                } else if (input.tagName === "SELECT") {
+                    input.classList.add("form-select");
+                }
+            });
+
+            // Add proper Bootstrap styling for file input
+            const fileInput = form.querySelector('input[name="file"], input[name="proof_file"], input[name="receipt"], input[name="receipt_image"], input[type="file"]');
+            if (fileInput) {
+                fileInput.classList.add("form-control");
+            }
+
+            // Force date picker only for matching date field
+            const dateInput = form.querySelector('input[name="date"], input[name="tithe_date"], input[id*="date"]');
+            if (dateInput) {
+                dateInput.type = "date";
+            }
+
+            function setStatus(type, message) {
+                ocrStatus.className = "ocr-status " + type;
+                ocrStatus.innerHTML = message;
+            }
+
+            function clearStatus() {
+                ocrStatus.className = "ocr-status";
+                ocrStatus.innerHTML = "";
+            }
+
+            function showResult(data) {
+                ocrResultGrid.innerHTML = "";
+
+                const entries = Object.entries(data || {});
+                if (!entries.length) {
+                    ocrResultBox.classList.remove("show");
+                    return;
+                }
+
+                entries.forEach(([key, value]) => {
+                    if (value === null || value === undefined || value === "") return;
+
+                    const item = document.createElement("div");
+                    item.className = "ocr-chip";
+                    item.innerHTML = `
+                        <div class="label">${key.replace(/_/g, " ")}</div>
+                        <div class="value">${String(value)}</div>
+                    `;
+                    ocrResultGrid.appendChild(item);
+                });
+
+                if (ocrResultGrid.children.length > 0) {
+                    ocrResultBox.classList.add("show");
+                } else {
+                    ocrResultBox.classList.remove("show");
+                }
+            }
+
+            function tryFillField(selectors, value) {
+                if (value === null || value === undefined || value === "") return false;
+
+                for (const selector of selectors) {
+                    const el = form.querySelector(selector);
+                    if (el) {
+                        el.value = value;
+                        el.dispatchEvent(new Event("change", { bubbles: true }));
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            function fillOCRData(data) {
+                if (!data || typeof data !== "object") return;
+
+                tryFillField(
+                    ['input[name="amount"]', 'input[id*="amount"]'],
+                    data.amount || data.total || data.receipt_amount
+                );
+
+                tryFillField(
+                    ['input[name="date"]', 'input[name="tithe_date"]', 'input[id*="date"]'],
+                    data.date || data.receipt_date || data.transaction_date
+                );
+
+                tryFillField(
+                    ['textarea[name="description"]', 'input[name="description"]', 'textarea[id*="description"]', 'input[id*="description"]'],
+                    data.description || data.vendor || data.store || data.note || data.raw_text
+                );
+            }
+
+            if (scanBtn) {
+                scanBtn.addEventListener("click", async function () {
+                    if (!fileInput || !fileInput.files || !fileInput.files.length) {
+                        setStatus("error", '<i class="fas fa-circle-exclamation me-2"></i>Please select a receipt or proof file first.');
+                        return;
+                    }
+
+                    const formData = new FormData();
+                    formData.append("action", "OCR");
+                    formData.append(fileInput.name || "receipt", fileInput.files[0]);
+
+                    const csrfToken = form.querySelector('input[name="csrfmiddlewaretoken"]')?.value || "";
+
+                    scanBtn.disabled = true;
+                    scanBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Scanning...';
+                    clearStatus();
+                    ocrResultBox.classList.remove("show");
+                    ocrResultGrid.innerHTML = "";
+
+                    try {
+                        const response = await fetch(window.location.href, {
+                            method: "POST",
+                            headers: {
+                                "X-CSRFToken": csrfToken
+                            },
+                            body: formData
+                        });
+
+                        const result = await response.json();
+
+                        if (!response.ok || !result.success) {
+                            throw new Error(result.error || "OCR scan failed.");
+                        }
+
+                        setStatus("success", '<i class="fas fa-circle-check me-2"></i>Receipt scan completed successfully.');
+                        showResult(result.data || {});
+                        fillOCRData(result.data || {});
+                    } catch (error) {
+                        setStatus("error", `<i class="fas fa-triangle-exclamation me-2"></i>${error.message}`);
+                    } finally {
+                        scanBtn.disabled = false;
+                        scanBtn.innerHTML = '<i class="fas fa-camera me-2"></i>Scan Receipt';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

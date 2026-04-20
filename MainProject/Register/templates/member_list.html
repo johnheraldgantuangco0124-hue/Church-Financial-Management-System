@@ -1,0 +1,341 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member List | Church IS</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f6f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Hero Header Background */
+        .header-bg {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            height: 200px;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            border-radius: 0 0 50px 50px;
+        }
+
+        .main-container {
+            flex: 1;
+            padding: 2rem 15px;
+            margin-top: 20px;
+        }
+
+        /* Glass Card */
+        .table-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border: none;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .card-header-custom {
+            background: white;
+            padding: 25px 30px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .search-wrapper input {
+            padding-left: 40px;
+            border-radius: 50px;
+            border: 1px solid #e0e0e0;
+            background-color: #f8f9fa;
+            transition: all 0.2s;
+        }
+        .search-wrapper input:focus {
+            background-color: white;
+            border-color: #38ef7d;
+            box-shadow: 0 0 0 4px rgba(56, 239, 125, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+        }
+
+        /* Table Styling */
+        .table-custom thead th {
+            background-color: #f8f9fa;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #e9ecef;
+            padding: 15px 20px;
+            white-space: nowrap;
+        }
+
+        .table-custom tbody td {
+            padding: 15px 20px;
+            vertical-align: middle;
+            color: #444;
+            font-size: 0.95rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .table-custom tbody tr:hover {
+            background-color: #f9fbfd;
+        }
+
+        /* Avatar */
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 12px;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Badges */
+        .badge-role { background-color: #e3f2fd; color: #1565c0; padding: 6px 12px; border-radius: 30px; font-weight: 500; font-size: 0.75rem; }
+        .badge-org { background-color: #f3e5f5; color: #7b1fa2; padding: 6px 12px; border-radius: 30px; font-weight: 500; font-size: 0.75rem; }
+
+        /* New Status Badges */
+        .badge-active { background-color: #e8f5e9; color: #2e7d32; padding: 6px 12px; border-radius: 30px; font-weight: 500; font-size: 0.75rem; display: inline-block; }
+        .badge-inactive { background-color: #ffebee; color: #c62828; padding: 6px 12px; border-radius: 30px; font-weight: 500; font-size: 0.75rem; display: inline-block; }
+
+        /* Action Buttons */
+        .btn-action {
+            width: 34px;
+            height: 34px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-edit { background-color: #e3f2fd; color: #1976d2; }
+        .btn-edit:hover { background-color: #1976d2; color: white; transform: translateY(-2px); }
+
+        .btn-delete { background-color: #ffebee; color: #c62828; }
+        .btn-delete:hover { background-color: #c62828; color: white; transform: translateY(-2px); }
+
+        /* Footer */
+        footer {
+            background-color: #212529;
+            color: #adb5bd;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: auto;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-bg"></div>
+
+    {% include 'navbar.html' %}
+
+    <div class="container main-container">
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm mb-4" role="alert">
+                    <i class="fas fa-info-circle me-2"></i> {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="table-card">
+            <div class="card-header-custom">
+                <div>
+                    <h4 class="fw-bold mb-1 text-dark">
+                        <i class="fas fa-users me-2 text-success"></i>Member Directory
+                    </h4>
+                    <p class="text-muted small mb-0">View and manage registered congregation members.</p>
+                </div>
+
+                <div class="search-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="memberSearch" class="form-control" placeholder="Search members...">
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-custom mb-0" id="membersTable">
+                    <thead>
+                        <tr>
+                            <th>Member Profile</th>
+                            <th>Contact</th>
+                            <th>Age / DOB</th>
+                            <th>Role & Org</th>
+                            <th>Status</th>
+                            <th>Created By</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in members %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if member.profile_picture %}
+                                            <img src="/media/{{ member.profile_picture }}" class="avatar" alt="Avatar">
+                                        {% else %}
+                                            <img src="https://ui-avatars.com/api/?name={{ member.first_name }}+{{ member.last_name }}&background=11998e&color=fff&size=40" class="avatar" alt="Avatar">
+                                        {% endif %}
+
+                                        <div>
+                                            <div class="fw-bold text-dark">{{ member.first_name }} {{ member.last_name }}</div>
+                                            <div class="small text-muted">@{{ member.username }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="text-muted small">{{ member.email|default:"No email" }}</span>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-dark">{{ member.age }} yrs</div>
+                                    <div class="small text-muted">{{ member.birthdate|date:"M d, Y"|default:member.birthdate }}</div>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column gap-1">
+                                        <span class="badge-role w-auto align-self-start">{{ member.user_type_display|default:member.user_type }}</span>
+                                        {% if member.organization_display or member.organization %}
+                                            <span class="badge-org w-auto align-self-start">{{ member.organization_display|default:member.organization }}</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if member.status_display == 'Active' %}
+                                        <span class="badge-active">
+                                            <i class="fas fa-check-circle me-1"></i> Active
+                                        </span>
+                                    {% else %}
+                                        <span class="badge-inactive">
+                                            <i class="fas fa-times-circle me-1"></i> Inactive
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if member.created_by_first_name %}
+                                        <div class="d-flex align-items-center small text-muted">
+                                            <i class="fas fa-user-edit me-2"></i> {{ member.created_by_first_name }}
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted small">System</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <a href="{% url 'member-edit' member.id %}" class="btn btn-action btn-edit me-1" title="Edit">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+
+                                    <button type="button" class="btn btn-action btn-delete"
+                                            onclick="confirmDelete('{% url 'member-delete' member.id %}', '{{ member.first_name|escapejs }} {{ member.last_name|escapejs }}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="fas fa-users-slash fa-3x mb-3 opacity-50"></i>
+                                        <p>No members found in the database.</p>
+                                        <a href="{% url 'register' %}" class="btn btn-sm btn-outline-success">Register New Member</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-danger text-white border-0">
+                    <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Confirm Deletion</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4 text-center">
+                    <p class="mb-0 text-muted">Are you sure you want to remove this member?</p>
+                    <h5 class="fw-bold mt-2" id="deleteMemberName"></h5>
+                    <p class="text-muted small">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer border-0 bg-light justify-content-center">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteForm" method="post" action="">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger rounded-pill px-4">Yes, Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Living Stone Evangelical Free Church Information System</p>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).ready(function(){
+            // Search Function
+            $("#memberSearch").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("#membersTable tbody tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+
+        // Delete Modal Logic
+        function confirmDelete(deleteUrl, memberName) {
+            document.getElementById('deleteMemberName').textContent = memberName;
+            document.getElementById('deleteForm').action = deleteUrl;
+
+            // Bootstrap 5 Modal Trigger
+            var myModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            myModal.show();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Your Thank You Letters</title>
+
+  <!-- Bootstrap 4.5 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css"/>
+
+  <style>
+    body { background:#f4f7fc; }
+    .page-title { color:#2d3a56; text-align:center; margin: 1.25rem 0 .75rem; }
+    .section-card { border-radius:.75rem; border:1px solid #e5e7eb; }
+    .section-card .card-header { background:#fff; border-bottom:1px solid #e5e7eb; }
+    .thead-light th { background:#3f72af; color:#fff; border-color:#3f72af; }
+    .amount { font-variant-numeric: tabular-nums; }
+    .muted { color:#6b7280; }
+    .toolbar .form-inline > * { margin-right:.5rem; }
+    .msg-preview { max-width: 520px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .badge-soft { background:#eef2ff; color:#3730a3; font-weight:500; }
+
+    /* Mobile cards */
+    @media (max-width: 576px) {
+      .toolbar .form-inline { display:block; }
+      .toolbar .form-inline > * { width:100%; margin-bottom:.5rem; margin-right:0; }
+      .table thead { display:none; }
+      .table tbody tr { display:block; margin-bottom:.75rem; border:1px solid #e5e7eb; border-radius:.5rem; background:#fff; }
+      .table tbody td { display:flex; justify-content:space-between; align-items:center; padding:.6rem .75rem; border-top:none !important; }
+      .table tbody td::before { content: attr(data-label); font-weight:600; color:#374151; margin-right:.75rem; }
+      .msg-preview { max-width: 50vw; }
+    }
+  </style>
+</head>
+<body>
+  {% include 'navbar.html' %}
+
+  <div class="container py-3">
+    <h1 class="page-title">Thank You Letters You Have Received</h1>
+
+    <div class="card section-card mb-4">
+      <div class="card-body toolbar">
+        <form class="form-inline" onsubmit="return false;">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">🔎</span>
+            </div>
+            <input id="search" type="search" class="form-control" placeholder="Search by Reference #, Sender, or Message…"/>
+          </div>
+          <input id="from" type="date" class="form-control" title="From date"/>
+          <input id="to" type="date" class="form-control" title="To date"/>
+          <button id="clear-filters" class="btn btn-outline-secondary">Clear</button>
+        </form>
+        <small class="text-muted d-block mt-2">
+          Tip: Use search and date to quickly filter your letters. Click <strong>View</strong> to read the full message.
+        </small>
+      </div>
+    </div>
+
+    {% if thank_you_letters %}
+      <div class="card section-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <strong>Letters ({{ thank_you_letters|length }})</strong>
+          <span class="muted">Newest first</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover mb-0" id="letters-table">
+            <thead class="thead-light">
+              <tr>
+                <th style="min-width:140px;">Reference Number</th>
+                <th>Sender</th>
+                <th>Message</th>
+                <th style="min-width:160px;">Sent At</th>
+                <th style="width: 110px;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for letter in thank_you_letters %}
+                <tr
+                  data-ref="{{ letter.reference.reference_number|lower }}"
+                  data-sender="{{ letter.sender.username|lower }}"
+                  data-msg="{{ letter.message|lower }}"
+                  data-date="{{ letter.sent_at }}"
+                >
+                  <td data-label="Reference Number">
+                    <span class="font-weight-bold">{{ letter.reference.reference_number }}</span>
+                  </td>
+                  <td data-label="Sender">
+                    <span class="badge badge-soft">{{ letter.sender.username }}</span>
+                  </td>
+                  <td data-label="Message">
+                    <span class="msg-preview" title="{{ letter.message|escape }}">{{ letter.message }}</span>
+                  </td>
+                  <td data-label="Sent At">
+                    {{ letter.sent_at }}
+                  </td>
+                  <td data-label="Action">
+                    <button
+                      type="button"
+                      class="btn btn-primary btn-sm view-btn"
+                      data-toggle="modal"
+                      data-target="#viewModal"
+                      data-ref="{{ letter.reference.reference_number }}"
+                      data-sender="{{ letter.sender.username }}"
+                      data-message="{{ letter.message|escapejs }}"
+                      data-date="{{ letter.sent_at }}"
+                    >View</button>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% else %}
+      <div class="card section-card">
+        <div class="card-body text-center text-muted">
+          You have not received any thank you letters yet.
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- View Modal -->
+  <div class="modal fade" id="viewModal" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div>
+            <h5 class="modal-title" id="viewModalLabel">Thank You Letter</h5>
+            <small class="text-muted d-block" id="modal-meta"></small>
+          </div>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <pre id="modal-message" class="mb-0" style="white-space:pre-wrap; font-family:inherit;"></pre>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="copy-btn" class="btn btn-outline-secondary">Copy message</button>
+          <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- jQuery + Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    (function(){
+      const $rows = $('#letters-table tbody tr');
+      const $search = $('#search');
+      const $from = $('#from');
+      const $to = $('#to');
+      const $clear = $('#clear-filters');
+
+      function parseDate(d) {
+        const dt = new Date(d);
+        return isNaN(dt.getTime()) ? null : dt;
+      }
+
+      function rowMatches($row, term, fromDt, toDt) {
+        const ref = ($row.data('ref') || '').toString();
+        const sender = ($row.data('sender') || '').toString();
+        const msg = ($row.data('msg') || '').toString();
+        const dateStr = ($row.data('date') || '').toString();
+        const dt = parseDate(dateStr);
+
+        const matchesText = !term || ref.includes(term) || sender.includes(term) || msg.includes(term);
+        let matchesDate = true;
+        if (fromDt && dt) matchesDate = matchesDate && (dt >= fromDt);
+        if (toDt && dt)   matchesDate = matchesDate && (dt <= toDt);
+
+        return matchesText && matchesDate;
+      }
+
+      function filterTable() {
+        const term = ($search.val() || '').trim().toLowerCase();
+        const fromDt = parseDate($from.val());
+        const toDt = parseDate($to.val());
+
+        $rows.each(function(){
+          const $r = $(this);
+          $r.toggle(rowMatches($r, term, fromDt, toDt));
+        });
+      }
+
+      $search.on('input', filterTable);
+      $from.on('change', filterTable);
+      $to.on('change', filterTable);
+      $clear.on('click', function(e){
+        e.preventDefault();
+        $search.val(''); $from.val(''); $to.val('');
+        filterTable();
+      });
+
+      // Modal handling
+      $('#viewModal').on('show.bs.modal', function (event) {
+        const btn = $(event.relatedTarget); // Button that triggered the modal
+        const ref = btn.data('ref') || '';
+        const sender = btn.data('sender') || '';
+        const message = btn.data('message') || '';
+        const date = btn.data('date') || '';
+
+        $('#modal-meta').text(`Ref #${ref} · From ${sender} · ${date}`);
+        $('#modal-message').text(message);
+      });
+
+      $('#copy-btn').on('click', function(){
+        const text = $('#modal-message').text();
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text).then(() => {
+            $(this).text('Copied!').addClass('btn-success').removeClass('btn-outline-secondary');
+            setTimeout(() => $(this).text('Copy message').addClass('btn-outline-secondary').removeClass('btn-success'), 1200);
+          });
+        } else {
+          // Fallback
+          const ta = document.createElement('textarea');
+          ta.value = text; document.body.appendChild(ta);
+          ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+          $(this).text('Copied!').addClass('btn-success').removeClass('btn-outline-secondary');
+          setTimeout(() => $(this).text('Copy message').addClass('btn-outline-secondary').removeClass('btn-success'), 1200);
+        }
+      });
+
+      // initial render
+      filterTable();
+    })();
+  </script>
+</body>
+</html>

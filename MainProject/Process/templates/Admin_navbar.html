@@ -1,0 +1,53 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav">
+            <li class="nav-item active">
+                <a class="nav-link" href="{}">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="{% url 'finance' %}">Financial Statement <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownFinances" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Finances
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdownFinances">
+                    <a class="dropdown-item" href="{% url 'add_tithe' %}">Tithes</a>
+                    <a class="dropdown-item" href="{% url 'add_offerings' %}">Offerings</a>
+                    <a class="dropdown-item" href="{% url 'select_expenses'%}">Expenses</a>
+                    <a class="dropdown-item" href="{% url 'select_donations'%}">Donations</a>
+                </div>
+            </li>
+             <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAccounts" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Accounts
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdownAccounts">
+                    <a class="dropdown-item" href="{% url 'member-list' %}">Member Accounts</a>
+                    <a class="dropdown-item" href="{% url 'treasurer-list'%}">Treasurer Accounts</a>
+                </div>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="{% url 'register' %}">Register User <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAccount" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Profile
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdownAccount">
+                    <a class="dropdown-item" href="{% url 'user_detail' %}">View Profile</a>
+                    <a class="dropdown-item" href="{% url 'user_edit' %}">Edit Profile</a>
+                </div>
+            </li>
+            <li class="nav-item">
+                <form action="{% url 'logout' %}" method="post" class="form-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Logout</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+</nav>

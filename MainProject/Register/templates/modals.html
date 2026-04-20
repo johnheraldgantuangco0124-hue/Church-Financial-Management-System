@@ -1,0 +1,68 @@
+<!-- modals.html -->
+<!-- Choose Login Modal -->
+<div class="modal fade" id="chooseLoginModal" tabindex="-1" aria-labelledby="chooseLoginModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="chooseLoginModalLabel">Choose Login Type</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <button class="btn btn-primary mb-3 w-100" data-bs-toggle="modal" data-bs-target="#treasurerLoginModal" data-bs-dismiss="modal">Login as Treasurer</button>
+                <button class="btn btn-secondary w-100" data-bs-toggle="modal" data-bs-target="#memberLoginModal" data-bs-dismiss="modal">Login as Member</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Treasurer Login Modal -->
+<div class="modal fade" id="treasurerLoginModal" tabindex="-1" aria-labelledby="treasurerLoginModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="treasurerLoginModalLabel">Treasurer Login</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'treasurer_login' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="treasurer-username" class="form-label">Username</label>
+                        <input type="text" id="treasurer-username" name="username" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="treasurer-password" class="form-label">Password</label>
+                        <input type="password" id="treasurer-password" name="password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Member Login Modal -->
+<div class="modal fade" id="memberLoginModal" tabindex="-1" aria-labelledby="memberLoginModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="memberLoginModalLabel">Member Login</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'member_login' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="member-username" class="form-label">Username</label>
+                        <input type="text" id="member-username" name="username" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="member-password" class="form-label">Password</label>
+                        <input type="password" id="member-password" name="password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-secondary w-100">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

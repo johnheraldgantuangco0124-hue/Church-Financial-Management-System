@@ -1,0 +1,1104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Summary | {{ denomination_name }}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <style>
+        :root{
+            --bg:#f3f7fc;
+            --surface:#ffffff;
+            --surface-2:#f8fbff;
+            --line:#e2e8f0;
+            --line-soft:#edf2f7;
+            --text:#0f172a;
+            --muted:#64748b;
+
+            --blue-50:#eff6ff;
+            --blue-100:#dbeafe;
+            --blue-200:#bfdbfe;
+            --blue-500:#3b82f6;
+            --blue-600:#2563eb;
+            --blue-700:#1d4ed8;
+            --blue-800:#1e3a8a;
+
+            --green-50:#ecfdf5;
+            --green-600:#059669;
+            --green-700:#047857;
+
+            --yellow-50:#fffbeb;
+            --yellow-600:#d97706;
+
+            --red-50:#fef2f2;
+            --red-600:#dc2626;
+            --red-700:#b91c1c;
+
+            --purple-600:#7c3aed;
+            --cyan-600:#0891b2;
+            --teal-700:#0f766e;
+
+            --shadow:0 16px 40px rgba(15, 23, 42, 0.08);
+            --shadow-soft:0 8px 24px rgba(15, 23, 42, 0.05);
+            --radius:22px;
+        }
+
+        *{
+            font-family:'Inter', sans-serif;
+        }
+
+        body{
+            background:
+                radial-gradient(circle at top left, rgba(37,99,235,.08), transparent 22%),
+                radial-gradient(circle at top right, rgba(29,78,216,.08), transparent 20%),
+                linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+            color:var(--text);
+        }
+
+        .mono{
+            font-family:'JetBrains Mono', monospace;
+        }
+
+        .page-wrap{
+            padding:2rem 0 3rem;
+        }
+
+        .hero-card{
+            background:linear-gradient(135deg, var(--blue-700) 0%, var(--blue-600) 50%, var(--blue-800) 100%);
+            color:#fff;
+            border:none;
+            border-radius:30px;
+            overflow:hidden;
+            position:relative;
+            box-shadow:0 24px 64px rgba(37,99,235,.24);
+        }
+
+        .hero-card::before,
+        .hero-card::after{
+            content:"";
+            position:absolute;
+            border-radius:50%;
+            background:rgba(255,255,255,.10);
+        }
+
+        .hero-card::before{
+            width:220px;
+            height:220px;
+            top:-70px;
+            right:-40px;
+        }
+
+        .hero-card::after{
+            width:180px;
+            height:180px;
+            bottom:-65px;
+            left:-35px;
+        }
+
+        .hero-content{
+            position:relative;
+            z-index:2;
+        }
+
+        .hero-chip{
+            display:inline-flex;
+            align-items:center;
+            gap:.5rem;
+            padding:.5rem .9rem;
+            border-radius:999px;
+            border:1px solid rgba(255,255,255,.18);
+            background:rgba(255,255,255,.12);
+            font-size:.85rem;
+            font-weight:600;
+        }
+
+        .hero-title{
+            font-size:clamp(1.7rem, 2.7vw, 2.5rem);
+            font-weight:800;
+            letter-spacing:-0.03em;
+            margin:1rem 0 .5rem;
+        }
+
+        .hero-subtitle{
+            color:rgba(255,255,255,.88);
+            max-width:860px;
+            line-height:1.7;
+            margin-bottom:0;
+        }
+
+        .hero-actions .btn{
+            border-radius:14px;
+            padding:.8rem 1rem;
+            font-weight:700;
+        }
+
+        .hero-actions .btn-light{
+            color:var(--blue-800);
+        }
+
+        .mini-stats{
+            display:grid;
+            grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+            gap:1rem;
+            margin-top:1.5rem;
+        }
+
+        .mini-stat{
+            background:rgba(255,255,255,.12);
+            border:1px solid rgba(255,255,255,.16);
+            border-radius:18px;
+            padding:1rem;
+            backdrop-filter:blur(8px);
+        }
+
+        .mini-stat .label{
+            font-size:.83rem;
+            color:rgba(255,255,255,.82);
+            margin-bottom:.35rem;
+        }
+
+        .mini-stat .value{
+            font-size:1.3rem;
+            font-weight:800;
+        }
+
+        .panel-card{
+            background:var(--surface);
+            border:1px solid var(--line);
+            border-radius:var(--radius);
+            box-shadow:var(--shadow);
+            overflow:hidden;
+        }
+
+        .panel-header{
+            padding:1.25rem 1.5rem;
+            border-bottom:1px solid var(--line-soft);
+            background:linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+        }
+
+        .section-title{
+            font-size:1.05rem;
+            font-weight:800;
+            color:var(--blue-800);
+            margin:0;
+            display:flex;
+            align-items:center;
+            gap:.7rem;
+        }
+
+        .section-title .icon{
+            width:42px;
+            height:42px;
+            border-radius:14px;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            background:var(--blue-50);
+            color:var(--blue-600);
+        }
+
+        .section-subtitle{
+            color:var(--muted);
+            font-size:.92rem;
+            margin:.35rem 0 0;
+        }
+
+        .table-wrap{
+            overflow:auto;
+        }
+
+        .table-custom{
+            margin:0;
+        }
+
+        .table-custom thead th{
+            background:linear-gradient(180deg, var(--blue-50) 0%, #f8fbff 100%);
+            color:var(--blue-800);
+            font-weight:700;
+            font-size:.78rem;
+            text-transform:uppercase;
+            letter-spacing:.04em;
+            white-space:nowrap;
+            border-bottom:1px solid var(--line);
+            padding:1rem 1rem;
+        }
+
+        .table-custom tbody td{
+            padding:1rem 1rem;
+            border-color:var(--line-soft);
+            vertical-align:middle;
+            font-size:.94rem;
+        }
+
+        .table-custom tbody tr:hover{
+            background:#fbfdff;
+        }
+
+        .row-selected{
+            background:#f3f8ff !important;
+        }
+
+        .church-cell{
+            display:flex;
+            align-items:center;
+            gap:.9rem;
+            min-width:220px;
+        }
+
+        .church-icon{
+            width:40px;
+            height:40px;
+            border-radius:14px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:var(--blue-50);
+            color:var(--blue-600);
+            flex-shrink:0;
+        }
+
+        .church-name{
+            font-weight:700;
+            color:var(--text);
+        }
+
+        .church-sub{
+            font-size:.82rem;
+            color:var(--muted);
+        }
+
+        .num-col{
+            font-family:'JetBrains Mono', monospace;
+            font-size:.88rem;
+            font-weight:600;
+            white-space:nowrap;
+        }
+
+        .val-tithe{ color:var(--green-600); }
+        .val-offering{ color:var(--cyan-600); }
+        .val-donation{ color:#c2410c; }
+        .val-other{ color:var(--purple-600); }
+        .val-return{ color:var(--teal-700); }
+        .val-income{ color:var(--blue-600); }
+        .val-expense{ color:var(--red-600); }
+
+        .badge-net{
+            display:inline-flex;
+            align-items:center;
+            padding:.45rem .8rem;
+            border-radius:999px;
+            font-family:'JetBrains Mono', monospace;
+            font-size:.83rem;
+            font-weight:700;
+        }
+
+        .badge-net-positive{
+            background:var(--green-50);
+            color:var(--green-700);
+        }
+
+        .badge-net-negative{
+            background:var(--red-50);
+            color:var(--red-700);
+        }
+
+        .status-badge{
+            display:inline-flex;
+            align-items:center;
+            gap:.4rem;
+            padding:.48rem .75rem;
+            border-radius:999px;
+            font-size:.78rem;
+            font-weight:700;
+            white-space:nowrap;
+        }
+
+        .status-approved{
+            background:var(--green-50);
+            color:var(--green-700);
+        }
+
+        .status-pending{
+            background:var(--yellow-50);
+            color:var(--yellow-600);
+        }
+
+        .status-rejected{
+            background:var(--red-50);
+            color:var(--red-700);
+        }
+
+        .status-closed{
+            background:#eef2f7;
+            color:#475569;
+        }
+
+        .action-box{
+            display:flex;
+            flex-direction:column;
+            gap:.45rem;
+            min-width:160px;
+        }
+
+        .btn{
+            border-radius:12px;
+            font-weight:700;
+        }
+
+        .btn-primary{
+            background:linear-gradient(135deg, var(--blue-600), var(--blue-700));
+            border:none;
+        }
+
+        .btn-primary:hover{
+            background:linear-gradient(135deg, #1f5ad9, #1944bc);
+        }
+
+        .btn-outline-primary{
+            border-color:#b8d3ff;
+            color:var(--blue-700);
+            background:#fff;
+        }
+
+        .btn-outline-primary:hover{
+            background:var(--blue-50);
+            color:var(--blue-800);
+            border-color:#8ab8ff;
+        }
+
+        .btn-print{
+            background:#fff;
+            border:1px solid var(--line);
+            color:var(--muted);
+        }
+
+        .btn-print:hover{
+            background:#f8fbff;
+            color:var(--blue-700);
+            border-color:#cfe0ff;
+        }
+
+        .muted-note{
+            color:var(--muted);
+            font-size:.82rem;
+        }
+
+        .empty-state{
+            text-align:center;
+            padding:4rem 1.5rem;
+        }
+
+        .empty-state .icon{
+            width:80px;
+            height:80px;
+            margin:0 auto 1rem;
+            border-radius:24px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:var(--blue-50);
+            color:var(--blue-600);
+            font-size:2rem;
+        }
+
+        .filter-bar{
+            display:flex;
+            flex-wrap:wrap;
+            gap:1rem;
+        }
+
+        .filter-bar .form-select{
+            min-width:220px;
+            border-radius:14px;
+            border:1px solid #d8e4f2;
+            min-height:46px;
+            box-shadow:none !important;
+        }
+
+        .report-grid{
+            display:grid;
+            grid-template-columns:repeat(4, minmax(0, 1fr));
+            gap:1rem;
+        }
+
+        .summary-card{
+            background:linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+            border:1px solid var(--line);
+            border-radius:18px;
+            padding:1rem;
+            box-shadow:var(--shadow-soft);
+            height:100%;
+        }
+
+        .summary-card .label{
+            color:var(--muted);
+            font-size:.84rem;
+            margin-bottom:.45rem;
+        }
+
+        .summary-card .value{
+            font-size:1.15rem;
+            font-weight:800;
+            color:var(--text);
+            font-family:'JetBrains Mono', monospace;
+            margin:0;
+        }
+
+        .report-period-card{
+            border:1px solid var(--line);
+            border-radius:20px;
+            overflow:hidden;
+            background:#fff;
+            box-shadow:var(--shadow-soft);
+        }
+
+        .report-period-head{
+            padding:1rem 1.25rem;
+            background:linear-gradient(180deg, var(--blue-50) 0%, #ffffff 100%);
+            border-bottom:1px solid var(--line);
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            gap:1rem;
+        }
+
+        .report-period-title{
+            font-size:1rem;
+            font-weight:800;
+            margin:0;
+            color:var(--blue-800);
+        }
+
+        .report-period-body{
+            padding:1.25rem;
+        }
+
+        .report-block{
+            background:#fbfdff;
+            border:1px solid var(--line-soft);
+            border-radius:16px;
+            padding:1rem;
+            height:100%;
+        }
+
+        .report-block h6{
+            font-size:.92rem;
+            font-weight:800;
+            margin-bottom:.8rem;
+            color:var(--blue-800);
+        }
+
+        .report-list{
+            list-style:none;
+            padding:0;
+            margin:0;
+        }
+
+        .report-list li{
+            display:flex;
+            justify-content:space-between;
+            gap:1rem;
+            padding:.42rem 0;
+            border-bottom:1px dashed #e7eef7;
+            font-size:.9rem;
+        }
+
+        .report-list li:last-child{
+            border-bottom:none;
+        }
+
+        .report-list .name{
+            color:#334155;
+        }
+
+        .report-list .amount{
+            font-family:'JetBrains Mono', monospace;
+            font-weight:700;
+            white-space:nowrap;
+        }
+
+        .report-total{
+            margin-top:.7rem;
+            padding-top:.7rem;
+            border-top:1px solid var(--line);
+            display:flex;
+            justify-content:space-between;
+            gap:1rem;
+            font-weight:800;
+            font-size:.9rem;
+        }
+
+        .alert{
+            border:none;
+            border-radius:16px;
+            box-shadow:var(--shadow-soft);
+        }
+
+        @media (max-width: 1199.98px){
+            .report-grid{
+                grid-template-columns:repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 767.98px){
+            .page-wrap{
+                padding-top:1.2rem;
+            }
+
+            .hero-card{
+                border-radius:22px;
+            }
+
+            .report-grid{
+                grid-template-columns:1fr;
+            }
+
+            .hero-actions{
+                margin-top:1rem;
+            }
+        }
+
+        @media print{
+            body{
+                background:#fff !important;
+            }
+
+            .navbar,
+            .no-print,
+            .btn,
+            form{
+                display:none !important;
+            }
+
+            .hero-card,
+            .panel-card,
+            .report-period-card,
+            .summary-card{
+                box-shadow:none !important;
+                border:1px solid #dbe4f0 !important;
+            }
+
+            .page-wrap{
+                padding:0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    {% include 'navbar.html' %}
+
+    <div class="page-wrap">
+        <div class="container-fluid px-lg-4 px-3">
+
+            {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-info-circle-fill"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="hero-card mb-4">
+                <div class="card-body p-4 p-lg-5 hero-content">
+                    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
+                        <div>
+                            <span class="hero-chip">
+                                <i class="bi bi-diagram-3-fill"></i>
+                                Denomination Financial Control
+                            </span>
+                            <h1 class="hero-title">Denomination Financial Overview</h1>
+                            <p class="hero-subtitle">
+                                View each church’s unrestricted financial summary, request liquidation access when needed,
+                                and open approved liquidation records on the same page with member-style visibility rules.
+                            </p>
+                        </div>
+
+                        <div class="hero-actions no-print">
+                            <button class="btn btn-light shadow-sm" onclick="window.print()">
+                                <i class="bi bi-printer me-2"></i>Print Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mini-stats">
+                        <div class="mini-stat">
+                            <div class="label">Denomination</div>
+                            <div class="value">{{ denomination_name|default:"—" }}</div>
+                        </div>
+                        <div class="mini-stat">
+                            <div class="label">Churches Listed</div>
+                            <div class="value">{{ daily_summary|length }}</div>
+                        </div>
+                        <div class="mini-stat">
+                            <div class="label">Current Report Type</div>
+                            <div class="value text-capitalize">{{ current_report_type|default:"weekly" }}</div>
+                        </div>
+                        <div class="mini-stat">
+                            <div class="label">Selected Church</div>
+                            <div class="value">{{ selected_church_name|default:"None" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-card mb-4">
+                <div class="panel-header d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                    <div>
+                        <h5 class="section-title">
+                            <span class="icon"><i class="bi bi-bar-chart-line-fill"></i></span>
+                            Church Financial Access Control
+                        </h5>
+                        <p class="section-subtitle">
+                            Per-church access controls for liquidation visibility.
+                        </p>
+                    </div>
+                    <div class="muted-note">
+                        Only approved access can open liquidation details.
+                    </div>
+                </div>
+
+                <div class="table-wrap">
+                    <table class="table table-custom table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Church</th>
+                                <th class="text-center no-print">Access</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in daily_summary %}
+                                <tr {% if selected_church_id == row.ChurchID %}class="row-selected"{% endif %}>
+                                    <td>
+                                        <div class="church-cell">
+                                            <div class="church-icon">
+                                                <i class="bi bi-building"></i>
+                                            </div>
+                                            <div>
+                                                <div class="church-name">{{ row.ChurchName }}</div>
+                                                <div class="church-sub">
+                                                    Church ID: {{ row.ChurchID }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <td class="text-center no-print">
+                                        <div class="action-box align-items-center">
+                                            {% if row.can_view_liquidation %}
+                                                <span class="status-badge status-approved">
+                                                    <i class="bi bi-check-circle-fill"></i> Approved
+                                                </span>
+                                                <a href="?selected_church={{ row.ChurchID }}&report_type={{ current_report_type|default:'weekly' }}"
+                                                   class="btn btn-sm btn-primary">
+                                                    <i class="bi bi-eye-fill me-1"></i>View Liquidation
+                                                </a>
+
+                                            {% elif row.is_pending %}
+                                                <span class="status-badge status-pending">
+                                                    <i class="bi bi-hourglass-split"></i> Pending Approval
+                                                </span>
+
+                                            {% elif row.is_closed %}
+                                                <span class="status-badge status-closed">
+                                                    <i class="bi bi-slash-circle-fill"></i> Closed
+                                                </span>
+                                                <form method="post" class="m-0">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="request_access">
+                                                    <input type="hidden" name="church_id" value="{{ row.ChurchID }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-arrow-clockwise me-1"></i>Request Again
+                                                    </button>
+                                                </form>
+
+                                            {% elif row.is_rejected %}
+                                                <span class="status-badge status-rejected">
+                                                    <i class="bi bi-x-circle-fill"></i> Rejected
+                                                </span>
+                                                <form method="post" class="m-0">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="request_access">
+                                                    <input type="hidden" name="church_id" value="{{ row.ChurchID }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-arrow-repeat me-1"></i>Request Again
+                                                    </button>
+                                                </form>
+
+                                            {% else %}
+                                                <form method="post" class="m-0">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="request_access">
+                                                    <input type="hidden" name="church_id" value="{{ row.ChurchID }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-send-check me-1"></i>Request View
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="2">
+                                        <div class="empty-state">
+                                            <div class="icon">
+                                                <i class="bi bi-inbox-fill"></i>
+                                            </div>
+                                            <h5 class="fw-bold mb-2">No Data Found</h5>
+                                            <p class="text-muted mb-0">
+                                                There are no churches or unrestricted financial records available under this denomination.
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="px-4 py-3 border-top bg-light">
+                    <div class="d-flex align-items-start gap-2 text-secondary small">
+                        <i class="bi bi-info-circle mt-1"></i>
+                        <span>
+                            This section now shows church access control only. Financial amount columns have been removed from the table.
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {% if show_liquidation %}
+                <div class="panel-card">
+                    <div class="panel-header d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                        <div>
+                            <h5 class="section-title">
+                                <span class="icon"><i class="bi bi-journal-richtext"></i></span>
+                                {{ report_title }} — {{ selected_church_name }}
+                            </h5>
+                            <p class="section-subtitle">
+                                Visible using locked-period member-style access rules.
+                            </p>
+                        </div>
+
+                        <form method="get" class="filter-bar no-print">
+                            <input type="hidden" name="selected_church" value="{{ selected_church_id }}">
+
+                            <select name="report_type" class="form-select" onchange="this.form.submit()">
+                                <option value="weekly" {% if current_report_type == "weekly" %}selected{% endif %}>Weekly Report</option>
+                                <option value="monthly" {% if current_report_type == "monthly" %}selected{% endif %}>Monthly Report</option>
+                                <option value="yearly" {% if current_report_type == "yearly" %}selected{% endif %}>Yearly Report</option>
+                            </select>
+
+                            <select name="date_filter" class="form-select" onchange="this.form.submit()">
+                                <option value="">All Available Periods</option>
+                                {% for p in available_periods %}
+                                    <option value="{{ p }}" {% if current_filter == p %}selected{% endif %}>{{ p }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </div>
+
+                    <div class="p-4 border-bottom">
+                        <div class="report-grid">
+                            <div class="summary-card">
+                                <div class="label">Selected Church</div>
+                                <p class="value">{{ selected_church_name }}</p>
+                            </div>
+                            <div class="summary-card">
+                                <div class="label">Accounting Lock Date</div>
+                                <p class="value">
+                                    {% if accounting_lock_date %}{{ accounting_lock_date }}{% else %}Not Set{% endif %}
+                                </p>
+                            </div>
+                            <div class="summary-card">
+                                <div class="label">Report Type</div>
+                                <p class="value text-capitalize">{{ current_report_type }}</p>
+                            </div>
+                            <div class="summary-card">
+                                <div class="label">Current Filter</div>
+                                <p class="value">{% if current_filter %}{{ current_filter }}{% else %}All{% endif %}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4">
+                        {% for item in weekly_report %}
+                            <div class="report-period-card mb-4">
+                                <div class="report-period-head">
+                                    <div>
+                                        <h6 class="report-period-title">{{ item.week }}</h6>
+                                        <div class="muted-note">Detailed financial liquidation snapshot</div>
+                                    </div>
+                                    <div class="text-lg-end">
+                                        <div class="muted-note">Net Fund Flow</div>
+                                        <div class="fw-bold mono {% if item.summary.net_fund_flow < 0 %}text-danger{% else %}text-primary{% endif %}">
+                                            ₱{{ item.summary.net_fund_flow|floatformat:2 }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="report-period-body">
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-xl-3 col-md-6">
+                                            <div class="summary-card">
+                                                <div class="label">Total General Income</div>
+                                                <p class="value">₱{{ item.summary.total_general_income|floatformat:2 }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-md-6">
+                                            <div class="summary-card">
+                                                <div class="label">Total Restricted Income</div>
+                                                <p class="value">₱{{ item.summary.total_restricted_income|floatformat:2 }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-md-6">
+                                            <div class="summary-card">
+                                                <div class="label">Total Expenses</div>
+                                                <p class="value text-danger">₱{{ item.summary.total_expenses|floatformat:2 }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-md-6">
+                                            <div class="summary-card">
+                                                <div class="label">Physical Cash Change</div>
+                                                <p class="value {% if item.summary.weekly_physical_cash_change < 0 %}text-danger{% else %}text-success{% endif %}">
+                                                    ₱{{ item.summary.weekly_physical_cash_change|floatformat:2 }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3">
+                                        <div class="col-xl-4">
+                                            <div class="report-block">
+                                                <h6>Income Breakdown</h6>
+                                                <ul class="report-list">
+                                                    <li>
+                                                        <span class="name">Tithes</span>
+                                                        <span class="amount text-success">₱{{ item.data.tithes|floatformat:2 }}</span>
+                                                    </li>
+                                                    <li>
+                                                        <span class="name">Offerings</span>
+                                                        <span class="amount text-info">₱{{ item.data.offering|floatformat:2 }}</span>
+                                                    </li>
+                                                    <li>
+                                                        <span class="name">Unrestricted Donations</span>
+                                                        <span class="amount" style="color:#c2410c;">₱{{ item.data.total_unres_donations|floatformat:2 }}</span>
+                                                    </li>
+                                                    <li>
+                                                        <span class="name">Unrestricted Other Income</span>
+                                                        <span class="amount text-primary">₱{{ item.data.total_unres_other|floatformat:2 }}</span>
+                                                    </li>
+                                                    <li>
+                                                        <span class="name">Restricted Donations</span>
+                                                        <span class="amount text-primary">₱{{ item.data.total_res_donations|floatformat:2 }}</span>
+                                                    </li>
+                                                    <li>
+                                                        <span class="name">Restricted Other Income</span>
+                                                        <span class="amount text-primary">₱{{ item.data.total_res_other|floatformat:2 }}</span>
+                                                    </li>
+                                                </ul>
+                                                <div class="report-total">
+                                                    <span>Total Income</span>
+                                                    <span class="mono text-primary">₱{{ item.summary.total_weekly_income|floatformat:2 }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-xl-4">
+                                            <div class="report-block">
+                                                <h6>Expense & Bank Movement</h6>
+                                                <ul class="report-list">
+                                                    <li>
+                                                        <span class="name">General Expenses</span>
+                                                        <span class="amount text-danger">₱{{ item.data.total_gen_expenses|floatformat:2 }}</span>
+                                                    </li>
+                                                    <li>
+                                                        <span class="name">Restricted Expenses</span>
+                                                        <span class="amount text-danger">₱{{ item.data.total_res_expenses|floatformat:2 }}</span>
+                                                    </li>
+                                                    <li>
+                                                        <span class="name">Bank Deposits</span>
+                                                        <span class="amount">₱{{ item.bank.deposits|floatformat:2 }}</span>
+                                                    </li>
+                                                    <li>
+                                                        <span class="name">Bank Withdrawals</span>
+                                                        <span class="amount">₱{{ item.bank.withdrawals|floatformat:2 }}</span>
+                                                    </li>
+                                                    <li>
+                                                        <span class="name">Net Transfer to Bank</span>
+                                                        <span class="amount">₱{{ item.bank.net_to_bank|floatformat:2 }}</span>
+                                                    </li>
+                                                    <li>
+                                                        <span class="name">Net Transfer to Physical Cash</span>
+                                                        <span class="amount">₱{{ item.bank.net_to_physical_cash|floatformat:2 }}</span>
+                                                    </li>
+                                                </ul>
+                                                <div class="report-total">
+                                                    <span>Total Expenses</span>
+                                                    <span class="mono text-danger">₱{{ item.summary.total_expenses|floatformat:2 }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-xl-4">
+                                            <div class="report-block">
+                                                <h6>Balances</h6>
+                                                <ul class="report-list">
+                                                    <li>
+                                                        <span class="name">Unrestricted Income</span>
+                                                        <span class="amount">₱{{ item.balances.unrestricted_income|floatformat:2 }}</span>
+                                                    </li>
+                                                    <li>
+                                                        <span class="name">Unrestricted Expenses</span>
+                                                        <span class="amount">₱{{ item.balances.unrestricted_expenses|floatformat:2 }}</span>
+                                                    </li>
+                                                    <li>
+                                                        <span class="name">Unrestricted Balance</span>
+                                                        <span class="amount">₱{{ item.balances.unrestricted_balance|floatformat:2 }}</span>
+                                                    </li>
+                                                    <li>
+                                                        <span class="name">Restricted Income</span>
+                                                        <span class="amount">₱{{ item.balances.total_restricted_income|floatformat:2 }}</span>
+                                                    </li>
+                                                    <li>
+                                                        <span class="name">Restricted Expenses</span>
+                                                        <span class="amount">₱{{ item.balances.total_restricted_expenses|floatformat:2 }}</span>
+                                                    </li>
+                                                    <li>
+                                                        <span class="name">Restricted Balance</span>
+                                                        <span class="amount">₱{{ item.balances.total_restricted_balance|floatformat:2 }}</span>
+                                                    </li>
+                                                </ul>
+                                                <div class="report-total">
+                                                    <span>Overall Balance</span>
+                                                    <span class="mono {% if item.balances.overall_balance < 0 %}text-danger{% else %}text-success{% endif %}">
+                                                        ₱{{ item.balances.overall_balance|floatformat:2 }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {% if item.balances.restricted_funds %}
+                                        <div class="mt-3">
+                                            <div class="report-block">
+                                                <h6>Restricted Fund Breakdown</h6>
+                                                <div class="table-responsive">
+                                                    <table class="table table-sm align-middle mb-0">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Fund Category</th>
+                                                                <th class="text-end">Income</th>
+                                                                <th class="text-end">Expenses</th>
+                                                                <th class="text-end">Balance</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for fund in item.balances.restricted_funds %}
+                                                                <tr>
+                                                                    <td>{{ fund.category }}</td>
+                                                                    <td class="text-end mono">₱{{ fund.income|floatformat:2 }}</td>
+                                                                    <td class="text-end mono text-danger">₱{{ fund.expenses|floatformat:2 }}</td>
+                                                                    <td class="text-end mono {% if fund.balance < 0 %}text-danger{% else %}text-success{% endif %}">
+                                                                        ₱{{ fund.balance|floatformat:2 }}
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="empty-state">
+                                <div class="icon">
+                                    <i class="bi bi-folder2-open"></i>
+                                </div>
+                                <h5 class="fw-bold mb-2">No Liquidation Data Available</h5>
+                                <p class="text-muted mb-0">
+                                    This church currently has no visible liquidation records for the selected locked periods.
+                                </p>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if restricted_income_updates %}
+                        <div class="border-top p-4">
+                            <h6 class="fw-bold text-primary mb-3">
+                                <i class="bi bi-wallet2 me-2"></i>Current Restricted Income Snapshot
+                            </h6>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <div class="summary-card">
+                                        <div class="label">Total Restricted Collected</div>
+                                        <p class="value">₱{{ restricted_income_summary.total_collected|floatformat:2 }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="summary-card">
+                                        <div class="label">Total Restricted Spent</div>
+                                        <p class="value text-danger">₱{{ restricted_income_summary.total_spent|floatformat:2 }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="summary-card">
+                                        <div class="label">Total Restricted Balance</div>
+                                        <p class="value {% if restricted_income_summary.total_balance < 0 %}text-danger{% else %}text-success{% endif %}">
+                                            ₱{{ restricted_income_summary.total_balance|floatformat:2 }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-custom mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Restricted Fund</th>
+                                            <th class="text-end">Total Collected</th>
+                                            <th class="text-end">Total Spent</th>
+                                            <th class="text-end">Current Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in restricted_income_updates %}
+                                            <tr>
+                                                <td>{{ item.category }}</td>
+                                                <td class="text-end mono">₱{{ item.total_collected|floatformat:2 }}</td>
+                                                <td class="text-end mono text-danger">₱{{ item.total_spent|floatformat:2 }}</td>
+                                                <td class="text-end mono {% if item.current_balance < 0 %}text-danger{% else %}text-success{% endif %}">
+                                                    ₱{{ item.current_balance|floatformat:2 }}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+</body>
+</html>

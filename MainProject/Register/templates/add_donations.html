@@ -1,0 +1,936 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Donations | Church IS</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --primary-color: #198754;
+            --primary-hover: #157347;
+            --primary-soft: rgba(25, 135, 84, 0.10);
+            --bg-color: #f4f6f8;
+            --card-border: #e5e7eb;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --danger: #dc3545;
+            --warning-soft: #fff8e1;
+            --warning-border: #f4d27a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background:
+                radial-gradient(1000px 400px at 0% -10%, rgba(25,135,84,.08), transparent 55%),
+                radial-gradient(800px 350px at 100% 0%, rgba(13,110,253,.07), transparent 55%),
+                var(--bg-color);
+            color: var(--text-main);
+            padding-bottom: 130px;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            padding: 2rem 0;
+            border-bottom: 1px solid var(--card-border);
+            margin-bottom: 2rem;
+        }
+
+        .header-shell {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .header-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .75rem;
+            margin-top: .75rem;
+        }
+
+        .meta-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            background: #fff;
+            border: 1px solid var(--card-border);
+            border-radius: 999px;
+            padding: .55rem .9rem;
+            font-size: .85rem;
+            color: var(--text-muted);
+            box-shadow: 0 1px 2px rgba(0,0,0,.03);
+        }
+
+        .top-action {
+            border-radius: 999px;
+            padding: .7rem 1.05rem;
+            font-weight: 600;
+        }
+
+        .donation-card {
+            background: #fff;
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            box-shadow: 0 6px 18px rgba(17, 24, 39, 0.05);
+            margin-bottom: 1.5rem;
+            position: relative;
+            transition: all 0.2s ease;
+            overflow: hidden;
+        }
+
+        .donation-card:hover {
+            box-shadow: 0 10px 24px rgba(17, 24, 39, 0.08);
+            border-color: #d1d5db;
+        }
+
+        .card-header-custom {
+            padding: 1rem 1.25rem;
+            background: linear-gradient(180deg, #fcfcfd 0%, #f9fafb 100%);
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: .75rem;
+            flex-wrap: wrap;
+        }
+
+        .row-badge {
+            background-color: #e8f3ee;
+            color: #166534;
+            font-weight: 700;
+            padding: 0.35rem 0.8rem;
+            border-radius: 9999px;
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .btn-remove {
+            color: #dc2626;
+            background: transparent;
+            border: 1px solid transparent;
+            padding: 0.45rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .btn-remove:hover {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        .section-caption {
+            font-size: .76rem;
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: .85rem;
+        }
+
+        .sub-panel {
+            border: 1px solid var(--card-border);
+            background: #fbfcfd;
+            border-radius: 14px;
+            padding: 1rem;
+            height: 100%;
+        }
+
+        .form-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 1px solid #d1d5db;
+            padding: 0.66rem 0.9rem;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.10);
+        }
+
+        .input-group-text {
+            background-color: #f9fafb;
+            border-color: #d1d5db;
+            color: #6b7280;
+            border-radius: 10px 0 0 10px;
+        }
+
+        .helper-text {
+            font-size: .78rem;
+            color: var(--text-muted);
+            margin-top: .35rem;
+        }
+
+        .ocr-box {
+            border: 1px dashed #cbd5e1;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: .85rem 1rem;
+            min-height: 92px;
+        }
+
+        .ocr-preview {
+            white-space: pre-wrap;
+            font-size: .83rem;
+            color: #334155;
+            margin: 0;
+        }
+
+        .ocr-status {
+            font-size: .82rem;
+            color: var(--text-muted);
+        }
+
+        .ocr-running {
+            color: #0d6efd;
+            font-weight: 600;
+        }
+
+        .sticky-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(8px);
+            border-top: 1px solid var(--card-border);
+            padding: 1.2rem 0;
+            z-index: 50;
+            box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .total-label {
+            font-size: 0.82rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+        }
+
+        .total-amount {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--primary-color);
+        }
+
+        .btn-action {
+            border-radius: 10px;
+            font-weight: 600;
+            padding: 0.8rem 1.3rem;
+            transition: all 0.2s;
+        }
+
+        .btn-add {
+            background-color: white;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .btn-add:hover {
+            background-color: #ecfdf5;
+        }
+
+        .btn-save {
+            background-color: var(--primary-color);
+            color: white;
+            border: 1px solid var(--primary-color);
+        }
+
+        .btn-save:hover {
+            background-color: var(--primary-hover);
+            color: white;
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.28s ease-out forwards;
+        }
+
+        .alert-shell {
+            border: 0;
+            border-radius: 14px;
+        }
+
+        .upload-note {
+            background: var(--warning-soft);
+            border: 1px solid var(--warning-border);
+            border-radius: 12px;
+            padding: .85rem 1rem;
+            color: #7c5e10;
+            font-size: .86rem;
+        }
+
+        .label-with-help {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+        }
+
+        .help-tooltip-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .help-tooltip-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #fff3cd;
+            color: #b45309;
+            border: 1px solid #f4d27a;
+            font-size: .72rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .help-tooltip-box {
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + 10px);
+            transform: translateX(-50%);
+            width: 290px;
+            background: #111827;
+            color: #fff;
+            font-size: .78rem;
+            line-height: 1.45;
+            padding: .7rem .8rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 24px rgba(0,0,0,.18);
+            opacity: 0;
+            visibility: hidden;
+            transition: all .18s ease;
+            z-index: 1000;
+            text-transform: none;
+            letter-spacing: normal;
+            pointer-events: none;
+        }
+
+        .help-tooltip-box::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 7px;
+            border-style: solid;
+            border-color: #111827 transparent transparent transparent;
+        }
+
+        .help-tooltip-wrap:hover .help-tooltip-box,
+        .help-tooltip-wrap:focus .help-tooltip-box,
+        .help-tooltip-wrap:focus-within .help-tooltip-box {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 767.98px) {
+            .sticky-footer .text-end {
+                text-align: center !important;
+            }
+
+            .help-tooltip-box {
+                width: 240px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+{% include 'navbar.html' %}
+
+<div class="page-header">
+    <div class="container">
+        <div class="header-shell">
+            <div>
+                <div class="d-flex align-items-center">
+                    <div class="bg-white p-3 rounded-circle shadow-sm me-3 border">
+                        <i class="bi bi-wallet2 text-success fs-4"></i>
+                    </div>
+                    <div>
+                        <h1 class="h3 fw-bold mb-1">Record Donations</h1>
+                        <p class="text-secondary mb-0">Enter one or more donation records, attach receipts, and optionally extract details using OCR.</p>
+                    </div>
+                </div>
+
+                <div class="header-meta">
+                    <span class="meta-pill"><i class="bi bi-journal-check"></i> Batch Entry</span>
+                    <span class="meta-pill"><i class="bi bi-paperclip"></i> File Attachments Supported</span>
+                    <span class="meta-pill"><i class="bi bi-eye"></i> Review Before Save</span>
+                </div>
+            </div>
+
+            <div>
+                <a href="?new_batch=1" class="btn btn-outline-secondary top-action">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Start New Batch
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm alert-shell mb-4" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <span>{{ message }}</span>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="upload-note mb-4">
+        <i class="bi bi-lightbulb me-2"></i>
+        You can upload a PDF/image receipt or a receipt image for each donation. OCR is optional and only helps prefill or capture text for review.
+    </div>
+
+    <form method="post" enctype="multipart/form-data" id="donation-form" autocomplete="off">
+        {% csrf_token %}
+        {{ formset.management_form }}
+
+        <div id="formset-container">
+            {% for form in formset %}
+                <div class="donation-card form-row animate-fade-in">
+
+                    {% for hidden in form.hidden_fields %}
+                        {{ hidden }}
+                    {% endfor %}
+
+                    <div class="card-header-custom">
+                        <span class="row-badge">Entry #<span class="row-number">{{ forloop.counter }}</span></span>
+
+                        <button type="button" class="btn-remove remove-form-row">
+                            <i class="bi bi-trash3 me-1"></i> Remove
+                        </button>
+                    </div>
+
+                    <div class="card-body p-4">
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger py-2">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <div class="row g-4">
+                            <div class="col-lg-7">
+                                <div class="section-caption">Donation Details</div>
+
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Donor Name</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                            {{ form.donor }}
+                                        </div>
+                                        {% if form.donor.errors %}
+                                            <div class="text-danger small mt-1">{{ form.donor.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Linked Member/User</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                                            {{ form.user }}
+                                        </div>
+                                        {% if form.user.errors %}
+                                            <div class="text-danger small mt-1">{{ form.user.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Amount <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text fw-bold text-success">₱</span>
+                                            {{ form.amount }}
+                                        </div>
+                                        {% if form.amount.errors %}
+                                            <div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Date <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                                            {{ form.donations_date }}
+                                        </div>
+                                        {% if form.donations_date.errors %}
+                                            <div class="text-danger small mt-1">{{ form.donations_date.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label label-with-help">
+                                            Donation Category <span class="text-danger">*</span>
+                                            <span class="help-tooltip-wrap" tabindex="0" aria-label="Category help">
+                                                <span class="help-tooltip-icon">!</span>
+                                                <span class="help-tooltip-box">
+                                                    Add category: Go to Management -> Donation types, Only admins can add category please contact your system admin
+                                                </span>
+                                            </span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                                            {{ form.donations_type }}
+                                        </div>
+                                        {% if form.donations_type.errors %}
+                                            <div class="text-danger small mt-1">{{ form.donations_type.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label">Description / Note</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-pencil"></i></span>
+                                            {{ form.other_donations_type }}
+                                        </div>
+                                        {% if form.other_donations_type.errors %}
+                                            <div class="text-danger small mt-1">{{ form.other_donations_type.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-5">
+                                <div class="section-caption">Receipt & OCR</div>
+
+                                <div class="sub-panel">
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label class="form-label">Receipt File</label>
+                                            {{ form.file }}
+                                            {% if form.file.help_text %}
+                                                <div class="helper-text">{{ form.file.help_text }}</div>
+                                            {% endif %}
+                                            {% if form.file.errors %}
+                                                <div class="text-danger small mt-1">{{ form.file.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="col-12">
+                                            <label class="form-label">Receipt Image</label>
+                                            {{ form.receipt_image }}
+                                            {% if form.receipt_image.help_text %}
+                                                <div class="helper-text">{{ form.receipt_image.help_text }}</div>
+                                            {% endif %}
+                                            {% if form.receipt_image.errors %}
+                                                <div class="text-danger small mt-1">{{ form.receipt_image.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="col-12">
+                                            <div class="form-check form-switch">
+                                                {{ form.run_ocr }}
+                                                <label class="form-check-label ms-2" for="{{ form.run_ocr.id_for_label }}">
+                                                    Run OCR for this entry
+                                                </label>
+                                            </div>
+                                            {% if form.run_ocr.errors %}
+                                                <div class="text-danger small mt-1">{{ form.run_ocr.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="col-12">
+                                            <div class="d-flex gap-2 flex-wrap">
+                                                <button type="button" class="btn btn-outline-primary btn-sm run-ocr-btn">
+                                                    <i class="bi bi-magic me-1"></i>Run OCR Now
+                                                </button>
+                                                <span class="ocr-status">No OCR run yet.</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <div class="ocr-box">
+                                                <div class="small fw-semibold mb-2 text-secondary">OCR Preview</div>
+                                                <pre class="ocr-preview mb-0">No OCR text yet.</pre>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 d-none">
+                                            {{ form.ocr_text }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="sticky-footer">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <button type="button" id="add-row-btn" class="btn btn-add btn-action w-100 w-md-auto shadow-sm">
+                            <i class="bi bi-plus-lg me-2"></i>Add Another Entry
+                        </button>
+                    </div>
+
+                    <div class="col-md-4 text-center mb-3 mb-md-0">
+                        <span class="total-label d-block">Total Amount</span>
+                        <span class="total-amount">₱0.00</span>
+                    </div>
+
+                    <div class="col-md-4 text-end">
+                        <button type="submit" class="btn btn-save btn-action w-100 w-md-auto shadow-sm">
+                            Proceed to Review <i class="bi bi-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div id="empty-form-template" class="d-none">
+    <div class="donation-card form-row animate-fade-in">
+
+        {% for hidden in formset.empty_form.hidden_fields %}
+            {{ hidden }}
+        {% endfor %}
+
+        <div class="card-header-custom">
+            <span class="row-badge">Entry #<span class="row-number">__prefix__</span></span>
+            <button type="button" class="btn-remove remove-form-row">
+                <i class="bi bi-trash3 me-1"></i> Remove
+            </button>
+        </div>
+
+        <div class="card-body p-4">
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <div class="section-caption">Donation Details</div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Donor Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                {{ formset.empty_form.donor }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Linked Member/User</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                                {{ formset.empty_form.user }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Amount <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text fw-bold text-success">₱</span>
+                                {{ formset.empty_form.amount }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Date <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                                {{ formset.empty_form.donations_date }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label label-with-help">
+                                Donation Category <span class="text-danger">*</span>
+                                <span class="help-tooltip-wrap" tabindex="0" aria-label="Category help">
+                                    <span class="help-tooltip-icon">!</span>
+                                    <span class="help-tooltip-box">
+                                        Add category: Go to Management -> Donation types, Only admins can add category please contact your system admin
+                                    </span>
+                                </span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                                {{ formset.empty_form.donations_type }}
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Description / Note</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-pencil"></i></span>
+                                {{ formset.empty_form.other_donations_type }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="section-caption">Receipt & OCR</div>
+
+                    <div class="sub-panel">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Receipt File</label>
+                                {{ formset.empty_form.file }}
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Receipt Image</label>
+                                {{ formset.empty_form.receipt_image }}
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    {{ formset.empty_form.run_ocr }}
+                                    <label class="form-check-label ms-2" for="{{ formset.empty_form.run_ocr.id_for_label }}">
+                                        Run OCR for this entry
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button type="button" class="btn btn-outline-primary btn-sm run-ocr-btn">
+                                        <i class="bi bi-magic me-1"></i>Run OCR Now
+                                    </button>
+                                    <span class="ocr-status">No OCR run yet.</span>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="ocr-box">
+                                    <div class="small fw-semibold mb-2 text-secondary">OCR Preview</div>
+                                    <pre class="ocr-preview mb-0">No OCR text yet.</pre>
+                                </div>
+                            </div>
+
+                            <div class="col-12 d-none">
+                                {{ formset.empty_form.ocr_text }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const prefix = 'donation';
+    const formContainer = document.getElementById('formset-container');
+    const addBtn = document.getElementById('add-row-btn');
+    const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
+    const totalDisplay = document.querySelector('.total-amount');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    function updateRowNumbers() {
+        const rows = formContainer.querySelectorAll('.form-row');
+        rows.forEach((row, index) => {
+            const badge = row.querySelector('.row-number');
+            if (badge) badge.textContent = index + 1;
+        });
+    }
+
+    function calculateTotal() {
+        let total = 0;
+        const amountInputs = formContainer.querySelectorAll('input[name$="-amount"]');
+
+        amountInputs.forEach(input => {
+            const val = parseFloat(input.value);
+            if (!isNaN(val)) total += val;
+        });
+
+        totalDisplay.textContent = '₱' + total.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function getRowField(row, suffix) {
+        return row.querySelector(`[name$="-${suffix}"]`);
+    }
+
+    function wireAmountEvents(row) {
+        const amountInput = getRowField(row, 'amount');
+        if (amountInput) {
+            amountInput.addEventListener('input', calculateTotal);
+            amountInput.addEventListener('change', calculateTotal);
+        }
+    }
+
+    function wireOcrButton(row) {
+        const ocrBtn = row.querySelector('.run-ocr-btn');
+        if (!ocrBtn) return;
+
+        ocrBtn.addEventListener('click', async function () {
+            const fileInput = getRowField(row, 'file');
+            const imageInput = getRowField(row, 'receipt_image');
+            const ocrTextInput = getRowField(row, 'ocr_text');
+            const donorInput = getRowField(row, 'donor');
+            const amountInput = getRowField(row, 'amount');
+            const dateInput = getRowField(row, 'donations_date');
+            const noteInput = getRowField(row, 'other_donations_type');
+            const statusEl = row.querySelector('.ocr-status');
+            const previewEl = row.querySelector('.ocr-preview');
+            const runOcrCheckbox = getRowField(row, 'run_ocr');
+
+            const upload = (fileInput && fileInput.files[0]) || (imageInput && imageInput.files[0]);
+
+            if (!upload) {
+                statusEl.textContent = 'Please upload a receipt file or receipt image first.';
+                return;
+            }
+
+            if (runOcrCheckbox) {
+                runOcrCheckbox.checked = true;
+            }
+
+            statusEl.textContent = 'Running OCR...';
+            statusEl.classList.add('ocr-running');
+            previewEl.textContent = 'Processing receipt...';
+            ocrBtn.disabled = true;
+
+            try {
+                const fd = new FormData();
+                fd.append('csrfmiddlewaretoken', csrfToken);
+                fd.append('action', 'OCR');
+                fd.append('receipt', upload);
+
+                const response = await fetch(window.location.href, {
+                    method: 'POST',
+                    body: fd,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.error || 'OCR failed.');
+                }
+
+                const data = result.data || {};
+                const rawText = data.ocr_text || data.text || JSON.stringify(data, null, 2);
+
+                if (ocrTextInput) {
+                    ocrTextInput.value = rawText;
+                }
+
+                previewEl.textContent = rawText || 'No OCR text returned.';
+                statusEl.textContent = 'OCR completed.';
+                statusEl.classList.remove('ocr-running');
+
+                if (donorInput && !donorInput.value && data.donor) donorInput.value = data.donor;
+                if (amountInput && !amountInput.value && data.amount) amountInput.value = data.amount;
+                if (dateInput && !dateInput.value && data.date) dateInput.value = data.date;
+
+                if (noteInput && !noteInput.value) {
+                    noteInput.value = data.description || data.note || '';
+                }
+
+                calculateTotal();
+
+            } catch (error) {
+                statusEl.textContent = error.message || 'OCR failed.';
+                statusEl.classList.remove('ocr-running');
+                previewEl.textContent = 'Unable to extract OCR text.';
+            } finally {
+                ocrBtn.disabled = false;
+            }
+        });
+    }
+
+    function initializeRow(row) {
+        wireAmountEvents(row);
+        wireOcrButton(row);
+    }
+
+    addBtn.addEventListener('click', function () {
+        const formCount = parseInt(totalFormsInput.value, 10);
+        const template = document.getElementById('empty-form-template').innerHTML;
+        const newRowHtml = template.replace(/__prefix__/g, formCount);
+
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = newRowHtml.trim();
+        const newRow = tempDiv.firstElementChild;
+
+        formContainer.appendChild(newRow);
+        totalFormsInput.value = formCount + 1;
+
+        initializeRow(newRow);
+        updateRowNumbers();
+
+        newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+
+    formContainer.addEventListener('click', function (e) {
+        if (e.target.closest('.remove-form-row')) {
+            const rowToRemove = e.target.closest('.form-row');
+            rowToRemove.remove();
+
+            const forms = formContainer.querySelectorAll('.form-row');
+            totalFormsInput.value = forms.length;
+
+            forms.forEach((form, index) => {
+                const badge = form.querySelector('.row-number');
+                if (badge) badge.textContent = index + 1;
+
+                form.querySelectorAll('input, select, textarea, label').forEach(el => {
+                    if (el.name) {
+                        el.name = el.name.replace(new RegExp(`${prefix}-\\d+`), `${prefix}-${index}`);
+                    }
+                    if (el.id) {
+                        el.id = el.id.replace(new RegExp(`${prefix}-\\d+`), `${prefix}-${index}`);
+                    }
+                    if (el.getAttribute && el.getAttribute('for')) {
+                        el.setAttribute(
+                            'for',
+                            el.getAttribute('for').replace(new RegExp(`${prefix}-\\d+`), `${prefix}-${index}`)
+                        );
+                    }
+                });
+            });
+
+            calculateTotal();
+        }
+    });
+
+    const existingRows = formContainer.querySelectorAll('.form-row');
+    existingRows.forEach(row => initializeRow(row));
+
+    calculateTotal();
+    updateRowNumbers();
+});
+</script>
+</body>
+</html>

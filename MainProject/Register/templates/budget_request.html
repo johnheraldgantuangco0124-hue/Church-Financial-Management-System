@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Release Requests (Approval Workflow)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --bg:#f7f8fa; --card:#fff; --line:#e6e8eb; --txt:#222; --link:#1e88e5; --pri:#17a2b8; --err:#b00020; }
+    *{box-sizing:border-box} body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);margin:0;color:var(--txt)}
+    .wrap{max-width:1100px;margin:0 auto;padding:24px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    h1{font-size:22px;margin:0}
+    nav a{margin-right:12px;text-decoration:none;color:var(--link)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+    table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+    th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left}
+    th{background:#fafafa}
+    label{font-weight:600;display:block;margin:8px 0 6px}
+    input, select, textarea{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px}
+    button{padding:10px 14px;border:0;border-radius:8px;cursor:pointer}
+    .primary{background:var(--pri);color:#fff}
+    .ghost{background:#eef2f3}
+    .err{color:var(--err);font-size:13px}
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+    <header>
+      <h1>Release Requests — For Approval</h1>
+      <nav>
+        <a href="{% url 'budgets_manage' %}">Budgets</a>
+        <a href="{% url 'release_budget' %}">Release Approved</a>
+        <a href="{% url 'budget_expense' %}">Record Expense</a>
+      </nav>
+    </header>
+
+    {% if messages %}<div class="card">{% for message in messages %}<div>{{ message }}</div>{% endfor %}</div>{% endif %}
+
+    <form method="post" class="card">
+      {% csrf_token %}
+      <div style="display:flex;gap:12px">
+        <div style="flex:1">
+          <label>Budget (Ministry — Period)</label>
+          {{ form.budget }} {% if form.budget.errors %}<div class="err">{{ form.budget.errors|striptags }}</div>{% endif %}
+        </div>
+        <div style="flex:1">
+          <label>Date to Release</label>
+          {{ form.date_released }} {% if form.date_released.errors %}<div class="err">{{ form.date_released.errors|striptags }}</div>{% endif %}
+        </div>
+        <div style="flex:1">
+          <label>Amount</label>
+          {{ form.amount }} {% if form.amount.errors %}<div class="err">{{ form.amount.errors|striptags }}</div>{% endif %}
+          <div style="color:#666;font-size:12px;margin-top:2px">Ex: 3000, 3,000.00, or ₱3,000</div>
+        </div>
+      </div>
+      <label>Remarks</label>
+      {{ form.remarks }} {% if form.remarks.errors %}<div class="err">{{ form.remarks.errors|striptags }}</div>{% endif %}
+      {% if form.non_field_errors %}<div class="err">{{ form.non_field_errors|striptags }}</div>{% endif %}
+      <div style="text-align:right;margin-top:8px">
+        <button class="primary" type="submit">Send for Approval</button>
+      </div>
+    </form>
+
+    <div class="card" style="margin-top:16px">
+      <h3 style="margin-top:0">Pending Requests</h3>
+      <table>
+        <thead><tr><th>Ministry</th><th>Period</th><th>Date</th><th>Amount</th><th>Remarks</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for r in pending %}
+          <tr>
+            <td>{{ r.budget.ministry.name }}</td>
+            <td>{{ r.budget.get_month_display }} {{ r.budget.year }}</td>
+            <td>{{ r.date_released|date:"Y-m-d" }}</td>
+            <td>₱{{ r.amount|floatformat:2 }}</td>
+            <td>{{ r.remarks|default:"—" }}</td>
+            <td>—</td>
+          </tr>
+          {% empty %}<tr><td colspan="6" style="color:#666">No pending requests.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3 style="margin-top:0">Approved Requests (waiting release)</h3>
+      <table>
+        <thead><tr><th>Ministry</th><th>Period</th><th>Date</th><th>Amount</th><th>Remarks</th></tr></thead>
+        <tbody>
+          {% for a in approved %}
+          <tr>
+            <td>{{ a.budget.ministry.name }}</td>
+            <td>{{ a.budget.get_month_display }} {{ a.budget.year }}</td>
+            <td>{{ a.date_released|date:"Y-m-d" }}</td>
+            <td>₱{{ a.amount|floatformat:2 }}</td>
+            <td>{{ a.remarks|default:"—" }}</td>
+          </tr>
+          {% empty %}<tr><td colspan="5" style="color:#666">No approved requests yet.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3 style="margin-top:0">Declined Requests</h3>
+      <table>
+        <thead><tr><th>Ministry</th><th>Period</th><th>Date</th><th>Amount</th><th>Remarks</th></tr></thead>
+        <tbody>
+          {% for d in declined %}
+          <tr>
+            <td>{{ d.budget.ministry.name }}</td>
+            <td>{{ d.budget.get_month_display }} {{ d.budget.year }}</td>
+            <td>{{ d.date_released|date:"Y-m-d" }}</td>
+            <td>₱{{ d.amount|floatformat:2 }}</td>
+            <td>{{ d.remarks|default:"—" }}</td>
+          </tr>
+          {% empty %}<tr><td colspan="5" style="color:#666">No declined requests.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

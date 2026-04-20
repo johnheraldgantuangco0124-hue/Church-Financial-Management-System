@@ -1,0 +1,357 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bank Withdraw | ChurchSys</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --brand: #dc3545;
+      --brand-soft: rgba(220,53,69,.10);
+      --card-radius: 18px;
+    }
+
+    body{
+      background:
+        radial-gradient(1200px 700px at 20% -10%, rgba(220,53,69,.10), transparent 55%),
+        radial-gradient(900px 600px at 100% 0%, rgba(13,110,253,.10), transparent 50%),
+        #f8fafc;
+    }
+
+    .page-wrap{
+      padding-top: 1.25rem;
+      padding-bottom: 2.25rem;
+    }
+
+    .page-title{
+      letter-spacing: -0.02em;
+    }
+
+    .soft-card{
+      border: 1px solid rgba(15,23,42,.08);
+      border-radius: var(--card-radius);
+      box-shadow: 0 10px 30px rgba(2,6,23,.08);
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .soft-card-header{
+      background: linear-gradient(135deg, rgba(220,53,69,.14), rgba(220,53,69,.04));
+      border-bottom: 1px solid rgba(15,23,42,.06);
+      padding: 1.15rem 1.25rem;
+    }
+
+    .bank-info{
+      background: #fff;
+      border: 1px solid rgba(15,23,42,.08);
+      border-radius: 14px;
+      padding: 1rem;
+    }
+
+    .label{
+      font-size: .78rem;
+      color: rgba(51,65,85,.95);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-weight: 700;
+    }
+
+    .value{
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    .balance-pill{
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .55rem .9rem;
+      border-radius: 999px;
+      background: var(--brand-soft);
+      color: #991b1b;
+      font-weight: 800;
+    }
+
+    .form-control, .form-select{
+      border-radius: 12px;
+      border-color: rgba(15,23,42,.12);
+      padding: .65rem .85rem;
+    }
+
+    .form-control:focus, .form-select:focus{
+      border-color: rgba(220,53,69,.55);
+      box-shadow: 0 0 0 .25rem rgba(220,53,69,.18);
+    }
+
+    .input-group-text{
+      border-radius: 12px;
+      border-color: rgba(15,23,42,.12);
+      background: #f8fafc;
+    }
+
+    .submit-bar{
+      position: sticky;
+      bottom: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,.92) 30%, rgba(255,255,255,1));
+      padding-top: .75rem;
+      margin-top: 1rem;
+    }
+
+    .btn-danger{
+      border-radius: 12px;
+      padding: .7rem 1.05rem;
+      font-weight: 700;
+    }
+
+    .btn-outline-secondary{
+      border-radius: 12px;
+    }
+
+    .alert{
+      border-radius: 14px;
+      border: 1px solid rgba(15,23,42,.08);
+    }
+
+    .helper{
+      color: rgba(71,85,105,.95);
+      font-size: .9rem;
+    }
+
+    .warning-box{
+      display: none;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    input[type="file"],
+    textarea{
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  {% include 'navbar.html' %}
+
+  <div class="container page-wrap">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 col-md-10">
+
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 mb-3">
+          <div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="d-inline-flex align-items-center justify-content-center rounded-circle"
+                    style="width:42px;height:42px;background:rgba(220,53,69,.12);color:#991b1b;">
+                <i class="bi bi-bank2 fs-5"></i>
+              </span>
+              <div>
+                <h3 class="mb-0 page-title">Bank Withdraw</h3>
+                <div class="helper">Record a withdrawal and update the bank balance.</div>
+              </div>
+            </div>
+          </div>
+
+          <a href="{% url 'financial_overview' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Back
+          </a>
+        </div>
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
+              <div class="d-flex gap-2">
+                {% if message.tags == 'success' %}
+                  <i class="bi bi-check-circle-fill mt-1"></i>
+                {% elif message.tags == 'error' or message.tags == 'danger' %}
+                  <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+                {% elif message.tags == 'warning' %}
+                  <i class="bi bi-exclamation-circle-fill mt-1"></i>
+                {% else %}
+                  <i class="bi bi-info-circle-fill mt-1"></i>
+                {% endif %}
+                <div>{{ message }}</div>
+              </div>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <div class="soft-card">
+          <div class="soft-card-header">
+            <div class="d-flex justify-content-between flex-wrap gap-2 align-items-center">
+              <div class="fw-bold text-dark">
+                <i class="bi bi-credit-card-2-front me-1"></i> Account Details
+              </div>
+              <div class="balance-pill">
+                <i class="bi bi-cash-coin"></i>
+                <span>₱ {{ current_balance|default_if_none:"0.00"|floatformat:2 }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3 p-sm-4">
+            <div class="bank-info mb-3">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <div class="label">Bank</div>
+                  <div class="value">{{ bank.bank_name|default:"—" }}</div>
+                </div>
+                <div class="col-md-4">
+                  <div class="label">Account Name</div>
+                  <div class="value">{{ bank.account_name|default:"—" }}</div>
+                </div>
+                <div class="col-md-4">
+                  <div class="label">Account #</div>
+                  <div class="value">
+                    {% if bank.account_number %}
+                      ****{{ bank.account_number|slice:"-4:" }}
+                    {% else %}
+                      —
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data" novalidate id="withdrawForm">
+              {% csrf_token %}
+
+              {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                  {{ form.non_field_errors }}
+                </div>
+              {% endif %}
+
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold" for="{{ form.amount.id_for_label }}">
+                    <i class="bi bi-currency-exchange me-1"></i> {{ form.amount.label }}
+                  </label>
+                  <div class="input-group">
+                    <span class="input-group-text">₱</span>
+                    {{ form.amount }}
+                  </div>
+                  <div class="form-text">Enter the exact amount withdrawn.</div>
+                  {% if form.amount.errors %}
+                    <div class="text-danger small mt-1">{{ form.amount.errors|striptags }}</div>
+                  {% endif %}
+
+                  <div id="balanceWarning" class="alert alert-danger warning-box mt-3 mb-0">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Withdrawal amount cannot be greater than the available bank balance.
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold" for="{{ form.withdraw_date.id_for_label }}">
+                    <i class="bi bi-calendar-event me-1"></i> {{ form.withdraw_date.label }}
+                  </label>
+                  {{ form.withdraw_date }}
+                  <div class="form-text">Use the date shown on the slip/transaction record.</div>
+                  {% if form.withdraw_date.errors %}
+                    <div class="text-danger small mt-1">{{ form.withdraw_date.errors|striptags }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label fw-semibold" for="{{ form.proof_image.id_for_label }}">
+                    <i class="bi bi-image me-1"></i> {{ form.proof_image.label }}
+                  </label>
+                  {{ form.proof_image }}
+                  {% if form.proof_image.help_text %}
+                    <div class="form-text">{{ form.proof_image.help_text }}</div>
+                  {% else %}
+                    <div class="form-text">Upload a clear photo or screenshot of the withdrawal proof.</div>
+                  {% endif %}
+                  {% if form.proof_image.errors %}
+                    <div class="text-danger small mt-1">{{ form.proof_image.errors|striptags }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label fw-semibold" for="{{ form.notes.id_for_label }}">
+                    <i class="bi bi-journal-text me-1"></i> {{ form.notes.label }}
+                  </label>
+                  {{ form.notes }}
+                  <div class="form-text">Optional: add reference details such as teller name, purpose, or remarks.</div>
+                  {% if form.notes.errors %}
+                    <div class="text-danger small mt-1">{{ form.notes.errors|striptags }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="submit-bar">
+                <div class="d-grid d-sm-flex gap-2 justify-content-sm-end">
+                  <button type="submit" class="btn btn-danger" id="submitBtn">
+                    <i class="bi bi-arrow-down-circle me-1"></i> Submit Withdrawal
+                  </button>
+                </div>
+                <div class="text-center mt-2">
+                  <small class="text-muted">
+                    Tip: Ensure the proof clearly shows the amount and date.
+                  </small>
+                </div>
+              </div>
+            </form>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const addClass = (el, cls) => {
+        if (el && !el.classList.contains(cls)) el.classList.add(cls);
+      };
+
+      document.querySelectorAll('input, select, textarea').forEach(el => {
+        const type = (el.getAttribute('type') || '').toLowerCase();
+
+        if (el.tagName === 'SELECT') addClass(el, 'form-select');
+        else if (type === 'file') addClass(el, 'form-control');
+        else if (el.tagName === 'TEXTAREA') addClass(el, 'form-control');
+        else if (['text', 'number', 'date', 'email', 'password'].includes(type) || el.tagName === 'INPUT') {
+          addClass(el, 'form-control');
+        }
+      });
+
+      document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.classList.add('form-check-input');
+      });
+
+      const amountInput = document.getElementById("id_amount");
+      const warningBox = document.getElementById("balanceWarning");
+      const submitBtn = document.getElementById("submitBtn");
+      const currentBalance = parseFloat("{{ current_balance|default_if_none:0 }}");
+
+      function validateWithdrawalAmount() {
+        if (!amountInput) return;
+
+        const enteredAmount = parseFloat(amountInput.value || 0);
+
+        if (enteredAmount > currentBalance && currentBalance >= 0) {
+          warningBox.style.display = "block";
+          submitBtn.disabled = true;
+        } else {
+          warningBox.style.display = "none";
+          submitBtn.disabled = false;
+        }
+      }
+
+      if (amountInput) {
+        amountInput.addEventListener("input", validateWithdrawalAmount);
+        amountInput.addEventListener("change", validateWithdrawalAmount);
+        validateWithdrawalAmount();
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,674 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Offerings | Church IS</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #183153;
+            --primary-dark: #10233a;
+            --accent: #2563eb;
+            --accent-soft: #eaf2ff;
+            --success: #16a34a;
+            --success-soft: #ecfdf3;
+            --danger: #dc2626;
+            --danger-soft: #fef2f2;
+            --warning: #f59e0b;
+            --warning-soft: #fff7ed;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --bg-page: #edf3f9;
+            --white: #ffffff;
+            --shadow-sm: 0 8px 18px rgba(15, 23, 42, 0.06);
+            --shadow-md: 0 16px 34px rgba(15, 23, 42, 0.10);
+            --radius-xl: 26px;
+            --radius-lg: 18px;
+            --radius-md: 14px;
+            --radius-sm: 10px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Poppins", sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 20%),
+                radial-gradient(circle at bottom right, rgba(22, 163, 74, 0.06), transparent 18%),
+                linear-gradient(180deg, #f8fbff 0%, var(--bg-page) 100%);
+            min-height: 100vh;
+            color: var(--text-main);
+        }
+
+        .main-container {
+            padding: 36px 16px 48px;
+        }
+
+        .review-card {
+            max-width: 1180px;
+            margin: 0 auto;
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid rgba(229, 231, 235, 0.85);
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header-custom {
+            position: relative;
+            padding: 34px 34px 24px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            text-align: center;
+            color: #fff;
+        }
+
+        .card-header-custom::before,
+        .card-header-custom::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+        }
+
+        .card-header-custom::before {
+            width: 170px;
+            height: 170px;
+            top: -50px;
+            right: -50px;
+        }
+
+        .card-header-custom::after {
+            width: 160px;
+            height: 160px;
+            left: -60px;
+            bottom: -70px;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .icon-wrapper {
+            width: 82px;
+            height: 82px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 31px;
+            margin-bottom: 16px;
+            color: #fff;
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.16);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.16);
+        }
+
+        .header-title {
+            font-size: 1.9rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: -0.4px;
+        }
+
+        .header-subtitle {
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.84);
+            margin-bottom: 0;
+        }
+
+        .card-body-custom {
+            padding: 30px 34px 36px;
+            background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+        }
+
+        .alert {
+            border: none;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .summary-strip {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .summary-box {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+            padding: 16px 18px;
+        }
+
+        .summary-label {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .summary-value {
+            font-size: 1.18rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .section-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .section-card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            background: #f9fbfd;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .section-card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .section-card-title i {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        .section-card-body {
+            padding: 20px;
+        }
+
+        .table-wrapper {
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background: #f7f9fc;
+            font-size: 0.78rem;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            color: #475569;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+            padding: 14px 12px;
+            white-space: nowrap;
+        }
+
+        .table tbody td {
+            padding: 14px 12px;
+            vertical-align: middle;
+            border-color: #eef2f7;
+            background: #fff;
+        }
+
+        .table tbody tr:hover td {
+            background: #fbfdff;
+        }
+
+        .member-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .member-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #eef6ff;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .member-name {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .member-sub {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .badge-soft {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .badge-soft-secondary {
+            background: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .badge-soft-warning {
+            background: var(--warning-soft);
+            color: #a16207;
+        }
+
+        .badge-soft-success {
+            background: var(--success-soft);
+            color: #15803d;
+        }
+
+        .amount-text {
+            font-weight: 700;
+            color: var(--success);
+            font-size: 1rem;
+            white-space: nowrap;
+        }
+
+        .proof-box {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .proof-thumb {
+            width: 74px;
+            height: 74px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            background: #fff;
+        }
+
+        .proof-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.83rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--accent);
+        }
+
+        .proof-link:hover {
+            color: #1d4ed8;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 52px 20px;
+        }
+
+        .empty-icon {
+            width: 88px;
+            height: 88px;
+            margin: 0 auto 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+            color: #9ca3af;
+            font-size: 34px;
+            border: 1px solid var(--border);
+        }
+
+        .action-panel {
+            margin-top: 22px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .info-note {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            color: #475569;
+            border-radius: 999px;
+            padding: 10px 16px;
+            font-size: 0.84rem;
+            font-weight: 500;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 11px 18px;
+        }
+
+        .btn-confirm {
+            background: linear-gradient(135deg, var(--success) 0%, #22c55e 100%);
+            border: none;
+            color: #fff;
+            box-shadow: 0 12px 24px rgba(34, 197, 94, 0.20);
+        }
+
+        .btn-confirm:hover {
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 16px 28px rgba(34, 197, 94, 0.24);
+        }
+
+        .btn-cancel {
+            background: #fff;
+            border: 1px solid #fecaca;
+            color: var(--danger);
+        }
+
+        .btn-cancel:hover {
+            background: var(--danger-soft);
+            color: #b91c1c;
+        }
+
+        .btn-back {
+            background: #fff;
+            border: 1px solid var(--border);
+            color: #334155;
+        }
+
+        .btn-back:hover {
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
+        .tfoot-total td {
+            background: #f8fbff !important;
+            border-top: 1px solid var(--border);
+            font-weight: 700;
+        }
+
+        @media (max-width: 991.98px) {
+            .card-header-custom,
+            .card-body-custom {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+
+            .summary-strip {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .main-container {
+                padding: 20px 10px 30px;
+            }
+
+            .review-card {
+                border-radius: 18px;
+            }
+
+            .card-header-custom,
+            .card-body-custom {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+
+            .header-title {
+                font-size: 1.55rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .action-buttons .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    {% include 'navbar.html' %}
+
+    <div class="main-container">
+        <div class="review-card">
+
+            <div class="card-header-custom">
+                <div class="header-content">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <h3 class="header-title">Review Offering Entries</h3>
+                    <p class="header-subtitle">
+                        Check the staged offering records below before final confirmation.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card-body-custom">
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if offerings %}
+
+                    <div class="summary-strip">
+                        <div class="summary-box">
+                            <div class="summary-label">Pending Entries</div>
+                            <div class="summary-value">{{ offerings|length }}</div>
+                        </div>
+                        <div class="summary-box">
+                            <div class="summary-label">Status</div>
+                            <div class="summary-value">
+                                <span class="badge-soft badge-soft-warning">
+                                    <i class="fas fa-clock"></i> Pending
+                                </span>
+                            </div>
+                        </div>
+                        <div class="summary-box">
+                            <div class="summary-label">Total Amount</div>
+                            <div class="summary-value">₱ {{ total_amount|intcomma }}</div>
+                        </div>
+                    </div>
+
+                    <div class="section-card">
+                        <div class="section-card-header">
+                            <h6 class="section-card-title mb-0">
+                                <i class="fas fa-list-check"></i>
+                                Offering Review Table
+                            </h6>
+                        </div>
+
+                        <div class="section-card-body">
+                            <div class="table-wrapper">
+                                <div class="table-responsive" style="max-height: 560px; overflow-y: auto;">
+                                    <table class="table align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Member / Source</th>
+                                                <th>Description</th>
+                                                <th>Proof</th>
+                                                <th class="text-end">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for offering in offerings %}
+                                            <tr>
+                                                <td>
+                                                    <div class="fw-semibold">{{ offering.date|date:"M d, Y" }}</div>
+                                                    <div class="member-sub">{{ offering.created_at|date:"h:i A"|default:"Pending entry" }}</div>
+                                                </td>
+
+                                                <td>
+                                                    {% if offering.user %}
+                                                        <div class="member-chip">
+                                                            <div class="member-avatar">
+                                                                <i class="fas fa-user"></i>
+                                                            </div>
+                                                            <div>
+                                                                <div class="member-name">
+                                                                    {{ offering.user.get_full_name|default:offering.user.username }}
+                                                                </div>
+                                                                <div class="member-sub">Member Offering</div>
+                                                            </div>
+                                                        </div>
+                                                    {% else %}
+                                                        <span class="badge-soft badge-soft-secondary">
+                                                            <i class="fas fa-hand-holding-dollar"></i>
+                                                            Loose / Anonymous
+                                                        </span>
+                                                    {% endif %}
+                                                </td>
+
+                                                <td>
+                                                    <div class="fw-semibold text-dark">{{ offering.description|default:"No description" }}</div>
+                                                    <div class="member-sub">
+                                                        {{ offering.status|default:"Pending" }}
+                                                    </div>
+                                                </td>
+
+                                                <td>
+                                                    {% if offering.proof_document %}
+                                                        <div class="proof-box">
+                                                            {% if ".pdf" in offering.proof_document.name|lower %}
+                                                                <span class="badge-soft badge-soft-secondary">
+                                                                    <i class="fas fa-file-pdf"></i> PDF Proof
+                                                                </span>
+                                                            {% else %}
+                                                                <img src="{{ offering.proof_document.url }}" alt="Proof Preview" class="proof-thumb">
+                                                            {% endif %}
+                                                            <a href="{{ offering.proof_document.url }}" target="_blank" class="proof-link">
+                                                                <i class="fas fa-eye"></i> View File
+                                                            </a>
+                                                        </div>
+                                                    {% else %}
+                                                        <span class="member-sub">No proof attached</span>
+                                                    {% endif %}
+                                                </td>
+
+                                                <td class="text-end">
+                                                    <span class="amount-text">₱ {{ offering.amount|intcomma }}</span>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+
+                                        <tfoot>
+                                            <tr class="tfoot-total">
+                                                <td colspan="4" class="text-end text-uppercase text-secondary">Total Deposit</td>
+                                                <td class="text-end amount-text">₱ {{ total_amount|intcomma }}</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <form method="post" action="{% url 'review_offerings' %}" class="action-panel">
+                                {% csrf_token %}
+
+                                <div class="info-note">
+                                    <i class="fas fa-circle-info"></i>
+                                    Please verify the entries carefully. Confirm will keep these records. Cancel will remove them.
+                                </div>
+
+                                <div class="action-buttons">
+                                    <a href="{% url 'add_offerings' %}" class="btn btn-back">
+                                        <i class="fas fa-arrow-left me-2"></i>Back to Entry Page
+                                    </a>
+
+                                    <button
+                                        type="submit"
+                                        name="cancel"
+                                        value="1"
+                                        class="btn btn-cancel"
+                                        onclick="return confirm('Are you sure? This will delete all staged offering entries.');">
+                                        <i class="fas fa-trash-alt me-2"></i>Cancel & Delete
+                                    </button>
+
+                                    <button type="submit" name="confirm" value="1" class="btn btn-confirm">
+                                        <i class="fas fa-check-circle me-2"></i>Confirm & Save
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                {% else %}
+                    <div class="section-card">
+                        <div class="section-card-body">
+                            <div class="empty-state">
+                                <div class="empty-icon">
+                                    <i class="fas fa-folder-open"></i>
+                                </div>
+                                <h5 class="fw-bold text-dark mb-2">No pending entries found</h5>
+                                <p class="text-muted mb-3">
+                                    The session may have expired, the entries may already be confirmed, or nothing has been staged yet.
+                                </p>
+                                <a href="{% url 'add_offerings' %}" class="btn btn-confirm">
+                                    <i class="fas fa-plus me-2"></i>Add New Offering
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

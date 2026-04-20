@@ -1,0 +1,1536 @@
+{% load static %}
+{% load humanize %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title|default:"AI Budget Optimizer" }} | Church System</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #e0e7ff;
+            --primary-soft: #eef2ff;
+            --bg-body: #f8fafc;
+            --surface: #ffffff;
+            --surface-soft: #f8fbff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --info: #0284c7;
+            --card-radius: 18px;
+            --shadow-sm: 0 1px 2px 0 rgba(0,0,0,.05);
+            --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.10);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            color: var(--text-main);
+            padding-bottom: 48px;
+        }
+
+        .container {
+            max-width: 1400px;
+        }
+
+        .page-hero {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+            border: 1px solid #e6edf7;
+            border-radius: 22px;
+            box-shadow: var(--shadow-md);
+            padding: 1.5rem 1.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--primary);
+            background: #eef2ff;
+            border: 1px solid #dbe4ff;
+            padding: .45rem .7rem;
+            border-radius: 999px;
+        }
+
+        .system-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            border-radius: 999px;
+            padding: .65rem .95rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.15rem 1.35rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .75rem;
+        }
+
+        .card-body {
+            padding: 1.35rem;
+        }
+
+        .card-highlight {
+            border: 1px solid #dbe4ff;
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-highlight .card-header {
+            background: linear-gradient(to right, #eff6ff, #fff);
+            color: var(--primary);
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            padding: 0.68rem 0.9rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.10);
+        }
+
+        .input-group-text {
+            background-color: #f8fafc;
+            border-color: var(--border-color);
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .section-label {
+            font-size: .73rem;
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .nav-pills {
+            gap: .5rem;
+        }
+
+        .nav-pills .nav-link {
+            color: var(--text-muted);
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all .2s ease;
+            background: #f8fafc;
+            border: 1px solid transparent;
+            padding: .8rem .95rem;
+        }
+
+        .nav-pills .nav-link:hover {
+            background-color: #f1f5f9;
+            border-color: #e2e8f0;
+        }
+
+        .nav-pills .nav-link.active {
+            background: linear-gradient(135deg, var(--primary-soft), #ffffff);
+            color: var(--primary);
+            border-color: #cfd8ff;
+            box-shadow: inset 0 0 0 1px rgba(79,70,229,.05);
+        }
+
+        .mode-helper {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: .95rem 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .mode-helper strong {
+            color: var(--text-main);
+        }
+
+        .metric-tile {
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+            padding: 1rem;
+            box-shadow: var(--shadow-sm);
+            height: 100%;
+        }
+
+        .metric-tile .label {
+            display: block;
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: .35rem;
+        }
+
+        .metric-tile .value {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.1;
+        }
+
+        .metric-tile .sub {
+            margin-top: .35rem;
+            color: var(--text-muted);
+            font-size: .82rem;
+        }
+
+        .fund-summary-box {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 1rem 1rem;
+        }
+
+        .fund-line {
+            font-size: .95rem;
+        }
+
+        .fund-line-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: .75rem;
+            padding: .55rem 0;
+        }
+
+        .fund-line-row + .fund-line-row {
+            border-top: 1px dashed #e8edf5;
+        }
+
+        .fund-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            font-size: .8rem;
+            font-weight: 700;
+            padding: .4rem .65rem;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            color: var(--text-muted);
+        }
+
+        .prescribed-panel {
+            background: linear-gradient(135deg, #eef2ff 0%, #f8fbff 100%);
+            border: 1px solid #d9e1ff;
+            border-radius: 18px;
+            padding: 1rem;
+            text-align: center;
+            position: relative;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,.6);
+        }
+
+        .prescribed-title {
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .prescribed-value {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1.1;
+        }
+
+        .helper-note {
+            font-size: .84rem;
+            color: var(--text-muted);
+        }
+
+        .ministry-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: .75rem;
+            margin-bottom: .9rem;
+        }
+
+        .ministry-card {
+            background: linear-gradient(180deg, #ffffff 0%, #fcfdff 100%);
+            border: 1px solid var(--border-color) !important;
+            border-radius: 16px;
+            transition: all 0.25s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .ministry-card:hover {
+            border-color: #d6ddff !important;
+            box-shadow: var(--shadow-md);
+        }
+
+        .ministry-card.border-info {
+            border-color: var(--primary) !important;
+            background-color: #f7f8ff;
+        }
+
+        .ministry-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            gap: 1rem;
+            margin-bottom: .7rem;
+        }
+
+        .ministry-name {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .priority-box {
+            min-width: 78px;
+            text-align: right;
+        }
+
+        .priority-val {
+            font-size: 1.6rem;
+            line-height: 1;
+        }
+
+        .stat-chip-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .45rem;
+            margin-top: .55rem;
+        }
+
+        .stat-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .38rem .62rem;
+            border-radius: 999px;
+            border: 1px solid #e5e7eb;
+            background: #f8fafc;
+            color: #475569;
+            font-size: .77rem;
+            font-weight: 700;
+        }
+
+        .stat-chip.soft-primary {
+            background: #eef2ff;
+            color: var(--primary);
+            border-color: #d9e1ff;
+        }
+
+        .stat-chip.soft-success {
+            background: #f0fdf4;
+            color: var(--success);
+            border-color: #d8f5e2;
+        }
+
+        .stat-chip.soft-warning {
+            background: #fff7ed;
+            color: var(--warning);
+            border-color: #fde7cf;
+        }
+
+        .stat-chip.soft-info {
+            background: #f0f9ff;
+            color: var(--info);
+            border-color: #d8eefc;
+        }
+
+        .range-label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: .35rem;
+            font-size: .78rem;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            margin: 12px 0 8px;
+        }
+
+        input[type=range]:focus {
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 9px;
+            cursor: pointer;
+            background: linear-gradient(90deg, #dbeafe 0%, #c7d2fe 100%);
+            border-radius: 999px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 2px solid var(--primary);
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.12);
+        }
+
+        .history-note {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 14px;
+            padding: .9rem 1rem;
+            color: #475569;
+            font-size: .87rem;
+        }
+
+        .history-note strong {
+            color: #0f172a;
+        }
+
+        .apply-btn {
+            border: none;
+            background: transparent;
+            color: var(--primary);
+            font-size: .82rem;
+            font-weight: 800;
+            padding: 0;
+        }
+
+        .apply-btn:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+            border: none;
+            color: white;
+            padding: 0.88rem 1.15rem;
+            font-weight: 700;
+            border-radius: 14px;
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.22);
+            transition: all 0.18s ease;
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-1px);
+            color: white;
+        }
+
+        .results-empty {
+            min-height: 540px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .allocation-row {
+            padding: 1rem 1.25rem;
+        }
+
+        .allocation-row + .allocation-row {
+            border-top: 1px solid #edf2f7;
+        }
+
+        .allocation-rationale {
+            font-size: .8rem;
+            color: var(--text-muted);
+            margin-top: .25rem;
+        }
+
+        .result-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: .75rem;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            background: #fff;
+        }
+
+        .result-stat {
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: .85rem .95rem;
+            background: #f8fafc;
+        }
+
+        .result-stat .k {
+            font-size: .7rem;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: var(--text-muted);
+            font-weight: 800;
+        }
+
+        .result-stat .v {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-top: .25rem;
+        }
+
+        .subtle-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #e5e7eb, transparent);
+            margin: 1.1rem 0;
+        }
+
+        .transition-opacity {
+            transition: opacity 0.2s ease;
+        }
+
+        @media (max-width: 991.98px) {
+            .result-summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-hero {
+                padding: 1.25rem;
+            }
+
+            .prescribed-value {
+                font-size: 1.6rem;
+            }
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #resultsContainer,
+            #resultsContainer * {
+                visibility: visible;
+            }
+
+            #resultsContainer {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+{% include 'navbar.html' %}
+
+<div class="container py-4">
+
+    <div class="page-hero">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3">
+            <div>
+                <div class="eyebrow mb-3">
+                    <i class="fas fa-chart-line"></i>
+                    Financial Planning Tool
+                </div>
+                <h1 class="h3 fw-bold text-dark mb-2">{{ page_heading|default:"AI Budget Optimizer" }}</h1>
+                <p class="text-muted mb-0">{{ page_subheading|default:"Define constraints or use historical data to generate the optimal allocation." }}</p>
+            </div>
+            <div class="text-lg-end">
+                <span class="system-pill">
+                    <i class="fas fa-server text-success"></i>
+                    {{ system_badge|default:"System Online" }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4 border-0 shadow-sm border-{{ health.color|default:'secondary' }}" style="border-left: 5px solid !important;">
+        <div class="card-body p-4">
+            <div class="row align-items-center g-3">
+                <div class="col-md-4 d-flex align-items-center gap-3 border-end">
+                    <div class="bg-light rounded-circle p-3 text-{{ health.color|default:'secondary' }}">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                    <div>
+                        <h2 class="mb-0 fw-bold text-{{ health.color|default:'secondary' }}">{{ health.ratio|default:'--' }}</h2>
+                        <span class="badge bg-{{ health.color|default:'secondary' }} bg-opacity-10 text-{{ health.color|default:'secondary' }} border border-{{ health.color|default:'secondary' }}">
+                            {{ health.status|default:'Unknown' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-8 ps-md-4">
+                    <h6 class="section-label mb-1">Financial Health Analysis</h6>
+                    <p class="mb-0 text-dark">{{ health.advice|default:'Not enough data to analyze health.' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-xl-5">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-sliders-h text-primary"></i>
+                        <span>Configuration</span>
+                    </div>
+                    <span class="fund-badge">OpenAI Optimizer</span>
+                </div>
+
+                <div class="card-body">
+                    <label class="section-label mb-2">Optimization Basis</label>
+
+                    <ul class="nav nav-pills nav-fill mb-3" id="modeTabs">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="tab-manual" href="javascript:void(0)" onclick="setMode('manual')">
+                                <i class="fas fa-wallet me-1"></i> Current Funds
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="tab-historical" href="javascript:void(0)" onclick="setMode('historical')">
+                                <i class="fas fa-history me-1"></i> Historical Basis
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div id="manual-inputs">
+                        <div class="mode-helper">
+                            <strong>Current Funds mode</strong> uses live unrestricted financial capacity. It starts from the current unrestricted balance, subtracts projected unrestricted bills, then caps the recommended pool by ministry need before sending the result to the OpenAI optimizer.
+                        </div>
+
+                        <div class="fund-summary-box mb-3">
+                            <div class="fund-line-row fund-line">
+                                <span class="text-muted"><i class="fas fa-wallet me-2"></i>Total Cash on Hand</span>
+                                <span class="fw-bold" id="manualTotalCash">₱{{ total_cash|default:0|floatformat:2|intcomma }}</span>
+                            </div>
+                            <div class="fund-line-row fund-line text-warning">
+                                <span><i class="fas fa-lock me-2"></i>Restricted Funds Held</span>
+                                <span class="fw-bold" id="manualRestrictedHeld">₱{{ restricted_funds_held|default:0|floatformat:2|intcomma }}</span>
+                            </div>
+                            <div class="fund-line-row fund-line text-primary">
+                                <span><i class="fas fa-unlock-alt me-2"></i>Unrestricted Cash Available</span>
+                                <span class="fw-bold" id="manualUnrestrictedAvailable">₱{{ unrestricted_cash_available|default:0|floatformat:2|intcomma }}</span>
+                            </div>
+                            <div class="fund-line-row fund-line text-danger">
+                                <span><i class="fas fa-file-invoice-dollar me-2"></i>Projected Unrestricted Bills</span>
+                                <span class="fw-bold" id="manualProjectedBills">₱{{ projected_bills|default:0|floatformat:2|intcomma }}</span>
+                            </div>
+                            <div class="fund-line-row fund-line text-success">
+                                <span class="fw-bold"><i class="fas fa-check-circle me-2"></i>Affordable Pool (Monthly Basis)</span>
+                                <span class="fw-bold" id="manualAffordablePool">₱{{ affordable_pool_monthly|default:safe_to_spend|default:0|floatformat:2|intcomma }}</span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-12">
+                                <label class="form-label fw-bold small mb-2">Timeframe</label>
+                                <select id="manualTimeframe" class="form-select" onchange="onManualChange()">
+                                    <option value="monthly" {% if timeframe == 'monthly' %}selected{% endif %}>Monthly Allocation View</option>
+                                    <option value="yearly" {% if timeframe != 'monthly' %}selected{% endif %}>Yearly Allocation View</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="prescribed-panel mb-3">
+                            <div id="manualStatsLoader" class="d-none position-absolute top-50 start-50 translate-middle">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            </div>
+
+                            <div id="manualStatsContent" class="opacity-100 transition-opacity">
+                                <div class="prescribed-title mb-2">Recommended Optimization Pool</div>
+                                <div class="prescribed-value" id="manualDispFundsOptimize">₱{{ recommended_pool|default:0|floatformat:2|intcomma }}</div>
+                                <div class="helper-note mt-2" id="manualDispLabel">
+                                    Uses current unrestricted capacity and ministry-need caps.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="totalFunds" class="form-label fw-bold text-dark">Funds to Optimize</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-white border-end-0 text-primary">₱</span>
+                                <input id="totalFunds" type="number" class="form-control border-start-0 fw-bold text-primary"
+                                       placeholder="0.00" value="{{ recommended_pool|default:0|floatformat:2 }}" readonly>
+                            </div>
+                            <div class="form-text small mt-2">
+                                <i class="fas fa-info-circle me-1"></i>
+                                This is the live recommended pool after unrestricted balance, projected bills, and ministry-need cap checks.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="historical-inputs" class="d-none">
+                        <div class="mode-helper">
+                            <strong>Historical Basis mode</strong> uses the selected year's unrestricted income basis and that year's ministry spending pattern. It is for reference planning, not a live current-cash view.
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small mb-2">Reference Year</label>
+                                <select id="histYear" class="form-select" onchange="onHistoryChange()">
+                                    {% if year_choices %}
+                                        {% for y in year_choices %}
+                                            <option value="{{ y }}" {% if y == default_hist_year %}selected{% endif %}>{{ y }}</option>
+                                        {% endfor %}
+                                    {% else %}
+                                        <option value="2026">2026</option>
+                                        <option value="2025" selected>2025</option>
+                                        <option value="2024">2024</option>
+                                        <option value="2023">2023</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small mb-2">Historical Display</label>
+                                <select id="histTimeframe" class="form-select" onchange="onHistoryChange()">
+                                    <option value="monthly">Monthly Average View</option>
+                                    <option value="yearly" selected>Whole Year View</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <div class="metric-tile">
+                                    <span class="label">Reference Year</span>
+                                    <div class="value" id="histRefYear">{{ default_hist_year|default:"--" }}</div>
+                                    <div class="sub">Selected historical basis</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="metric-tile">
+                                    <span class="label">Basis Type</span>
+                                    <div class="value" id="histBasisType">Yearly</div>
+                                    <div class="sub">Historical display mode</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="metric-tile">
+                                    <span class="label">History Focus</span>
+                                    <div class="value" id="histFocusText">Usage</div>
+                                    <div class="sub">Selected year's spending pattern</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="prescribed-panel mb-3">
+                            <div id="statsLoader" class="d-none position-absolute top-50 start-50 translate-middle">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            </div>
+
+                            <div id="statsContent" class="opacity-100 transition-opacity">
+                                <div class="prescribed-title mb-2">Historical Spending Reference</div>
+                                <div class="prescribed-value" id="dispFundsOptimize">₱0.00</div>
+                                <div class="helper-note mt-2" id="dispLabel">Select a historical year to load its spending reference and income context.</div>
+                            </div>
+                        </div>
+
+                        <div class="history-note mb-4" id="historyProcessNote">
+                            <strong>How to use this:</strong> review the selected year's ministry usage pattern. This mode is read-only, and the optimizer will automatically use the history-based suggested weights when you run it.
+                        </div>
+                    </div>
+
+                    <div class="subtle-divider"></div>
+
+                    <div class="ministry-toolbar">
+                        <div>
+                            <h6 class="fw-bold mb-1" id="ministrySectionTitle">Ministry Priorities</h6>
+                            <p class="text-muted small mb-0" id="ministrySectionHelp">
+                                Adjust the weighting from 1 to 10 before running the optimizer.
+                            </p>
+                        </div>
+                        <span class="fund-badge" id="modeBadge">Live Basis</span>
+                    </div>
+
+                    <form id="optimizerForm">
+                        <div id="ministryList">
+                            {% for m in ministries %}
+                                <div class="mb-3 p-3 ministry-card" data-ministry-id="{{ m.id }}">
+                                    <div class="ministry-top">
+                                        <div>
+                                            <div class="ministry-name">{{ m.name }}</div>
+                                            <div class="stat-chip-wrap">
+                                                <span class="stat-chip">
+                                                    <i class="fas fa-coins"></i>
+                                                    ₱{{ m.stats_spent|floatformat:0|intcomma }} Spent
+                                                </span>
+                                                <span class="stat-chip soft-warning">
+                                                    <i class="fas fa-layer-group"></i>
+                                                    Base Req: ₱{{ m.stats_min_req|default:0|floatformat:0|intcomma }}
+                                                </span>
+                                                {% if m.stats_suggested %}
+                                                <span class="stat-chip soft-info">
+                                                    <i class="fas fa-sparkles"></i>
+                                                    Suggested: {{ m.stats_suggested }}
+                                                </span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <div class="priority-box">
+                                            <div class="priority-val fw-bold text-primary" id="val-{{ m.id }}">{{ m.priority_score }}</div>
+                                            <small class="text-muted fw-bold">Priority</small>
+                                        </div>
+                                    </div>
+
+                                    <input type="range"
+                                           class="form-range priority-slider"
+                                           id="slider-{{ m.id }}"
+                                           data-id="{{ m.id }}"
+                                           min="1" max="10" step="1"
+                                           value="{{ m.priority_score }}"
+                                           oninput="document.getElementById('val-{{ m.id }}').innerText = this.value">
+
+                                    <div class="range-label-row">
+                                        <span>Lower Weight</span>
+                                        <span>Higher Weight</span>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+                                        <div class="small text-muted">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            {% if m.stats_min_req_unit %}
+                                                Based on {{ m.stats_min_req_unit }} budget requirement
+                                            {% else %}
+                                                Based on current budget requirement
+                                            {% endif %}
+                                        </div>
+
+                                        {% if m.priority_score != m.stats_suggested %}
+                                            <button type="button"
+                                                    class="apply-btn"
+                                                    onclick="applySuggestion({{ m.id }}, {{ m.stats_suggested }})">
+                                                <i class="fas fa-magic me-1 text-warning"></i>
+                                                Apply Suggested {{ m.stats_suggested }}
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="alert alert-warning border-0 shadow-sm text-center">
+                                    No active ministries found.
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </form>
+
+                    <button type="button" onclick="runOptimizer()" class="btn btn-primary-custom w-100 mt-3">
+                        <i class="fas fa-rocket me-2"></i> Run Optimization
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-7" id="resultsContainer">
+            <div class="card h-100 card-highlight">
+                <div class="card-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-chart-pie text-primary"></i>
+                        <span>Optimized Allocation Plan</span>
+                    </div>
+                    <span class="fund-badge">Decision Output</span>
+                </div>
+
+                <div class="card-body position-relative p-0">
+                    <div id="loadingSpinner" class="text-center position-absolute top-50 start-50 translate-middle d-none" style="z-index: 10;">
+                        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status"></div>
+                        <p class="mt-3 fw-bold text-muted">Calculating optimized allocation...</p>
+                    </div>
+
+                    <div id="emptyState" class="results-empty text-center px-4">
+                        <div>
+                            <div class="bg-light rounded-circle d-inline-flex p-4 mb-3 text-secondary">
+                                <i class="fas fa-coins fa-4x opacity-50"></i>
+                            </div>
+                            <h4 class="fw-bold text-dark">Ready to Optimize</h4>
+                            <p class="text-muted mb-0">Choose a planning basis, review ministry priorities, then run the optimizer to generate a professional allocation plan.</p>
+                        </div>
+                    </div>
+
+                    <div id="resultsArea" class="d-none">
+                        <div class="p-4 bg-primary-subtle text-primary border-bottom">
+                            <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-check-circle fs-3 me-3"></i>
+                                    <div>
+                                        <h5 class="fw-bold mb-0">Optimization Complete</h5>
+                                        <small id="resultMetaText">Based on your planning basis and priority settings.</small>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-white text-primary shadow-sm" id="resultMetaBadge">Manual</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="result-summary-grid" id="resultSummaryGrid">
+                            <div class="result-stat">
+                                <div class="k">Funds Used</div>
+                                <div class="v" id="resultFundsUsed">₱0.00</div>
+                            </div>
+                            <div class="result-stat">
+                                <div class="k">Allocation Count</div>
+                                <div class="v" id="resultAllocationCount">0 Ministries</div>
+                            </div>
+                            <div class="result-stat">
+                                <div class="k">Reserve</div>
+                                <div class="v" id="resultReserve">₱0.00</div>
+                            </div>
+                        </div>
+
+                        <div id="allocationList"></div>
+
+                        <div class="p-4 bg-light border-top text-end no-print">
+                            <button class="btn btn-white border shadow-sm text-secondary me-2" onclick="window.print()">
+                                <i class="fas fa-print me-2"></i>Print
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="alert('Review process initiated.')">
+                                <i class="fas fa-save me-2"></i>Save Plan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+window.currentMode = 'manual';
+window.historySuggestedScores = {};
+window.manualMinistryHtml = '';
+
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(";").shift();
+    return null;
+}
+const CSRFTOKEN = getCookie("csrftoken");
+
+const URL_HIST_STATS = "{{ historical_stats_url|default:'' }}" || "{% url 'api_get_historical_stats' %}";
+const URL_MINISTRY_YEAR = "{{ ministry_year_stats_url|default:'' }}" || "{% url 'api_get_ministry_stats_year' %}";
+const URL_RUN_OPT = "{{ optimizer_post_url|default:'' }}" || "{% url 'api_run_optimizer_openai' %}";
+
+function fmtPeso(num) {
+    return "₱" + parseFloat(num || 0).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+function fmtPeso0(num) {
+    return "₱" + parseFloat(num || 0).toLocaleString('en-US', {
+        maximumFractionDigits: 0
+    });
+}
+
+function fmtPercent(num) {
+    return (parseFloat(num || 0)).toLocaleString('en-US', {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1
+    }) + "%";
+}
+
+function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.innerText = value;
+}
+
+function setValue(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.value = value;
+}
+
+function timeframeMultiplierFromMeta(meta) {
+    return (meta.ui_timeframe || 'monthly') === 'yearly' ? 12 : 1;
+}
+
+function updateModeText(mode) {
+    const badge = document.getElementById('modeBadge');
+    const title = document.getElementById('ministrySectionTitle');
+    const help = document.getElementById('ministrySectionHelp');
+    const note = document.getElementById('historyProcessNote');
+
+    if (mode === 'manual') {
+        badge.innerText = 'Live Basis';
+        title.innerText = 'Ministry Priorities';
+        help.innerText = 'Adjust ministry weights manually based on current unrestricted capacity and ministry-need caps.';
+        if (note) {
+            note.innerHTML = `<strong>How to use this:</strong> review the selected year's ministry usage pattern. This mode is read-only, and the optimizer will automatically use the history-based suggested weights when you run it.`;
+        }
+    } else {
+        badge.innerText = 'Historical Basis';
+        title.innerText = 'Historical Ministry Review';
+        help.innerText = 'This mode is read-only. The optimizer uses history-based suggested weights automatically from the selected year.';
+        if (note) {
+            note.innerHTML = `<strong>How to use this:</strong> review the selected year's ministry usage pattern. This mode is read-only, and the optimizer will automatically use the history-based suggested weights when you run it.`;
+        }
+    }
+}
+
+function updateManualTiles(meta) {
+    const totalCash = parseFloat(meta.total_cash || 0);
+    const restrictedHeld = parseFloat(meta.restricted_funds_held || 0);
+    const unrestrictedCash = parseFloat(meta.unrestricted_cash_available || 0);
+    const projectedBills = parseFloat(meta.projected_unrestricted_bills || 0);
+    const affordablePool = parseFloat(
+        meta.affordable_pool_monthly ??
+        meta.safe_to_spend ??
+        0
+    );
+
+    setText('manualTotalCash', fmtPeso(totalCash));
+    setText('manualRestrictedHeld', fmtPeso(restrictedHeld));
+    setText('manualUnrestrictedAvailable', fmtPeso(unrestrictedCash));
+    setText('manualProjectedBills', fmtPeso(projectedBills));
+    setText('manualAffordablePool', fmtPeso(affordablePool));
+}
+
+function updateManualPoolDisplay(meta, errorText = "") {
+    const dispFunds = document.getElementById('manualDispFundsOptimize');
+    const dispLabel = document.getElementById('manualDispLabel');
+
+    const unrestrictedCash = parseFloat(meta.unrestricted_cash_available || 0);
+    const projectedBills = parseFloat(meta.projected_unrestricted_bills || 0);
+    const affordablePool = parseFloat(
+        meta.affordable_pool_monthly ??
+        meta.safe_to_spend ??
+        0
+    );
+
+    const needCapMonthly = parseFloat(
+        meta.need_total_monthly ??
+        meta.baseline_need_monthly ??
+        0
+    );
+
+    const multiplier = timeframeMultiplierFromMeta(meta);
+    const needCapDisplay = needCapMonthly * multiplier;
+
+    const poolUI = parseFloat(
+        meta.pool_used_ui ??
+        meta.final_recommended_pool_monthly ??
+        meta.pool_used_monthly ??
+        0
+    );
+
+    if (dispFunds) {
+        dispFunds.innerText = fmtPeso(poolUI);
+    }
+
+    if (dispLabel) {
+        if (errorText) {
+            dispLabel.innerText = errorText;
+        } else {
+            dispLabel.innerText =
+                `Unrestricted available ${fmtPeso(unrestrictedCash)} • ` +
+                `Projected bills ${fmtPeso(projectedBills)} • ` +
+                `Affordable pool ${fmtPeso(affordablePool)} • ` +
+                `Need cap ${fmtPeso(needCapDisplay)}`;
+        }
+    }
+
+    setValue('totalFunds', (poolUI || 0).toFixed(2));
+}
+
+window.setMode = async function(mode) {
+    const manualDiv = document.getElementById('manual-inputs');
+    const histDiv = document.getElementById('historical-inputs');
+    const tabMan = document.getElementById('tab-manual');
+    const tabHist = document.getElementById('tab-historical');
+    const holder = document.getElementById('ministryList');
+
+    if (mode === 'historical' && window.currentMode === 'manual' && holder) {
+        window.manualMinistryHtml = holder.innerHTML;
+    }
+
+    window.currentMode = mode;
+
+    if (mode === 'manual') {
+        manualDiv.classList.remove('d-none');
+        histDiv.classList.add('d-none');
+        tabMan.classList.add('active');
+        tabHist.classList.remove('active');
+
+        if (holder && window.manualMinistryHtml) {
+            holder.innerHTML = window.manualMinistryHtml;
+        }
+
+        updateModeText('manual');
+        await onManualChange();
+    } else {
+        manualDiv.classList.add('d-none');
+        histDiv.classList.remove('d-none');
+        tabMan.classList.remove('active');
+        tabHist.classList.add('active');
+
+        updateModeText('historical');
+        await onHistoryChange();
+    }
+};
+
+window.onManualChange = async function() {
+    const timeframe = document.getElementById('manualTimeframe').value;
+
+    const loader = document.getElementById('manualStatsLoader');
+    const content = document.getElementById('manualStatsContent');
+
+    loader.classList.remove('d-none');
+    content.style.opacity = '0.35';
+
+    const priorities = {};
+    document.querySelectorAll('.priority-slider').forEach(slider => {
+        priorities[slider.getAttribute('data-id')] = slider.value;
+    });
+
+    try {
+        const response = await fetch(URL_RUN_OPT + "?_=" + Date.now(), {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": CSRFTOKEN
+            },
+            body: JSON.stringify({
+                use_history: false,
+                timeframe: timeframe,
+                priorities: priorities,
+                dry_run: true
+            })
+        });
+
+        const data = await response.json();
+        const meta = data.meta || {};
+
+        updateManualTiles(meta);
+
+        if (!response.ok || data.error) {
+            updateManualPoolDisplay(meta, data.error || "Unable to calculate the current recommended optimization pool.");
+            console.error(data.error || response.status);
+        } else {
+            updateManualPoolDisplay(meta);
+        }
+    } catch (e) {
+        console.error(e);
+        updateManualTiles({});
+        updateManualPoolDisplay({}, "Please try again.");
+    } finally {
+        loader.classList.add('d-none');
+        content.style.opacity = '1';
+    }
+};
+
+window.onHistoryChange = async function() {
+    await fetchHistoricalStats();
+    const year = document.getElementById('histYear').value;
+    await fetchMinistryStatsForYear(year);
+};
+
+window.fetchHistoricalStats = async function() {
+    const year = document.getElementById('histYear').value;
+    const timeframe = document.getElementById('histTimeframe').value;
+
+    document.getElementById('histRefYear').innerText = year;
+    document.getElementById('histBasisType').innerText = timeframe === 'monthly' ? 'Monthly' : 'Yearly';
+    document.getElementById('histFocusText').innerText = 'Usage';
+
+    const loader = document.getElementById('statsLoader');
+    const content = document.getElementById('statsContent');
+    const dispFunds = document.getElementById('dispFundsOptimize');
+    const dispLabel = document.getElementById('dispLabel');
+
+    loader.classList.remove('d-none');
+    content.style.opacity = '0.35';
+
+    try {
+        const response = await fetch(URL_HIST_STATS + "?_=" + Date.now(), {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": CSRFTOKEN
+            },
+            body: JSON.stringify({ year: year, timeframe: timeframe })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.error) {
+            dispFunds.innerText = "Error";
+            dispLabel.innerText = data.error || ("HTTP " + response.status);
+        } else {
+            const spendRef = parseFloat(data.expenses_reference || 0);
+            const incomeRef = parseFloat(data.raw_income || 0);
+            const releasedRef = parseFloat(data.released_total || 0);
+            const returnedRef = parseFloat(data.returned_total || 0);
+            const label = timeframe === 'monthly' ? "monthly average" : "whole-year";
+
+            dispFunds.innerText = fmtPeso(spendRef);
+
+            dispLabel.innerText =
+                `Historical spending reference from ${year} ${label} activity. ` +
+                `Income reference: ${fmtPeso(incomeRef)} • Released: ${fmtPeso(releasedRef)} • Returned: ${fmtPeso(returnedRef)}`;
+        }
+    } catch (error) {
+        console.error(error);
+        dispFunds.innerText = "Connection Error";
+        dispLabel.innerText = "Please try again.";
+    } finally {
+        loader.classList.add('d-none');
+        content.style.opacity = '1';
+    }
+};
+
+window.fetchMinistryStatsForYear = async function(year) {
+    const holder = document.getElementById("ministryList");
+    if (!holder) return;
+
+    window.historySuggestedScores = {};
+
+    holder.innerHTML = `
+        <div class="alert alert-light border shadow-sm text-center mb-3">
+            <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+            Loading historical ministry usage for ${year}...
+        </div>`;
+
+    try {
+        const response = await fetch(URL_MINISTRY_YEAR + "?_=" + Date.now(), {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": CSRFTOKEN
+            },
+            body: JSON.stringify({ year: year })
+        });
+
+        const data = await response.json();
+        if (!response.ok || data.error) {
+            holder.innerHTML = `<div class="alert alert-danger">Error loading ministries: ${data.error || ("HTTP " + response.status)}</div>`;
+            return;
+        }
+
+        const items = Array.isArray(data.items) ? data.items : [];
+        if (!items.length) {
+            holder.innerHTML = `<div class="alert alert-warning border-0 shadow-sm text-center">No ministries found for ${year}.</div>`;
+            return;
+        }
+
+        holder.innerHTML = "";
+
+        items.forEach(m => {
+            const id = m.ministry_id;
+            const name = m.ministry_name || ("Ministry #" + id);
+            const spent = m.spent || 0;
+            const minReq = m.min_req || 0;
+            const suggested = m.suggested_score || 5;
+
+            const allocated = m.allocated ?? null;
+            const utilization = m.utilization ?? null;
+            const share = m.share_percentage ?? null;
+
+            window.historySuggestedScores[String(id)] = suggested;
+
+            holder.innerHTML += `
+                <div class="mb-3 p-3 ministry-card" data-ministry-id="${id}">
+                    <div class="ministry-top">
+                        <div>
+                            <div class="ministry-name">${name}</div>
+                            <div class="stat-chip-wrap">
+                                <span class="stat-chip">
+                                    <i class="fas fa-coins"></i>
+                                    ${fmtPeso0(spent)} Spent (${year})
+                                </span>
+                                <span class="stat-chip soft-warning">
+                                    <i class="fas fa-layer-group"></i>
+                                    Base Req: ${fmtPeso0(minReq)}
+                                </span>
+                                ${allocated !== null ? `
+                                    <span class="stat-chip soft-info">
+                                        <i class="fas fa-wallet"></i>
+                                        Allocated: ${fmtPeso0(allocated)}
+                                    </span>
+                                ` : ``}
+                                ${utilization !== null ? `
+                                    <span class="stat-chip soft-success">
+                                        <i class="fas fa-chart-line"></i>
+                                        Utilization: ${fmtPercent(utilization)}
+                                    </span>
+                                ` : ``}
+                                ${share !== null ? `
+                                    <span class="stat-chip soft-primary">
+                                        <i class="fas fa-chart-pie"></i>
+                                        Share: ${fmtPercent(share)}
+                                    </span>
+                                ` : ``}
+                                <span class="stat-chip soft-info">
+                                    <i class="fas fa-sparkles"></i>
+                                    Suggested History Weight: ${suggested}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+                        <div class="small text-muted">
+                            <i class="fas fa-history me-1"></i>
+                            Read-only historical basis from ${year} usage pattern
+                        </div>
+                        <div class="small text-muted fw-semibold">
+                            Auto-used when optimization runs
+                        </div>
+                    </div>
+                </div>`;
+        });
+
+    } catch (e) {
+        console.error(e);
+        holder.innerHTML = `<div class="alert alert-danger">Connection error loading ministries.</div>`;
+    }
+};
+
+window.applySuggestion = function(ministryId, suggestedValue) {
+    const slider = document.getElementById('slider-' + ministryId);
+    if (slider) {
+        slider.value = suggestedValue;
+        const valEl = document.getElementById('val-' + ministryId);
+        if (valEl) valEl.innerText = suggestedValue;
+
+        const card = slider.closest('.ministry-card');
+        if (card) {
+            card.classList.add('border-info');
+            setTimeout(() => card.classList.remove('border-info'), 900);
+        }
+    }
+};
+
+window.runOptimizer = async function() {
+    const spinner = document.getElementById('loadingSpinner');
+    const emptyState = document.getElementById('emptyState');
+    const resultsArea = document.getElementById('resultsArea');
+
+    emptyState.classList.add('d-none');
+    resultsArea.classList.add('d-none');
+    spinner.classList.remove('d-none');
+
+    let priorities = {};
+
+    if (window.currentMode === 'manual') {
+        document.querySelectorAll('.priority-slider').forEach(slider => {
+            priorities[slider.getAttribute('data-id')] = slider.value;
+        });
+    } else {
+        priorities = { ...window.historySuggestedScores };
+        if (!Object.keys(priorities).length) {
+            alert("Historical ministry data is not loaded yet.");
+            spinner.classList.add('d-none');
+            emptyState.classList.remove('d-none');
+            return;
+        }
+    }
+
+    const payload = { priorities: priorities };
+
+    if (window.currentMode === 'manual') {
+        payload.use_history = false;
+        payload.timeframe = document.getElementById('manualTimeframe').value;
+    } else {
+        payload.use_history = true;
+        payload.historical_year = document.getElementById('histYear').value;
+        payload.timeframe = document.getElementById('histTimeframe').value;
+    }
+
+    try {
+        const response = await fetch(URL_RUN_OPT, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": CSRFTOKEN
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        spinner.classList.add('d-none');
+
+        if (!response.ok || data.error) {
+            alert("Error: " + (data.error || ("HTTP " + response.status)));
+            emptyState.classList.remove('d-none');
+        } else {
+            renderResults(data);
+        }
+
+    } catch (error) {
+        console.error(error);
+        alert("Connection failed.");
+        spinner.classList.add('d-none');
+        emptyState.classList.remove('d-none');
+    }
+};
+
+function renderResults(data) {
+    const list = document.getElementById('allocationList');
+    const resultsArea = document.getElementById('resultsArea');
+    const metaText = document.getElementById('resultMetaText');
+    const metaBadge = document.getElementById('resultMetaBadge');
+
+    const resultFundsUsed = document.getElementById('resultFundsUsed');
+    const resultAllocationCount = document.getElementById('resultAllocationCount');
+    const resultReserve = document.getElementById('resultReserve');
+
+    const meta = data.meta || {};
+    const mode = meta.mode || "Manual";
+    const multiplier = timeframeMultiplierFromMeta(meta);
+
+    resultFundsUsed.innerText = fmtPeso(meta.pool_used_ui || 0);
+    resultReserve.innerText = fmtPeso((parseFloat(meta.reserve_amount_monthly || 0)) * multiplier);
+
+    if (mode === "Historical") {
+        const year = meta.basis_year || meta.reference_year || meta.year || "N/A";
+        const tf = (meta.ui_timeframe || "yearly");
+        const tfLabel = tf.charAt(0).toUpperCase() + tf.slice(1);
+
+        metaBadge.innerText = `${year} • ${tfLabel}`;
+        metaBadge.className = 'badge bg-white text-info shadow-sm';
+
+        metaText.innerHTML =
+            `Built from <strong>${year}</strong> historical spending reference and automatically applied history-based suggested weights. ` +
+            `Final allocations may be lower than gross historical income because ministry caps and historical usage limits still apply.`;
+    } else {
+        const tf = (meta.ui_timeframe || "yearly");
+        const tfLabel = tf.charAt(0).toUpperCase() + tf.slice(1);
+
+        const unrestrictedCash = parseFloat(meta.unrestricted_cash_available || 0);
+        const projectedBills = parseFloat(meta.projected_unrestricted_bills || 0);
+        const affordablePool = parseFloat(
+            meta.affordable_pool_monthly ??
+            meta.safe_to_spend ??
+            0
+        );
+        const needCapMonthly = parseFloat(
+            meta.need_total_monthly ??
+            meta.baseline_need_monthly ??
+            0
+        );
+        const needCapDisplay = needCapMonthly * multiplier;
+
+        metaBadge.innerText = `Current Funds • ${tfLabel}`;
+        metaBadge.className = 'badge bg-white text-primary shadow-sm';
+
+        metaText.innerHTML =
+            `Built from current unrestricted capacity and ministry-need caps.<br>` +
+            `<small class="text-muted">Unrestricted Available: ${fmtPeso(unrestrictedCash)} • Projected Bills: ${fmtPeso(projectedBills)} • Affordable Pool: ${fmtPeso(affordablePool)} • Need Cap: ${fmtPeso(needCapDisplay)}</small>`;
+    }
+
+    list.innerHTML = '';
+    const allocations = Array.isArray(data.allocations) ? data.allocations : [];
+
+    resultAllocationCount.innerText = `${allocations.length} Ministr${allocations.length === 1 ? 'y' : 'ies'}`;
+
+    if (!allocations.length) {
+        list.innerHTML = `<div class="allocation-row text-center text-muted">No allocations returned.</div>`;
+        resultsArea.classList.remove('d-none');
+        return;
+    }
+
+    allocations.sort((a, b) => (parseFloat(b.allocated_amount) || 0) - (parseFloat(a.allocated_amount) || 0));
+
+    let grandTotal = 0;
+    allocations.forEach(row => {
+        const ministryId = row.ministry_id;
+        const amount = parseFloat(row.allocated_amount || 0);
+        grandTotal += amount;
+
+        let name = row.ministry_name;
+        if (!name) {
+            const cardName = document.querySelector(`.ministry-card[data-ministry-id="${ministryId}"] .ministry-name`);
+            name = cardName ? cardName.innerText : `Ministry #${ministryId}`;
+        }
+
+        const rationale = row.rationale || "";
+        const priority = row.priority_score || "-";
+
+        list.innerHTML += `
+            <div class="allocation-row d-flex justify-content-between align-items-start gap-3">
+                <div class="d-flex align-items-start">
+                    <div class="bg-light rounded p-2 me-3 text-secondary"><i class="fas fa-users"></i></div>
+                    <div>
+                        <h6 class="mb-1 text-dark fw-bold">${name}</h6>
+                        <div class="d-flex flex-wrap gap-2 mb-1">
+                            <span class="stat-chip soft-primary"><i class="fas fa-sliders-h"></i> Priority ${priority}</span>
+                        </div>
+                        ${rationale ? `<div class="allocation-rationale">${rationale}</div>` : `<div class="allocation-rationale">Recommended allocation based on selected process and current priority settings.</div>`}
+                    </div>
+                </div>
+                <span class="badge bg-success bg-opacity-10 text-success border border-success fw-bold px-3 py-2 fs-6">
+                    ${fmtPeso(amount)}
+                </span>
+            </div>`;
+    });
+
+    list.innerHTML += `
+        <div class="allocation-row bg-light d-flex justify-content-between align-items-center border-top">
+            <span class="fw-bold text-uppercase text-muted">Total Allocated</span>
+            <span class="text-dark fw-bold fs-5">${fmtPeso(grandTotal)}</span>
+        </div>`;
+
+    resultsArea.classList.remove('d-none');
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const holder = document.getElementById('ministryList');
+    if (holder) {
+        window.manualMinistryHtml = holder.innerHTML;
+    }
+
+    updateModeText('manual');
+    await onManualChange();
+});
+</script>
+
+</body>
+</html>

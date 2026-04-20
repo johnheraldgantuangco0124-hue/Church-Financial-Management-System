@@ -1,0 +1,1113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record Offering | Church IS</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #183153;
+            --primary-dark: #10233a;
+            --accent: #2563eb;
+            --accent-soft: #eaf2ff;
+            --success: #16a34a;
+            --success-soft: #ecfdf3;
+            --warning: #f59e0b;
+            --warning-soft: #fff7ed;
+            --danger: #dc2626;
+            --danger-soft: #fef2f2;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --bg-soft: #f8fafc;
+            --bg-page: #edf3f9;
+            --white: #ffffff;
+            --shadow-sm: 0 8px 18px rgba(15, 23, 42, 0.06);
+            --shadow-md: 0 16px 34px rgba(15, 23, 42, 0.10);
+            --radius-xl: 26px;
+            --radius-lg: 18px;
+            --radius-md: 14px;
+            --radius-sm: 10px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Poppins", sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 20%),
+                radial-gradient(circle at bottom right, rgba(22, 163, 74, 0.06), transparent 18%),
+                linear-gradient(180deg, #f8fbff 0%, var(--bg-page) 100%);
+            min-height: 100vh;
+            color: var(--text-main);
+        }
+
+        .main-container {
+            padding: 36px 16px 48px;
+        }
+
+        .offering-card {
+            max-width: 1220px;
+            margin: 0 auto;
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid rgba(229, 231, 235, 0.85);
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header-custom {
+            position: relative;
+            padding: 36px 34px 26px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            text-align: center;
+            color: #fff;
+        }
+
+        .card-header-custom::before,
+        .card-header-custom::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+        }
+
+        .card-header-custom::before {
+            width: 170px;
+            height: 170px;
+            top: -50px;
+            right: -50px;
+        }
+
+        .card-header-custom::after {
+            width: 160px;
+            height: 160px;
+            left: -60px;
+            bottom: -70px;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .icon-wrapper {
+            width: 82px;
+            height: 82px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 16px;
+            color: #fff;
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.16);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.16);
+        }
+
+        .header-title {
+            font-size: 1.9rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: -0.4px;
+        }
+
+        .header-subtitle {
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.84);
+            margin-bottom: 0;
+        }
+
+        .nav-pills {
+            gap: 10px;
+        }
+
+        .nav-pills .nav-link {
+            border-radius: 999px;
+            padding: 11px 20px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.88);
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            transition: 0.2s ease;
+        }
+
+        .nav-pills .nav-link:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.14);
+        }
+
+        .nav-pills .nav-link.active {
+            background: #fff;
+            color: var(--primary-dark);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+        .card-body-custom {
+            padding: 30px 34px 36px;
+            background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+        }
+
+        .alert {
+            border: none;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .section-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .section-card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            background: #f9fbfd;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .section-card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .section-card-title i {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        .section-card-body {
+            padding: 22px 20px;
+        }
+
+        .summary-strip {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .summary-box {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+            padding: 16px 18px;
+        }
+
+        .summary-label {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .summary-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        label {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-control,
+        .form-select {
+            min-height: 46px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background-color: #fbfcfe;
+            color: var(--text-main);
+            padding: 10px 14px;
+            font-size: 0.95rem;
+            box-shadow: none;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: rgba(37, 99, 235, 0.6);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+        }
+
+        .form-control-sm,
+        .form-select-sm {
+            min-height: 40px;
+            font-size: 0.88rem;
+            padding: 8px 10px;
+            border-radius: 10px;
+        }
+
+        .input-group-text {
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: #fff;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .form-text {
+            color: var(--text-muted) !important;
+        }
+
+        .field-error {
+            color: var(--danger);
+            font-size: 0.78rem;
+            margin-top: 6px;
+        }
+
+        .upload-panel {
+            background: linear-gradient(180deg, #ffffff 0%, #f9fbfe 100%);
+            border: 1px dashed #cfd8e3;
+            border-radius: 16px;
+            padding: 16px;
+        }
+
+        .ocr-result {
+            margin-top: 14px;
+            display: none;
+            border: 1px solid #d8e6ff;
+            background: #f6faff;
+            border-radius: 14px;
+            padding: 14px 16px;
+        }
+
+        .ocr-result.show {
+            display: block;
+        }
+
+        .ocr-result h6 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .ocr-result pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 0.82rem;
+            color: #334155;
+            font-family: Consolas, Monaco, monospace;
+        }
+
+        .table-wrapper {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background: #f7f9fc;
+            font-size: 0.78rem;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            color: #475569;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+            padding: 14px 12px;
+            white-space: nowrap;
+        }
+
+        .table tbody td {
+            padding: 12px;
+            vertical-align: top;
+            border-color: #eef2f7;
+            background: #fff;
+        }
+
+        .table tbody tr:hover td {
+            background: #fbfdff;
+        }
+
+        .optional-text {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            font-weight: 500;
+            text-transform: none;
+        }
+
+        .highlight-row td {
+            background: #ecfdf3 !important;
+            transition: background 1s;
+        }
+
+        .btn {
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 10px 16px;
+        }
+
+        .btn-outline-success {
+            border-color: #b7e4c7;
+            color: var(--success);
+            background: #fff;
+        }
+
+        .btn-outline-success:hover {
+            background: var(--success-soft);
+            color: #0f7a34;
+            border-color: #9ed7b3;
+        }
+
+        .btn-outline-primary {
+            border-color: #b8d6ff;
+            color: var(--accent);
+            background: #fff;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--accent-soft);
+            color: #1d68cf;
+            border-color: #9fc7ff;
+        }
+
+        .btn-outline-secondary {
+            border-color: #d5dbe4;
+            color: #475569;
+            background: #fff;
+        }
+
+        .btn-outline-secondary:hover {
+            background: #f8fafc;
+            color: #1f2937;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--accent) 0%, #1f6ed4 100%);
+            border: none;
+            color: #fff;
+            min-height: 48px;
+            padding: 12px 22px;
+            box-shadow: 0 12px 24px rgba(37, 99, 235, 0.22);
+        }
+
+        .btn-submit:hover {
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 16px 28px rgba(37, 99, 235, 0.26);
+        }
+
+        .single-form-wrapper {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            padding: 24px;
+        }
+
+        .single-form-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .single-form-title i {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .grid-1 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .footer-note {
+            font-size: 0.84rem;
+            color: var(--text-muted);
+            margin-top: 10px;
+        }
+
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        @media (max-width: 991.98px) {
+            .card-header-custom,
+            .card-body-custom {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+
+            .summary-strip {
+                grid-template-columns: 1fr;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .main-container {
+                padding: 20px 10px 30px;
+            }
+
+            .offering-card {
+                border-radius: 18px;
+            }
+
+            .card-header-custom,
+            .card-body-custom {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+
+            .nav-pills {
+                flex-direction: column;
+            }
+
+            .nav-pills .nav-link {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+{% include 'navbar.html' %}
+
+<div class="main-container">
+    <div class="offering-card">
+
+        <div class="card-header-custom">
+            <div class="header-content">
+                <div class="icon-wrapper">
+                    <i class="fas fa-hand-holding-dollar"></i>
+                </div>
+                <h3 class="header-title">Record Offering</h3>
+                <p class="header-subtitle">
+                    Record service offerings with proof upload, OCR assistance, and clean batch review workflow.
+                </p>
+
+                <ul class="nav nav-pills justify-content-center mt-4" id="offeringTab" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="batch-tab" data-bs-toggle="pill" data-bs-target="#batch-mode" type="button" role="tab">
+                            <i class="fas fa-layer-group me-2"></i>Sunday Batch
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="single-tab" data-bs-toggle="pill" data-bs-target="#single-mode" type="button" role="tab">
+                            <i class="fas fa-user-edit me-2"></i>Individual Entry
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card-body-custom">
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="summary-strip">
+                <div class="summary-box">
+                    <div class="summary-label">Loose Total</div>
+                    <div class="summary-value" id="summaryLoose">₱0.00</div>
+                </div>
+                <div class="summary-box">
+                    <div class="summary-label">Envelope Total</div>
+                    <div class="summary-value" id="summaryEnvelope">₱0.00</div>
+                </div>
+                <div class="summary-box">
+                    <div class="summary-label">Combined Total</div>
+                    <div class="summary-value" id="summaryCombined">₱0.00</div>
+                </div>
+            </div>
+
+            <div class="tab-content">
+
+                <!-- Batch Mode -->
+                <div class="tab-pane fade show active" id="batch-mode" role="tabpanel">
+                    <form method="post" enctype="multipart/form-data" id="batchForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="batch">
+
+                        <div class="section-card">
+                            <div class="section-card-header">
+                                <h6 class="section-card-title mb-0">
+                                    <i class="fas fa-coins"></i>
+                                    Service Summary & Shared Proof
+                                </h6>
+                            </div>
+
+                            <div class="section-card-body">
+                                <div class="grid-2">
+                                    <div>
+                                        <label for="{{ loose_form.date.id_for_label }}">Service Date</label>
+                                        {{ loose_form.date }}
+                                        {% if loose_form.date.errors %}
+                                            <div class="field-error">{{ loose_form.date.errors.0 }}</div>
+                                        {% endif %}
+                                        <div class="form-text">This date is used when a row below has no date entered.</div>
+                                    </div>
+
+                                    <div>
+                                        <label for="{{ loose_form.loose_total.id_for_label }}">Loose Offering Total</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">₱</span>
+                                            {{ loose_form.loose_total }}
+                                        </div>
+                                        {% if loose_form.loose_total.errors %}
+                                            <div class="field-error">{{ loose_form.loose_total.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="upload-panel mt-4">
+                                    <div class="grid-2">
+                                        <div>
+                                            <label for="{{ loose_form.proof_document.id_for_label }}">Batch Proof Document</label>
+                                            {{ loose_form.proof_document }}
+                                            {% if loose_form.proof_document.errors %}
+                                                <div class="field-error">{{ loose_form.proof_document.errors.0 }}</div>
+                                            {% endif %}
+                                            {% if loose_form.proof_document.help_text %}
+                                                <div class="form-text">{{ loose_form.proof_document.help_text }}</div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="d-flex align-items-end">
+                                            <button type="button" class="btn btn-outline-primary w-100" id="batchOcrBtn" onclick="runOCR('batchForm', 'batch')">
+                                                <i class="fas fa-file-magnifying-glass me-2"></i>Scan Batch Proof with OCR
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {% if loose_form.ocr_text %}
+                                        {{ loose_form.ocr_text }}
+                                    {% endif %}
+
+                                    <div class="ocr-result" id="batchOcrResult">
+                                        <h6><i class="fas fa-robot me-2"></i>OCR Result</h6>
+                                        <pre id="batchOcrText"></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-card">
+                            <div class="section-card-header">
+                                <h6 class="section-card-title mb-0">
+                                    <i class="fas fa-list"></i>
+                                    Envelope Batch List
+                                </h6>
+
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <input type="file" id="excelFile" accept=".xlsx,.xls" class="d-none" onchange="importExcel()">
+                                    <button type="button" class="btn btn-outline-success btn-sm" onclick="document.getElementById('excelFile').click()">
+                                        <i class="fas fa-file-excel me-2"></i>Import Excel
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addMoreRows()">
+                                        <i class="fas fa-plus me-2"></i>Add Row
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="section-card-body">
+                                {{ batch_formset.management_form }}
+
+                                <div class="table-wrapper">
+                                    <div class="table-responsive">
+                                        <table class="table align-middle" id="batchTable">
+                                            <thead>
+                                                <tr>
+                                                    <th width="15%">Date <span class="optional-text">(Optional)</span></th>
+                                                    <th width="25%">Member</th>
+                                                    <th width="18%">Amount</th>
+                                                    <th width="15%">Type</th>
+                                                    <th width="27%">Check Number / Note</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="batchTableBody">
+                                                {% for form in batch_formset %}
+                                                <tr class="form-row">
+                                                    <td>
+                                                        {{ form.date }}
+                                                        {% if form.date.errors %}
+                                                            <div class="field-error">{{ form.date.errors.0 }}</div>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {{ form.member }}
+                                                        {% if form.member.errors %}
+                                                            <div class="field-error">{{ form.member.errors.0 }}</div>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {{ form.amount }}
+                                                        {% if form.amount.errors %}
+                                                            <div class="field-error">{{ form.amount.errors.0 }}</div>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {{ form.type }}
+                                                        {% if form.type.errors %}
+                                                            <div class="field-error">{{ form.type.errors.0 }}</div>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {{ form.check_number }}
+                                                        {% if form.check_number.errors %}
+                                                            <div class="field-error">{{ form.check_number.errors.0 }}</div>
+                                                        {% endif %}
+                                                    </td>
+                                                    {% for hidden in form.hidden_fields %}
+                                                        {{ hidden }}
+                                                    {% endfor %}
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="footer-note">
+                                    Tip: You can upload a spreadsheet for faster entry, then review and adjust rows before saving.
+                                </div>
+
+                                <div class="mt-4 d-flex justify-content-end">
+                                    <button type="submit" class="btn btn-submit">
+                                        <i class="fas fa-check-circle me-2"></i>Review Batch
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Single Mode -->
+                <div class="tab-pane fade" id="single-mode" role="tabpanel">
+                    <form method="post" enctype="multipart/form-data" id="singleForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="single">
+
+                        <div class="row justify-content-center">
+                            <div class="col-lg-9">
+                                <div class="single-form-wrapper">
+                                    <div class="single-form-title">
+                                        <i class="fas fa-user-edit"></i>
+                                        Individual Offering Entry
+                                    </div>
+
+                                    <div class="grid-2">
+                                        <div>
+                                            <label for="{{ single_form.user.id_for_label }}">{{ single_form.user.label }}</label>
+                                            {{ single_form.user }}
+                                            {% if single_form.user.help_text %}
+                                                <div class="form-text">{{ single_form.user.help_text }}</div>
+                                            {% endif %}
+                                            {% if single_form.user.errors %}
+                                                <div class="field-error">{{ single_form.user.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div>
+                                            <label for="{{ single_form.amount.id_for_label }}">{{ single_form.amount.label }}</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">₱</span>
+                                                {{ single_form.amount }}
+                                            </div>
+                                            {% if single_form.amount.errors %}
+                                                <div class="field-error">{{ single_form.amount.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div>
+                                            <label for="{{ single_form.date.id_for_label }}">{{ single_form.date.label }}</label>
+                                            {{ single_form.date }}
+                                            {% if single_form.date.errors %}
+                                                <div class="field-error">{{ single_form.date.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div>
+                                            <label for="{{ single_form.description.id_for_label }}">{{ single_form.description.label }}</label>
+                                            {{ single_form.description }}
+                                            {% if single_form.description.errors %}
+                                                <div class="field-error">{{ single_form.description.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <div class="upload-panel mt-4">
+                                        <div class="grid-2">
+                                            <div>
+                                                <label for="{{ single_form.proof_document.id_for_label }}">{{ single_form.proof_document.label }}</label>
+                                                {{ single_form.proof_document }}
+                                                {% if single_form.proof_document.help_text %}
+                                                    <div class="form-text">{{ single_form.proof_document.help_text }}</div>
+                                                {% endif %}
+                                                {% if single_form.proof_document.errors %}
+                                                    <div class="field-error">{{ single_form.proof_document.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+
+                                            <div class="d-flex align-items-end">
+                                                <button type="button" class="btn btn-outline-primary w-100" id="singleOcrBtn" onclick="runOCR('singleForm', 'single')">
+                                                    <i class="fas fa-file-magnifying-glass me-2"></i>Scan Proof with OCR
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="ocr-result" id="singleOcrResult">
+                                            <h6><i class="fas fa-robot me-2"></i>OCR Result</h6>
+                                            <pre id="singleOcrText"></pre>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-end mt-4">
+                                        <button type="submit" class="btn btn-submit">
+                                            <i class="fas fa-save me-2"></i>Submit Individual
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="empty-form" style="display:none;">
+    <table>
+        <tr class="form-row">
+            <td>{{ batch_formset.empty_form.date }}</td>
+            <td>{{ batch_formset.empty_form.member }}</td>
+            <td>{{ batch_formset.empty_form.amount }}</td>
+            <td>{{ batch_formset.empty_form.type }}</td>
+            <td>{{ batch_formset.empty_form.check_number }}</td>
+        </tr>
+    </table>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        applyInputStyling();
+        updateBatchSummary();
+
+        document.addEventListener("input", function (e) {
+            if (
+                e.target.matches('input[name$="amount"]') ||
+                e.target.matches('input[name="loose-loose_total"]') ||
+                e.target.matches('input[name$="loose_total"]')
+            ) {
+                updateBatchSummary();
+            }
+        });
+
+        document.addEventListener("change", function (e) {
+            if (
+                e.target.matches('input[name$="amount"]') ||
+                e.target.matches('input[name="loose-loose_total"]') ||
+                e.target.matches('input[name$="loose_total"]')
+            ) {
+                updateBatchSummary();
+            }
+        });
+    });
+
+    function applyInputStyling() {
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            if (!el.classList.contains('btn-close')) {
+                if (el.closest('#batchTable')) {
+                    if (el.tagName.toLowerCase() === 'select') {
+                        el.classList.add('form-select', 'form-select-sm');
+                    } else {
+                        el.classList.add('form-control', 'form-control-sm');
+                    }
+                } else {
+                    if (el.tagName.toLowerCase() === 'select') {
+                        el.classList.add('form-select');
+                    } else if (el.type !== 'hidden' && el.type !== 'file') {
+                        el.classList.add('form-control');
+                    }
+                }
+            }
+        });
+    }
+
+    function addMoreRows() {
+        const totalFormsInput = document.getElementById('id_envelope-TOTAL_FORMS');
+        const currentCount = parseInt(totalFormsInput.value);
+        const emptyRow = document.querySelector('#empty-form tr').cloneNode(true);
+        const regex = new RegExp('__prefix__', 'g');
+
+        emptyRow.innerHTML = emptyRow.innerHTML.replace(regex, currentCount);
+        document.getElementById('batchTableBody').appendChild(emptyRow);
+
+        emptyRow.querySelectorAll('input, select').forEach(el => {
+            if (el.tagName.toLowerCase() === 'select') {
+                el.classList.add('form-select', 'form-select-sm');
+            } else {
+                el.classList.add('form-control', 'form-control-sm');
+            }
+        });
+
+        totalFormsInput.value = currentCount + 1;
+        updateBatchSummary();
+    }
+
+    function currencyFormat(value) {
+        const num = parseFloat(value || 0);
+        return "₱" + num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function updateBatchSummary() {
+        const looseInput = document.querySelector('input[name="loose-loose_total"]') || document.querySelector('input[name$="loose_total"]');
+        const amountInputs = document.querySelectorAll('#batchTableBody input[name$="amount"]');
+
+        let loose = parseFloat(looseInput?.value || 0) || 0;
+        let envelope = 0;
+
+        amountInputs.forEach(input => {
+            envelope += parseFloat(input.value || 0) || 0;
+        });
+
+        document.getElementById('summaryLoose').textContent = currencyFormat(loose);
+        document.getElementById('summaryEnvelope').textContent = currencyFormat(envelope);
+        document.getElementById('summaryCombined').textContent = currencyFormat(loose + envelope);
+    }
+
+    function getParsedDate(value) {
+        if (!value) return "";
+
+        let dateObj = null;
+
+        if (typeof value === 'number') {
+            dateObj = new Date(Math.round((value - 25569) * 86400 * 1000));
+        } else if (value instanceof Date) {
+            dateObj = value;
+        } else if (typeof value === 'string' && value.includes('-')) {
+            return value.trim();
+        } else if (typeof value === 'string' && value.includes('/')) {
+            const parts = value.trim().split('/');
+            if (parts.length === 3) {
+                dateObj = new Date(parts[2], parts[0] - 1, parts[1]);
+            }
+        }
+
+        if (dateObj && !isNaN(dateObj.getTime())) {
+            const yyyy = dateObj.getFullYear();
+            const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const dd = String(dateObj.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        return "";
+    }
+
+    function importExcel() {
+        const fileInput = document.getElementById('excelFile');
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, cellDates: true });
+
+            let formIdx = 0;
+            const tableRows = document.querySelectorAll('#batchTableBody tr.form-row');
+
+            for (let i = 0; i < rows.length; i++) {
+                const rowData = rows[i];
+                if (!rowData || rowData.length === 0) continue;
+
+                let dateRaw = rowData[0];
+                let name = rowData[1];
+                let amount = rowData[2];
+                let type = rowData[3] || 'Cash';
+                let ref = rowData[4] || '';
+
+                if (!amount || isNaN(parseFloat(amount))) continue;
+
+                if (formIdx >= tableRows.length) addMoreRows();
+
+                const currentRows = document.querySelectorAll('#batchTableBody tr.form-row');
+                const currentRow = currentRows[formIdx];
+
+                const inputDate = currentRow.querySelector('input[name$="date"]');
+                const selectMember = currentRow.querySelector('select[name$="member"]');
+                const inputAmount = currentRow.querySelector('input[name$="amount"]');
+                const selectType = currentRow.querySelector('select[name$="type"]');
+                const inputRef = currentRow.querySelector('input[name$="check_number"]');
+
+                if (inputAmount) inputAmount.value = amount;
+                if (inputRef) inputRef.value = ref;
+                if (type && selectType) selectType.value = type;
+
+                let cleanDate = getParsedDate(dateRaw);
+                if (cleanDate && inputDate) inputDate.value = cleanDate;
+
+                if (name && selectMember) {
+                    const searchName = String(name).toLowerCase().trim();
+                    for (let j = 0; j < selectMember.options.length; j++) {
+                        if (selectMember.options[j].text.toLowerCase().includes(searchName)) {
+                            selectMember.selectedIndex = j;
+                            break;
+                        }
+                    }
+                }
+
+                currentRow.classList.add('highlight-row');
+                formIdx++;
+            }
+
+            updateBatchSummary();
+            fileInput.value = '';
+            alert(`Imported ${formIdx} rows successfully.`);
+        };
+
+        reader.readAsArrayBuffer(file);
+    }
+
+    async function runOCR(formId, mode) {
+        const form = document.getElementById(formId);
+        const formData = new FormData(form);
+        formData.append("action", "OCR");
+
+        const button = mode === "batch"
+            ? document.getElementById("batchOcrBtn")
+            : document.getElementById("singleOcrBtn");
+
+        const resultBox = mode === "batch"
+            ? document.getElementById("batchOcrResult")
+            : document.getElementById("singleOcrResult");
+
+        const resultText = mode === "batch"
+            ? document.getElementById("batchOcrText")
+            : document.getElementById("singleOcrText");
+
+        const originalHtml = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Scanning...`;
+
+        try {
+            const response = await fetch("", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                alert(data.error || "OCR failed.");
+                return;
+            }
+
+            const parsed = data.data || {};
+            resultBox.classList.add("show");
+            resultText.textContent = JSON.stringify(parsed, null, 2);
+
+            if (mode === "single") {
+                const amountInput = form.querySelector('input[name="single-amount"]');
+                const dateInput = form.querySelector('input[name="single-date"]');
+
+                if (amountInput && parsed.amount && !amountInput.value) {
+                    amountInput.value = parsed.amount;
+                }
+                if (dateInput && parsed.date && !dateInput.value) {
+                    dateInput.value = parsed.date;
+                }
+            }
+
+            if (mode === "batch") {
+                const looseTotalInput = form.querySelector('input[name="loose-loose_total"]');
+                const defaultDateInput = form.querySelector('input[name="loose-date"]');
+
+                if (looseTotalInput && parsed.amount && !looseTotalInput.value) {
+                    looseTotalInput.value = parsed.amount;
+                }
+                if (defaultDateInput && parsed.date && !defaultDateInput.value) {
+                    defaultDateInput.value = parsed.date;
+                }
+
+                updateBatchSummary();
+            }
+
+        } catch (error) {
+            alert("OCR request failed.");
+        } finally {
+            button.disabled = false;
+            button.innerHTML = originalHtml;
+        }
+    }
+</script>
+</body>
+</html>

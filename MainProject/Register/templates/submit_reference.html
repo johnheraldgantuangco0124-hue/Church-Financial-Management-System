@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Submit Reference</title>
+
+  <!-- Bootstrap 4.5 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css"/>
+
+  <style>
+    body { background: #f5f7fb; }
+    .page-wrap { padding: 24px 0; }
+    .card { border-radius: .75rem; border: 1px solid #e5e7eb; }
+    .card-header { background: #fff; border-bottom: 1px solid #e5e7eb; }
+    .form-help { color: #6b7280; font-size: .875rem; }
+    .file-hint { font-size: .85rem; color: #6b7280; }
+    .required-asterisk { color: #dc2626; }
+  </style>
+</head>
+<body>
+  {% include 'navbar.html' %}
+
+  <div class="container page-wrap">
+    <div class="row justify-content-center">
+      <div class="col-lg-6 col-md-8">
+
+        <!-- Messages -->
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <div class="card shadow-sm">
+          <div class="card-header">
+            <h4 class="mb-0">Submit Donation for Approval</h4>
+          </div>
+
+          <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {% csrf_token %}
+            <div class="card-body">
+
+              {{ form.non_field_errors }}
+
+              <!-- Render fields one by one for nicer layout -->
+              {% for field in form %}
+                <div class="form-group">
+                  <label for="{{ field.id_for_label }}">
+                    {{ field.label }}
+                    {% if field.field.required %}
+                      <span class="required-asterisk">*</span>
+                    {% endif %}
+                  </label>
+
+                  <!-- The field itself -->
+                  {{ field }}
+
+                  <!-- Per-field help text -->
+                  {% if field.help_text %}
+                    <small class="form-text text-muted">{{ field.help_text|safe }}</small>
+                  {% endif %}
+
+                  <!-- Per-field errors -->
+                  {% if field.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in field.errors %}
+                        {{ error }}{% if not forloop.last %}<br/>{% endif %}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+
+              <p class="file-hint mb-0">
+                <em>Tip:</em> If a file is required, make sure it’s clear and complete before submitting.
+              </p>
+            </div>
+
+            <div class="card-footer d-flex justify-content-between align-items-center">
+              <a href="javascript:history.back()" class="btn btn-outline-secondary">Back</a>
+              <button type="submit" class="btn btn-primary">
+                Submit
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <p class="text-center text-muted mt-3 mb-0" style="font-size:.9rem;">
+          Fields marked with <span class="required-asterisk">*</span> are required.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- jQuery + Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // 1) Add Bootstrap form-control class to inputs/selects/textarea rendered by {{ field }}
+    (function() {
+      const formEl = document.querySelector('form');
+      if (!formEl) return;
+
+      formEl.querySelectorAll('input:not([type=checkbox]):not([type=radio]), select, textarea')
+        .forEach(el => {
+          // Avoid double-adding if already styled via widget
+          if (!el.classList.contains('form-control')) {
+            el.classList.add('form-control');
+          }
+        });
+
+      // 2) Basic client-side validation UX (Bootstrap)
+      formEl.addEventListener('submit', function (event) {
+        if (formEl.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        formEl.classList.add('was-validated');
+      }, false);
+
+      // 3) Show selected file name(s) next to file inputs
+      formEl.querySelectorAll('input[type="file"]').forEach(input => {
+        input.addEventListener('change', function() {
+          const label = this.closest('.form-group')?.querySelector('label');
+          if (!label) return;
+          const files = Array.from(this.files || []);
+          if (files.length) {
+            label.dataset.original = label.dataset.original || label.textContent;
+            label.innerHTML = (label.dataset.original || label.textContent)
+              + ' <small class="text-muted">(' + files.map(f => f.name).join(', ') + ')</small>';
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
