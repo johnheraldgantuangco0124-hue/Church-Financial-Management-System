@@ -4588,6 +4588,7 @@ DELIMITER ;
 
 DROP PROCEDURE IF EXISTS `GetDonationsByChurch`;
 DELIMITER $$
+
 CREATE PROCEDURE `GetDonationsByChurch`(
     IN target_church_id BIGINT
 )
@@ -4595,22 +4596,68 @@ BEGIN
     SELECT
         d.id,
         d.church_id,
+        d.user_id,
+        d.donor_type,
         d.donor,
         d.amount,
         d.donations_date,
-        d.gcash_reference_number,
         d.other_donations_type,
-        -- Get the category name instead of just the ID
-        c.name AS category_name
-    FROM
-        register_donations d
-    LEFT JOIN
-        register_donationcategory c ON d.donations_type_id = c.id
-    WHERE
-        d.church_id = target_church_id
-    ORDER BY
-        d.donations_date DESC;
+        c.name AS category_name,
+
+        u.username AS user_name,
+        TRIM(
+            CONCAT_WS(
+                ' ',
+                NULLIF(u.first_name, ''),
+                NULLIF(u.middle_name, ''),
+                NULLIF(u.last_name, '')
+            )
+        ) AS full_name,
+
+        CASE
+            WHEN d.donor_type = 'member' THEN
+                COALESCE(
+                    NULLIF(TRIM(d.donor), ''),
+                    NULLIF(
+                        TRIM(
+                            CONCAT_WS(
+                                ' ',
+                                NULLIF(u.first_name, ''),
+                                NULLIF(u.middle_name, ''),
+                                NULLIF(u.last_name, '')
+                            )
+                        ),
+                        ''
+                    ),
+                    NULLIF(TRIM(u.username), ''),
+                    'Member'
+                )
+
+            WHEN d.donor_type = 'non_member' THEN
+                COALESCE(
+                    NULLIF(TRIM(d.donor), ''),
+                    'Non-member'
+                )
+
+            WHEN d.donor_type = 'anonymous' THEN
+                'Anonymous'
+
+            ELSE
+                COALESCE(
+                    NULLIF(TRIM(d.donor), ''),
+                    'Unknown Donor'
+                )
+        END AS donor_display
+
+    FROM register_donations d
+    LEFT JOIN register_donationcategory c
+        ON d.donations_type_id = c.id
+    LEFT JOIN register_customuser u
+        ON d.user_id = u.id
+    WHERE d.church_id = target_church_id
+    ORDER BY d.donations_date DESC, d.id DESC;
 END $$
+
 DELIMITER ;
 
 DROP PROCEDURE IF EXISTS `GetRestrictedIncomeTotal`;
