@@ -5441,10 +5441,17 @@ class FinancialOverviewView(TemplateView):
 
             row_unrestricted = self.sp_one("Finance_UnrestrictedNet", [church_id])
 
+            church_income = Decimal("0.00")
+            grand_total_unrestricted = Decimal("0.00")
+
             if row_unrestricted:
                 gross_income = Decimal(row_unrestricted[5] or 0) if len(row_unrestricted) > 5 else Decimal("0.00")
                 unres_expenses = Decimal(row_unrestricted[6] or 0) if len(row_unrestricted) > 6 else Decimal("0.00")
                 net_unrestricted = Decimal(row_unrestricted[7] or 0) if len(row_unrestricted) > 7 else Decimal("0.00")
+
+                # Church Income should follow GrandTotalUnrestricted
+                church_income = gross_income
+                grand_total_unrestricted = gross_income
 
                 unrestricted_stats = {
                     "tithes": Decimal(row_unrestricted[0] or 0),
@@ -5458,6 +5465,10 @@ class FinancialOverviewView(TemplateView):
                     "total_income": gross_income,
                 }
             else:
+                # Safe fallback: use unrestricted income from FundBalancesTotal
+                church_income = Decimal(fund_stats.get("unrestricted_income", Decimal("0.00")) or 0)
+                grand_total_unrestricted = church_income
+
                 unrestricted_stats = {
                     "tithes": Decimal("0.00"),
                     "offerings": Decimal("0.00"),
@@ -5485,6 +5496,10 @@ class FinancialOverviewView(TemplateView):
             context["bank_name"] = bank_name
             context["bank_proof_url"] = bank_proof_url
             context["total_funds"] = total_cash_position
+
+            # Explicit values for Church Income card
+            context["church_income"] = church_income
+            context["grand_total_unrestricted"] = grand_total_unrestricted
 
             # =========================================================
             #  B) FILTERED VIEWS
@@ -5606,6 +5621,8 @@ class FinancialOverviewView(TemplateView):
             context.setdefault("bank_name", "No Bank Account")
             context.setdefault("bank_proof_url", None)
             context.setdefault("total_funds", Decimal("0.00"))
+            context.setdefault("church_income", Decimal("0.00"))
+            context.setdefault("grand_total_unrestricted", Decimal("0.00"))
             context.setdefault("filtered_summary", [])
             context.setdefault("filtered_transactions", {})
             context.setdefault("combined_data", [])
