@@ -8,7 +8,7 @@ from .views import HomeView
 from .views import api_get_ministry_stats_year
 from .views import (RegisterView, CustomLoginView, UnifiedIncomeEntryPageView, ChurchAdminLiquidationRequestsView,
                     CustomLogoutView,ConfirmDonationsView,LandingView,ManageExpenseCategoriesView,
-                    ReviewExpensesView,AddDonationsView,
+                    ReviewExpensesView,AddDonationsView, preview_budget_receipt,
                     SelectExpensesNumberView, TitheCreateView, ReviewTitheView, ExpenseFraudDetectionSettingsView,
                     AddExpenseView, TreasurerLoginView,
                     MemberLoginView,FinanceOverview, CustomUserDetailView, CustomUserUpdateView, FinanceChartView, ChangePasswordView,TemplateView)
@@ -162,6 +162,13 @@ path('donations/manage-types/', AddDonationCategoryView.as_view(), name='add_don
     path("accounts/treasurer/<int:pk>/edit/", TreasurerEditView.as_view(), name="treasurer-edit"),
 
     path('financial-overview/', FinancialOverviewView.as_view(), name='financial_overview'),
+
+    path(
+    "budget-expense/<int:expense_id>/preview-receipt/",
+    preview_budget_receipt,
+    name="preview_budget_receipt",
+    ),
+
 
     path('monthly-summary/', MonthlyFinancialSummaryView.as_view(), name='monthly_summary'),
 

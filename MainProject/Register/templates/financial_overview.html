@@ -735,11 +735,11 @@
                             <td>{{ transaction.movement_reference_no|default:"-" }}</td>
                             <td>
                                 {% if transaction.file %}
-                                    <a href="/media/{{ transaction.file }}" target="_blank" class="btn btn-sm btn-light border text-primary">
-                                        <i class="fas fa-paperclip mr-1"></i>View
+                                    <a href="{% url 'preview_financial_transaction_receipt' transaction.transaction_type transaction.transaction_id %}" target="_blank" rel="noopener" class="btn btn-sm btn-light border text-primary">
+                                        <i class="fas fa-eye mr-1"></i>Preview
                                     </a>
                                 {% elif transaction.movement_proof_file %}
-                                    <a href="/media/{{ transaction.movement_proof_file }}" target="_blank" class="btn btn-sm btn-light border text-info">
+                                    <a href="{% url 'preview_financial_transaction_movement_proof' transaction.transaction_type transaction.transaction_id %}" target="_blank" rel="noopener" class="btn btn-sm btn-light border text-info">
                                         <i class="fas fa-university mr-1"></i>Movement Proof
                                     </a>
                                 {% else %}
@@ -817,7 +817,7 @@
                                 <div class="d-flex align-items-center mt-1">
                                     <small class="text-muted mr-2">Bank Deposits</small>
                                     {% if bank_proof_url %}
-                                        <a href="{{ bank_proof_url }}" target="_blank" class="badge badge-light border text-primary px-2 py-1">
+                                        <a href="{{ bank_proof_url }}" target="_blank" rel="noopener" class="badge badge-light border text-primary px-2 py-1">
                                             <i class="fas fa-eye"></i> Proof
                                         </a>
                                     {% endif %}
@@ -1033,11 +1033,11 @@
                             <td>{{ transaction.movement_reference_no|default:"-" }}</td>
                             <td>
                                 {% if transaction.file %}
-                                    <a href="/media/{{ transaction.file }}" target="_blank" class="btn btn-sm btn-light border text-info">
-                                        <i class="fas fa-file-download mr-1"></i>View
+                                    <a href="{% url 'preview_financial_transaction_receipt' transaction.transaction_type transaction.transaction_id %}" target="_blank" rel="noopener" class="btn btn-sm btn-light border text-info">
+                                        <i class="fas fa-eye mr-1"></i>Preview
                                     </a>
                                 {% elif transaction.movement_proof_file %}
-                                    <a href="/media/{{ transaction.movement_proof_file }}" target="_blank" class="btn btn-sm btn-light border text-primary">
+                                    <a href="{% url 'preview_financial_transaction_movement_proof' transaction.transaction_type transaction.transaction_id %}" target="_blank" rel="noopener" class="btn btn-sm btn-light border text-primary">
                                         <i class="fas fa-university mr-1"></i>Movement Proof
                                     </a>
                                 {% else %}

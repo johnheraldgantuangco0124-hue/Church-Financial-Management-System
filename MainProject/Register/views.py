@@ -19,6 +19,7 @@ from .models import TemporaryOtherIncomeFile, TemporaryDonationFile
 from Church.models import DenominationLiquidationAccessRequest
 from .forms import ForgotPasswordForm, ResetPasswordConfirmForm, ExpenseFraudDetectionSettingsForm
 from django import forms
+from django.http import FileResponse, Http404
 from django.db import connection
 from openai import OpenAI
 from django.contrib.auth import get_user_model
@@ -4924,6 +4925,23 @@ class TreasurerEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         if self.request.user.user_type == CustomUser.UserType.CHURCH_ADMIN:
             qs = qs.filter(church_id=self.request.user.church_id)
         return qs
+
+
+@login_required
+def preview_budget_receipt(request, expense_id):
+    expense = get_object_or_404(
+        BudgetExpense,
+        pk=expense_id,
+        church=request.user.church,
+    )
+
+    if not expense.receipt_proof:
+        raise Http404("No receipt file found.")
+
+    return FileResponse(
+        expense.receipt_proof.open("rb"),
+        as_attachment=False,
+    )
 
 
 class FinancialOverviewView(TemplateView):

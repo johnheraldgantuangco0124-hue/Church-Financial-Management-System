@@ -1,3 +1,4 @@
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -422,7 +423,6 @@
       padding: 1rem 1.5rem;
     }
 
-    /* ===== CUSTOM MODAL STYLES ===== */
     .modal-notify .modal-content {
       border: none;
       border-radius: 18px;
@@ -500,7 +500,6 @@
 
   <div class="row g-4">
 
-    <!-- ================== SIDEBAR ================== -->
     <div class="col-lg-3">
       <div class="sidebar-wrapper">
 
@@ -534,7 +533,6 @@
             </li>
           </ul>
 
-          <!-- SEARCH FILTERS -->
           <div class="sidebar-search-box">
             <div class="sidebar-search-title">Search Releases</div>
 
@@ -582,10 +580,10 @@
                   <div class="small text-muted">{{ item.budget }}</div>
                   <div class="d-flex justify-content-between align-items-end mt-2">
                     <div class="text-secondary small">
-                      Released: <span class="fw-bold text-dark">₱{{ item.amount|floatformat:0 }}</span>
+                      Released: <span class="fw-bold text-dark">₱{{ item.amount|floatformat:0|intcomma }}</span>
                     </div>
                     <span class="badge bg-warning text-warning-emphasis bg-opacity-10 rounded-pill px-2">
-                      Bal: ₱{{ item.remaining_release_balance|floatformat:0 }}
+                      Bal: ₱{{ item.remaining_release_balance|floatformat:0|intcomma }}
                     </span>
                   </div>
                 </a>
@@ -640,7 +638,6 @@
       </div>
     </div>
 
-    <!-- ================== MAIN CONTENT ================== -->
     <div class="col-lg-9">
       {% if selected_release %}
 
@@ -652,7 +649,7 @@
               </div>
               <div>
                 <div class="text-secondary text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Total Budget</div>
-                <div class="fs-4 num-font text-dark">₱{{ selected_release.amount|floatformat:2 }}</div>
+                <div class="fs-4 num-font text-dark">₱{{ selected_release.amount|floatformat:2|intcomma }}</div>
               </div>
             </div>
           </div>
@@ -664,7 +661,7 @@
               </div>
               <div>
                 <div class="text-secondary text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Expenses</div>
-                <div class="fs-4 num-font text-danger">₱{{ selected_release.total_expenses|floatformat:2 }}</div>
+                <div class="fs-4 num-font text-danger">₱{{ selected_release.total_expenses|floatformat:2|intcomma }}</div>
               </div>
             </div>
           </div>
@@ -677,7 +674,7 @@
                 </div>
                 <div>
                   <div class="text-secondary text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Returned Change</div>
-                  <div class="fs-4 num-font text-success">₱{{ selected_release.amount_returned|floatformat:2 }}</div>
+                  <div class="fs-4 num-font text-success">₱{{ selected_release.amount_returned|floatformat:2|intcomma }}</div>
                 </div>
               {% else %}
                 <div class="stat-icon bg-warning bg-opacity-10 text-warning-emphasis">
@@ -685,7 +682,7 @@
                 </div>
                 <div>
                   <div class="text-secondary text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Remaining Balance</div>
-                  <div class="fs-4 num-font text-dark">₱{{ selected_release.remaining_release_balance|floatformat:2 }}</div>
+                  <div class="fs-4 num-font text-dark">₱{{ selected_release.remaining_release_balance|floatformat:2|intcomma }}</div>
                 </div>
               {% endif %}
             </div>
@@ -866,7 +863,7 @@
                   </div>
                   {% if bank_acct %}
                     <span class="help-chip">
-                      <i class="bi bi-bank"></i> Bank: ₱{{ bank_acct.current_balance|floatformat:2 }}
+                      <i class="bi bi-bank"></i> Bank: ₱{{ bank_acct.current_balance|floatformat:2|intcomma }}
                     </span>
                   {% else %}
                     <span class="help-chip text-warning-emphasis">
@@ -1013,7 +1010,7 @@
                         <span class="text-muted small opacity-50">No attachment</span>
                       {% endif %}
                     </td>
-                    <td class="num-font fw-bold text-dark text-end pe-4">₱{{ expense.amount|floatformat:2 }}</td>
+                    <td class="num-font fw-bold text-dark text-end pe-4">₱{{ expense.amount|floatformat:2|intcomma }}</td>
                     <td class="text-end pe-4">
                       <span class="text-muted small opacity-50">Use the editor above</span>
                     </td>
@@ -1032,7 +1029,7 @@
                 <tfoot class="bg-light">
                   <tr>
                     <td colspan="4" class="text-end fw-bold text-secondary text-uppercase small pt-3">Total Encoded:</td>
-                    <td class="num-font fw-bold text-danger text-end pe-4 pt-3">₱{{ selected_release.total_expenses|floatformat:2 }}</td>
+                    <td class="num-font fw-bold text-danger text-end pe-4 pt-3">₱{{ selected_release.total_expenses|floatformat:2|intcomma }}</td>
                     <td></td>
                   </tr>
                 </tfoot>
@@ -1058,7 +1055,6 @@
   </div>
 </div>
 
-<!-- ================== REUSABLE NOTIFICATION MODAL (replaces alert) ================== -->
 <div class="modal fade modal-notify" id="notifyModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-sm">
     <div class="modal-content">
@@ -1071,9 +1067,7 @@
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body" id="notifyModalBody">
-        <!-- dynamic message -->
-      </div>
+      <div class="modal-body" id="notifyModalBody"></div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary fw-semibold rounded-pill px-4" data-bs-dismiss="modal">OK</button>
       </div>
@@ -1081,7 +1075,6 @@
   </div>
 </div>
 
-<!-- ================== FINALIZE CONFIRMATION MODAL (replaces confirm) ================== -->
 <div class="modal fade modal-notify" id="finalizeConfirmModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -1121,7 +1114,6 @@
   </div>
 </div>
 
-<!-- EMPTY FORM TEMPLATE -->
 <div id="empty-form" style="display:none;">
   <div class="row g-2 mb-3 align-items-center expense-row p-2 shadow-sm mx-0">
     {{ formset.empty_form.id }}
@@ -1145,6 +1137,7 @@
     </div>
   </div>
 </div>
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
   const addBtn = document.getElementById("add-form");
@@ -1152,15 +1145,9 @@ document.addEventListener("DOMContentLoaded", function() {
   const totalFormsInput = document.getElementById("id_form-TOTAL_FORMS");
   const finalizeBtn = document.getElementById("finalize-btn");
 
-  // ===== REUSABLE MODAL HELPERS =====
   const notifyModalEl = document.getElementById("notifyModal");
   const notifyModal = new bootstrap.Modal(notifyModalEl);
 
-  /**
-   * Show a styled notification modal (replaces alert()).
-   * @param {string} message  - The body text (HTML allowed).
-   * @param {object} opts     - Optional { title, type }  type = 'warning' | 'danger' | 'info' (default)
-   */
   function showNotify(message, opts = {}) {
     const title = opts.title || "Notice";
     const type  = opts.type  || "info";
@@ -1184,12 +1171,10 @@ document.addEventListener("DOMContentLoaded", function() {
     notifyModal.show();
   }
 
-  // ===== FINALIZE CONFIRM MODAL =====
   const finalizeConfirmModalEl = document.getElementById("finalizeConfirmModal");
   const finalizeConfirmModal = finalizeConfirmModalEl ? new bootstrap.Modal(finalizeConfirmModalEl) : null;
   const finalizeConfirmYes = document.getElementById("finalizeConfirmYes");
 
-  // ===== SIDEBAR SEARCH =====
   const releaseSearchInput = document.getElementById("releaseSearchInput");
   const releaseSearchDate = document.getElementById("releaseSearchDate");
   const clearReleaseFilters = document.getElementById("clearReleaseFilters");
@@ -1197,6 +1182,70 @@ document.addEventListener("DOMContentLoaded", function() {
 
   function normalizeText(value) {
     return (value || "").toString().trim().toLowerCase();
+  }
+
+  function stripCommas(value) {
+    return (value || "").toString().replace(/,/g, "").trim();
+  }
+
+  function sanitizeMoneyInput(value) {
+    let cleaned = stripCommas(value).replace(/[^\d.]/g, "");
+
+    const firstDotIndex = cleaned.indexOf(".");
+    if (firstDotIndex !== -1) {
+      cleaned =
+        cleaned.slice(0, firstDotIndex + 1) +
+        cleaned.slice(firstDotIndex + 1).replace(/\./g, "");
+    }
+
+    const parts = cleaned.split(".");
+    if (parts.length > 1) {
+      parts[1] = parts[1].slice(0, 2);
+      cleaned = parts[0] + "." + parts[1];
+    }
+
+    return cleaned;
+  }
+
+  function formatMoneyForDisplay(value) {
+    const cleaned = sanitizeMoneyInput(value);
+    if (!cleaned) return "";
+
+    const parts = cleaned.split(".");
+    let whole = parts[0] || "0";
+    const decimal = parts.length > 1 ? "." + parts[1] : "";
+
+    whole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return whole + decimal;
+  }
+
+  function bindAmountFormatting(scope = document) {
+    scope.querySelectorAll(".expense-amount").forEach(input => {
+      if (input.dataset.moneyBound === "true") return;
+      input.dataset.moneyBound = "true";
+
+      input.addEventListener("focus", function() {
+        this.value = stripCommas(this.value);
+      });
+
+      input.addEventListener("input", function() {
+        this.value = sanitizeMoneyInput(this.value);
+      });
+
+      input.addEventListener("blur", function() {
+        this.value = formatMoneyForDisplay(this.value);
+      });
+
+      if (input.value) {
+        input.value = formatMoneyForDisplay(input.value);
+      }
+    });
+  }
+
+  function stripAmountInputsBeforeSubmit() {
+    document.querySelectorAll(".expense-amount").forEach(input => {
+      input.value = sanitizeMoneyInput(input.value);
+    });
   }
 
   function applyReleaseFilters() {
@@ -1254,7 +1303,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  // ===== FORMSET REMOVE =====
   function bindRemoveButtons() {
     document.querySelectorAll(".remove-form-visual").forEach(btn => {
       btn.onclick = function(e) {
@@ -1292,15 +1340,16 @@ document.addEventListener("DOMContentLoaded", function() {
       const newFormHtml = emptyFormHtml.replace(/__prefix__/g, currentFormCount);
       const div = document.createElement("div");
       div.innerHTML = newFormHtml;
-      formContainer.appendChild(div.firstElementChild);
+      const newRow = div.firstElementChild;
+      formContainer.appendChild(newRow);
       totalFormsInput.value = currentFormCount + 1;
       bindRemoveButtons();
+      bindAmountFormatting(newRow);
     });
 
     bindRemoveButtons();
   }
 
-  // ===== AI OCR =====
   document.body.addEventListener("click", function(e) {
     const btn = e.target.closest(".ai-scan-btn");
     if (!btn) return;
@@ -1339,7 +1388,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const data = result.data || {};
         if (data.date && dateInput) dateInput.value = data.date;
         if (data.description && descInput) descInput.value = data.description;
-        if (data.amount && amountInput) amountInput.value = data.amount.toString().replace(/,/g, "");
+        if (data.amount && amountInput) amountInput.value = formatMoneyForDisplay(data.amount.toString());
 
         row.style.transition = "background-color 0.5s";
         row.style.backgroundColor = "#dcfce7";
@@ -1364,10 +1413,8 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  // ===== FINALIZE FLOW (modal-based) =====
   if (finalizeBtn && finalizeConfirmModal) {
-    finalizeBtn.addEventListener("click", function(e) {
-      // Validate return destination is selected
+    finalizeBtn.addEventListener("click", function() {
       const selectedReturn = document.querySelector('input[name="return_to"]:checked');
       if (!selectedReturn) {
         showNotify(
@@ -1377,23 +1424,21 @@ document.addEventListener("DOMContentLoaded", function() {
         return;
       }
 
-      // Populate the confirmation modal with the chosen label
       const label = selectedReturn.value === "bank"
         ? '<span class="source-pill bank"><i class="bi bi-bank"></i> Bank</span>'
         : '<span class="source-pill cash"><i class="bi bi-cash-stack"></i> Physical Cash</span>';
       document.getElementById("finalizeReturnLabel").innerHTML = label;
 
-      // Show the confirmation modal
       finalizeConfirmModal.show();
     });
 
-    // When user confirms inside the modal → submit the form
     if (finalizeConfirmYes) {
       finalizeConfirmYes.addEventListener("click", function() {
         finalizeConfirmModal.hide();
 
-        // Create a hidden input for the finalize action and submit the form
         const form = document.getElementById("expense-form");
+        stripAmountInputsBeforeSubmit();
+
         const hiddenInput = document.createElement("input");
         hiddenInput.type = "hidden";
         hiddenInput.name = "finalize";
@@ -1404,6 +1449,14 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   }
 
+  const expenseForm = document.getElementById("expense-form");
+  if (expenseForm) {
+    expenseForm.addEventListener("submit", function() {
+      stripAmountInputsBeforeSubmit();
+    });
+  }
+
+  bindAmountFormatting();
   applyReleaseFilters();
 });
 </script>
