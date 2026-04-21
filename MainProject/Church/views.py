@@ -760,7 +760,7 @@ class DenominationFinanceOverview(IsDenominationAdmin, TemplateView):
         return visible_rows[0]
 
     # =========================================================
-    #  NORMALIZE REPORT TX TYPE
+    #  NORMALIZE / COERCE REPORT TX TYPE
     # =========================================================
     def _normalize_report_tx_type(self, txn_type):
         tx = (txn_type or "").strip()
@@ -782,6 +782,53 @@ class DenominationFinanceOverview(IsDenominationAdmin, TemplateView):
         }
         return aliases.get(key, tx)
 
+    def _is_budget_return_label(self, category_name: str) -> bool:
+        c = (category_name or "").strip().lower()
+        if not c:
+            return False
+
+        return (
+            c == "budget return"
+            or c.startswith("budget return:")
+            or c.startswith("budget return -")
+            or c.startswith("cash:budget return:")
+            or c.startswith("bank:budget return:")
+            or c.startswith("unposted:budget return:")
+            or ":budget return:" in c
+        )
+
+    def _is_visible_budget_release_label(self, category_name: str) -> bool:
+        c = (category_name or "").strip().lower()
+        if not c:
+            return False
+
+        return (
+            c in {
+                "budget release - cash",
+                "budget release - bank",
+                "budget release (unposted)",
+            }
+            or c.startswith("cash:budget release:")
+            or c.startswith("bank:budget release:")
+            or c.startswith("unposted:budget release:")
+            or ":budget release:" in c
+        )
+
+    def _coerce_report_tx_type(self, txn_type: str, category_name: str) -> str:
+        """
+        Budget Return belongs to General Income (Unrestricted).
+        Visible Budget Release stays as restricted expense.
+        """
+        tx = self._normalize_report_tx_type(txn_type)
+
+        if self._is_budget_return_label(category_name):
+            return "Unres_Other"
+
+        if self._is_visible_budget_release_label(category_name):
+            return "Res_Expense"
+
+        return tx
+
     # =========================================================
     #  DEFENSIVE DETECTORS
     # =========================================================
@@ -801,23 +848,35 @@ class DenominationFinanceOverview(IsDenominationAdmin, TemplateView):
         )
 
     def _looks_like_internal_budget_expense(self, category_name: str) -> bool:
+        """
+        Exclude only true internal/system budget rows.
+
+        KEEP as visible rows:
+        - Budget Release (Unposted)
+        - Budget Release - Cash
+        - Budget Release - Bank
+        - Budget Return rows
+        """
         c = (category_name or "").strip().lower()
 
-        if c in {
-            "budget release (unposted)",
-            "budget release - cash",
-            "budget release - bank",
-        }:
+        if self._is_visible_budget_release_label(category_name):
             return False
 
-        return (
-            c in {"budget release", "budget return"}
-            or c.startswith("budget return deposit")
-            or c.startswith("budget return from")
-        )
+        if self._is_budget_return_label(category_name):
+            return False
+
+        return c in {
+            "budget release",
+            "system budget release",
+            "system budget return",
+        }
 
     def _should_skip_detailed_row(self, txn_type: str, category_name: str) -> bool:
-        tx = self._normalize_report_tx_type(txn_type)
+        tx = self._coerce_report_tx_type(txn_type, category_name)
+
+        # Budget return is visible unrestricted income, never skip it here
+        if self._is_budget_return_label(category_name):
+            return False
 
         if tx in {
             "Transfer_Deposit",
@@ -834,6 +893,22 @@ class DenominationFinanceOverview(IsDenominationAdmin, TemplateView):
                 return True
 
         return False
+
+    # =========================================================
+    #  MERGE SAME-NAME ROWS
+    # =========================================================
+    def _append_or_merge_amount(self, bucket, name, amount):
+        clean_name = str(name or "").strip()
+
+        for item in bucket:
+            if item["name"] == clean_name:
+                item["amount"] += amount
+                return
+
+        bucket.append({
+            "name": clean_name,
+            "amount": amount,
+        })
 
     # =========================================================
     #  LIQUIDATION BUILDER (MEMBER-SCOPE STYLE)
@@ -995,9 +1070,11 @@ class DenominationFinanceOverview(IsDenominationAdmin, TemplateView):
             raw_period_label = str(row[1] or "")
             display_period_label = self._format_period_label(report_type, raw_period_label)
 
-            txn_type = self._normalize_report_tx_type(row[2] if len(row) > 2 else "")
+            raw_txn_type = row[2] if len(row) > 2 else ""
             category = str(row[3] or "") if len(row) > 3 else ""
             amount = Decimal(str(row[4] or 0)) if len(row) > 4 else Decimal("0.00")
+
+            txn_type = self._coerce_report_tx_type(raw_txn_type, category)
 
             if date_filter and date_filter != display_period_label:
                 continue
@@ -1009,25 +1086,32 @@ class DenominationFinanceOverview(IsDenominationAdmin, TemplateView):
 
             if txn_type == "Tithe":
                 d["tithes"] += amount
+
             elif txn_type == "Offering":
                 d["offering"] += amount
+
             elif txn_type == "Unres_Donation":
-                d["unres_donations"].append({"name": category, "amount": amount})
+                self._append_or_merge_amount(d["unres_donations"], category, amount)
                 d["total_unres_donations"] += amount
+
             elif txn_type == "Unres_Other":
-                d["unres_other"].append({"name": category, "amount": amount})
+                self._append_or_merge_amount(d["unres_other"], category, amount)
                 d["total_unres_other"] += amount
+
             elif txn_type == "Res_Donation":
-                d["res_donations"].append({"name": category, "amount": amount})
+                self._append_or_merge_amount(d["res_donations"], category, amount)
                 d["total_res_donations"] += amount
+
             elif txn_type == "Res_Other":
-                d["res_other"].append({"name": category, "amount": amount})
+                self._append_or_merge_amount(d["res_other"], category, amount)
                 d["total_res_other"] += amount
+
             elif txn_type == "Gen_Expense":
-                d["gen_expenses"].append({"name": category, "amount": amount})
+                self._append_or_merge_amount(d["gen_expenses"], category, amount)
                 d["total_gen_expenses"] += amount
+
             elif txn_type == "Res_Expense":
-                d["res_expenses"].append({"name": category, "amount": amount})
+                self._append_or_merge_amount(d["res_expenses"], category, amount)
                 d["total_res_expenses"] += amount
 
         restricted_income_updates = []
@@ -1233,11 +1317,8 @@ class DenominationFinanceOverview(IsDenominationAdmin, TemplateView):
         date_filter = context["current_filter"]
 
         for church in churches:
-            # Keep unrestricted-net details for legacy denomination columns
             row = self._get_unrestricted_net_row(church.id)
 
-            # THIS is now the authoritative church-income source,
-            # matching WeeklyReportView balance logic
             balance_payload = self._get_church_income_snapshot(
                 church_id=church.id,
                 report_type=report_type,
@@ -1270,9 +1351,7 @@ class DenominationFinanceOverview(IsDenominationAdmin, TemplateView):
                 "UnrestrictedBalance": self.money(unrestricted_balance_amount),
                 "CurrentPeriodLabel": balance_payload.get("period_label", ""),
 
-                # compatibility mapping:
-                # if your template still prints GrandTotalUnrestricted,
-                # it will now show the same Church Income value as WeeklyReportView
+                # compatibility mapping
                 "GrandTotalUnrestricted": self.money(church_income_amount),
 
                 "request_status": request_status,
@@ -1285,6 +1364,7 @@ class DenominationFinanceOverview(IsDenominationAdmin, TemplateView):
         context["daily_summary"] = formatted_rows
         self._attach_selected_liquidation(context, churches, latest_request_by_church)
         return context
+
 
 @login_required
 @require_POST

@@ -498,6 +498,61 @@
             font-size:.9rem;
         }
 
+        .breakdown-group{
+            border:1px solid var(--line-soft);
+            border-radius:14px;
+            background:#fff;
+            padding:.85rem .9rem;
+            margin-bottom:.8rem;
+        }
+
+        .breakdown-group:last-child{
+            margin-bottom:0;
+        }
+
+        .breakdown-head{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:1rem;
+            margin-bottom:.55rem;
+            padding-bottom:.45rem;
+            border-bottom:1px dashed #e7eef7;
+        }
+
+        .breakdown-title{
+            font-size:.86rem;
+            font-weight:800;
+            color:var(--blue-800);
+            margin:0;
+        }
+
+        .breakdown-total{
+            font-family:'JetBrains Mono', monospace;
+            font-size:.84rem;
+            font-weight:800;
+            white-space:nowrap;
+        }
+
+        .breakdown-empty{
+            color:var(--muted);
+            font-size:.84rem;
+            font-style:italic;
+            margin:0;
+        }
+
+        .subtle-success{
+            color:var(--green-700);
+        }
+
+        .subtle-primary{
+            color:var(--blue-700);
+        }
+
+        .subtle-orange{
+            color:#c2410c;
+        }
+
         .alert{
             border:none;
             border-radius:16px;
@@ -870,32 +925,99 @@
                                         <div class="col-xl-4">
                                             <div class="report-block">
                                                 <h6>Income Breakdown</h6>
-                                                <ul class="report-list">
-                                                    <li>
-                                                        <span class="name">Tithes</span>
-                                                        <span class="amount text-success">₱{{ item.data.tithes|floatformat:2 }}</span>
-                                                    </li>
-                                                    <li>
-                                                        <span class="name">Offerings</span>
-                                                        <span class="amount text-info">₱{{ item.data.offering|floatformat:2 }}</span>
-                                                    </li>
-                                                    <li>
-                                                        <span class="name">Unrestricted Donations</span>
-                                                        <span class="amount" style="color:#c2410c;">₱{{ item.data.total_unres_donations|floatformat:2 }}</span>
-                                                    </li>
-                                                    <li>
-                                                        <span class="name">Unrestricted Other Income</span>
-                                                        <span class="amount text-primary">₱{{ item.data.total_unres_other|floatformat:2 }}</span>
-                                                    </li>
-                                                    <li>
-                                                        <span class="name">Restricted Donations</span>
-                                                        <span class="amount text-primary">₱{{ item.data.total_res_donations|floatformat:2 }}</span>
-                                                    </li>
-                                                    <li>
-                                                        <span class="name">Restricted Other Income</span>
-                                                        <span class="amount text-primary">₱{{ item.data.total_res_other|floatformat:2 }}</span>
-                                                    </li>
-                                                </ul>
+
+                                                <div class="breakdown-group">
+                                                    <div class="breakdown-head">
+                                                        <p class="breakdown-title mb-0">Tithes</p>
+                                                        <span class="breakdown-total subtle-success">₱{{ item.data.tithes|floatformat:2 }}</span>
+                                                    </div>
+                                                    <p class="breakdown-empty">Single summarized amount.</p>
+                                                </div>
+
+                                                <div class="breakdown-group">
+                                                    <div class="breakdown-head">
+                                                        <p class="breakdown-title mb-0">Offerings</p>
+                                                        <span class="breakdown-total text-info">₱{{ item.data.offering|floatformat:2 }}</span>
+                                                    </div>
+                                                    <p class="breakdown-empty">Single summarized amount.</p>
+                                                </div>
+
+                                                <div class="breakdown-group">
+                                                    <div class="breakdown-head">
+                                                        <p class="breakdown-title mb-0">Unrestricted Donations</p>
+                                                        <span class="breakdown-total subtle-orange">₱{{ item.data.total_unres_donations|floatformat:2 }}</span>
+                                                    </div>
+                                                    {% if item.data.unres_donations %}
+                                                        <ul class="report-list">
+                                                            {% for entry in item.data.unres_donations %}
+                                                                <li>
+                                                                    <span class="name">{{ entry.name }}</span>
+                                                                    <span class="amount subtle-orange">₱{{ entry.amount|floatformat:2 }}</span>
+                                                                </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% else %}
+                                                        <p class="breakdown-empty">No unrestricted donation entries.</p>
+                                                    {% endif %}
+                                                </div>
+
+                                                <div class="breakdown-group">
+                                                    <div class="breakdown-head">
+                                                        <p class="breakdown-title mb-0">Unrestricted Other Income</p>
+                                                        <span class="breakdown-total subtle-primary">₱{{ item.data.total_unres_other|floatformat:2 }}</span>
+                                                    </div>
+                                                    {% if item.data.unres_other %}
+                                                        <ul class="report-list">
+                                                            {% for entry in item.data.unres_other %}
+                                                                <li>
+                                                                    <span class="name">{{ entry.name }}</span>
+                                                                    <span class="amount subtle-primary">₱{{ entry.amount|floatformat:2 }}</span>
+                                                                </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% else %}
+                                                        <p class="breakdown-empty">No unrestricted other-income entries.</p>
+                                                    {% endif %}
+                                                </div>
+
+                                                <div class="breakdown-group">
+                                                    <div class="breakdown-head">
+                                                        <p class="breakdown-title mb-0">Restricted Donations</p>
+                                                        <span class="breakdown-total subtle-primary">₱{{ item.data.total_res_donations|floatformat:2 }}</span>
+                                                    </div>
+                                                    {% if item.data.res_donations %}
+                                                        <ul class="report-list">
+                                                            {% for entry in item.data.res_donations %}
+                                                                <li>
+                                                                    <span class="name">{{ entry.name }}</span>
+                                                                    <span class="amount subtle-primary">₱{{ entry.amount|floatformat:2 }}</span>
+                                                                </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% else %}
+                                                        <p class="breakdown-empty">No restricted donation entries.</p>
+                                                    {% endif %}
+                                                </div>
+
+                                                <div class="breakdown-group">
+                                                    <div class="breakdown-head">
+                                                        <p class="breakdown-title mb-0">Restricted Other Income</p>
+                                                        <span class="breakdown-total subtle-primary">₱{{ item.data.total_res_other|floatformat:2 }}</span>
+                                                    </div>
+                                                    {% if item.data.res_other %}
+                                                        <ul class="report-list">
+                                                            {% for entry in item.data.res_other %}
+                                                                <li>
+                                                                    <span class="name">{{ entry.name }}</span>
+                                                                    <span class="amount subtle-primary">₱{{ entry.amount|floatformat:2 }}</span>
+                                                                </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% else %}
+                                                        <p class="breakdown-empty">No restricted other-income entries.</p>
+                                                    {% endif %}
+                                                </div>
+
                                                 <div class="report-total">
                                                     <span>Total Income</span>
                                                     <span class="mono text-primary">₱{{ item.summary.total_weekly_income|floatformat:2 }}</span>
@@ -905,33 +1027,78 @@
 
                                         <div class="col-xl-4">
                                             <div class="report-block">
-                                                <h6>Expense & Bank Movement</h6>
-                                                <ul class="report-list">
-                                                    <li>
-                                                        <span class="name">General Expenses</span>
-                                                        <span class="amount text-danger">₱{{ item.data.total_gen_expenses|floatformat:2 }}</span>
-                                                    </li>
-                                                    <li>
-                                                        <span class="name">Restricted Expenses</span>
-                                                        <span class="amount text-danger">₱{{ item.data.total_res_expenses|floatformat:2 }}</span>
-                                                    </li>
-                                                    <li>
-                                                        <span class="name">Bank Deposits</span>
-                                                        <span class="amount">₱{{ item.bank.deposits|floatformat:2 }}</span>
-                                                    </li>
-                                                    <li>
-                                                        <span class="name">Bank Withdrawals</span>
-                                                        <span class="amount">₱{{ item.bank.withdrawals|floatformat:2 }}</span>
-                                                    </li>
-                                                    <li>
-                                                        <span class="name">Net Transfer to Bank</span>
-                                                        <span class="amount">₱{{ item.bank.net_to_bank|floatformat:2 }}</span>
-                                                    </li>
-                                                    <li>
-                                                        <span class="name">Net Transfer to Physical Cash</span>
-                                                        <span class="amount">₱{{ item.bank.net_to_physical_cash|floatformat:2 }}</span>
-                                                    </li>
-                                                </ul>
+                                                <h6>Expense &amp; Bank Movement</h6>
+
+                                                <div class="breakdown-group">
+                                                    <div class="breakdown-head">
+                                                        <p class="breakdown-title mb-0">General Expenses</p>
+                                                        <span class="breakdown-total text-danger">₱{{ item.data.total_gen_expenses|floatformat:2 }}</span>
+                                                    </div>
+                                                    {% if item.data.gen_expenses %}
+                                                        <ul class="report-list">
+                                                            {% for entry in item.data.gen_expenses %}
+                                                                <li>
+                                                                    <span class="name">{{ entry.name }}</span>
+                                                                    <span class="amount text-danger">₱{{ entry.amount|floatformat:2 }}</span>
+                                                                </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% else %}
+                                                        <p class="breakdown-empty">No general expense entries.</p>
+                                                    {% endif %}
+                                                </div>
+
+                                                <div class="breakdown-group">
+                                                    <div class="breakdown-head">
+                                                        <p class="breakdown-title mb-0">Restricted Expenses</p>
+                                                        <span class="breakdown-total text-danger">₱{{ item.data.total_res_expenses|floatformat:2 }}</span>
+                                                    </div>
+                                                    {% if item.data.res_expenses %}
+                                                        <ul class="report-list">
+                                                            {% for entry in item.data.res_expenses %}
+                                                                <li>
+                                                                    <span class="name">{{ entry.name }}</span>
+                                                                    <span class="amount text-danger">₱{{ entry.amount|floatformat:2 }}</span>
+                                                                </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% else %}
+                                                        <p class="breakdown-empty">No restricted expense entries.</p>
+                                                    {% endif %}
+                                                </div>
+
+                                                <div class="breakdown-group">
+                                                    <div class="breakdown-head">
+                                                        <p class="breakdown-title mb-0">Bank Deposits</p>
+                                                        <span class="breakdown-total">₱{{ item.bank.deposits|floatformat:2 }}</span>
+                                                    </div>
+                                                    <p class="breakdown-empty">Transfer movement to bank.</p>
+                                                </div>
+
+                                                <div class="breakdown-group">
+                                                    <div class="breakdown-head">
+                                                        <p class="breakdown-title mb-0">Bank Withdrawals</p>
+                                                        <span class="breakdown-total">₱{{ item.bank.withdrawals|floatformat:2 }}</span>
+                                                    </div>
+                                                    <p class="breakdown-empty">Transfer movement to physical cash.</p>
+                                                </div>
+
+                                                <div class="breakdown-group">
+                                                    <div class="breakdown-head">
+                                                        <p class="breakdown-title mb-0">Net Transfer to Bank</p>
+                                                        <span class="breakdown-total">₱{{ item.bank.net_to_bank|floatformat:2 }}</span>
+                                                    </div>
+                                                    <p class="breakdown-empty">Deposits less withdrawals.</p>
+                                                </div>
+
+                                                <div class="breakdown-group">
+                                                    <div class="breakdown-head">
+                                                        <p class="breakdown-title mb-0">Net Transfer to Physical Cash</p>
+                                                        <span class="breakdown-total">₱{{ item.bank.net_to_physical_cash|floatformat:2 }}</span>
+                                                    </div>
+                                                    <p class="breakdown-empty">Withdrawals less deposits.</p>
+                                                </div>
+
                                                 <div class="report-total">
                                                     <span>Total Expenses</span>
                                                     <span class="mono text-danger">₱{{ item.summary.total_expenses|floatformat:2 }}</span>
@@ -1084,5 +1251,7 @@
 
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
