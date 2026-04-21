@@ -695,9 +695,6 @@
                             <tr>
                                 <th>Church</th>
                                 <th class="text-end">Church Income</th>
-                                <th class="text-end">Restricted Balance</th>
-                                <th class="text-end">Unrestricted Balance</th>
-                                <th class="text-center">Period</th>
                                 <th class="text-center no-print">Access</th>
                             </tr>
                         </thead>
@@ -717,32 +714,6 @@
                                             </div>
                                         </div>
                                     </td>
-
-                                    <td class="text-end">
-                                        <div class="num-col val-income fw-bold">
-                                            ₱{{ row.ChurchIncome }}
-                                        </div>
-                                    </td>
-
-                                    <td class="text-end">
-                                        <div class="num-col text-primary fw-semibold">
-                                            ₱{{ row.RestrictedBalance }}
-                                        </div>
-                                    </td>
-
-                                    <td class="text-end">
-                                        <div class="num-col text-success fw-semibold">
-                                            ₱{{ row.UnrestrictedBalance }}
-                                        </div>
-                                    </td>
-
-                                    <td class="text-center">
-                                        <span class="status-badge status-closed">
-                                            <i class="bi bi-calendar-week"></i>
-                                            {{ row.CurrentPeriodLabel|default:"No locked period" }}
-                                        </span>
-                                    </td>
-
                                     <td class="text-center no-print">
                                         <div class="action-box align-items-center">
                                             {% if row.can_view_liquidation %}
