@@ -5439,9 +5439,8 @@ class FinancialOverviewView(TemplateView):
 
             total_cash_position = Decimal(physical_cash) + Decimal(bank_balance)
 
+            # Keep unrestricted SP only for unrestricted breakdown
             row_unrestricted = self.sp_one("Finance_UnrestrictedNet", [church_id])
-
-            church_income = Decimal("0.00")
             grand_total_unrestricted = Decimal("0.00")
 
             if row_unrestricted:
@@ -5449,8 +5448,6 @@ class FinancialOverviewView(TemplateView):
                 unres_expenses = Decimal(row_unrestricted[6] or 0) if len(row_unrestricted) > 6 else Decimal("0.00")
                 net_unrestricted = Decimal(row_unrestricted[7] or 0) if len(row_unrestricted) > 7 else Decimal("0.00")
 
-                # Church Income should follow GrandTotalUnrestricted
-                church_income = gross_income
                 grand_total_unrestricted = gross_income
 
                 unrestricted_stats = {
@@ -5465,10 +5462,6 @@ class FinancialOverviewView(TemplateView):
                     "total_income": gross_income,
                 }
             else:
-                # Safe fallback: use unrestricted income from FundBalancesTotal
-                church_income = Decimal(fund_stats.get("unrestricted_income", Decimal("0.00")) or 0)
-                grand_total_unrestricted = church_income
-
                 unrestricted_stats = {
                     "tithes": Decimal("0.00"),
                     "offerings": Decimal("0.00"),
@@ -5485,6 +5478,13 @@ class FinancialOverviewView(TemplateView):
             restricted_funds = res_balance
             unrestricted_balance = unres_balance
 
+            # =========================================================
+            #  CORRECT BUSINESS RULE:
+            #  Church Income = Restricted Funds + Unrestricted Balance
+            #  Equivalent to total_fund_balance
+            # =========================================================
+            church_income = restricted_funds + unrestricted_balance
+
             context["physical_cash"] = physical_cash
             context["cash_on_hand"] = cash_on_hand
             context["restricted_funds"] = restricted_funds
@@ -5496,8 +5496,6 @@ class FinancialOverviewView(TemplateView):
             context["bank_name"] = bank_name
             context["bank_proof_url"] = bank_proof_url
             context["total_funds"] = total_cash_position
-
-            # Explicit values for Church Income card
             context["church_income"] = church_income
             context["grand_total_unrestricted"] = grand_total_unrestricted
 
@@ -5941,6 +5939,13 @@ class FinancialOverviewView(TemplateView):
     def download_financial_report(self):
         if not self._can_manage_financial_actions(self.request):
             messages.error(self.request, "Only ChurchAdmin or Admin can download the financial report.")
+            return redirect("financial_overview")
+
+        try:
+            import openpyxl
+            from openpyxl.styles import Font
+        except Exception as e:
+            messages.error(self.request, f"Excel export is unavailable: {e}")
             return redirect("financial_overview")
 
         try:
