@@ -282,33 +282,7 @@
             white-space:nowrap;
         }
 
-        .val-tithe{ color:var(--green-600); }
-        .val-offering{ color:var(--cyan-600); }
-        .val-donation{ color:#c2410c; }
-        .val-other{ color:var(--purple-600); }
-        .val-return{ color:var(--teal-700); }
         .val-income{ color:var(--blue-600); }
-        .val-expense{ color:var(--red-600); }
-
-        .badge-net{
-            display:inline-flex;
-            align-items:center;
-            padding:.45rem .8rem;
-            border-radius:999px;
-            font-family:'JetBrains Mono', monospace;
-            font-size:.83rem;
-            font-weight:700;
-        }
-
-        .badge-net-positive{
-            background:var(--green-50);
-            color:var(--green-700);
-        }
-
-        .badge-net-negative{
-            background:var(--red-50);
-            color:var(--red-700);
-        }
 
         .status-badge{
             display:inline-flex;
@@ -372,18 +346,6 @@
             background:var(--blue-50);
             color:var(--blue-800);
             border-color:#8ab8ff;
-        }
-
-        .btn-print{
-            background:#fff;
-            border:1px solid var(--line);
-            color:var(--muted);
-        }
-
-        .btn-print:hover{
-            background:#f8fbff;
-            color:var(--blue-700);
-            border-color:#cfe0ff;
         }
 
         .muted-note{
@@ -623,7 +585,7 @@
                             </span>
                             <h1 class="hero-title">Denomination Financial Overview</h1>
                             <p class="hero-subtitle">
-                                View each church’s unrestricted financial summary, request liquidation access when needed,
+                                View each church’s balance-based financial summary, request liquidation access when needed,
                                 and open approved liquidation records on the same page with member-style visibility rules.
                             </p>
                         </div>
@@ -661,14 +623,14 @@
                     <div>
                         <h5 class="section-title">
                             <span class="icon"><i class="bi bi-bar-chart-line-fill"></i></span>
-                            Church Financial Access Control
+                            Church Financial Overview
                         </h5>
                         <p class="section-subtitle">
-                            Per-church access controls for liquidation visibility.
+                            Per-church balances aligned with the same church-income output used in the Weekly Report.
                         </p>
                     </div>
                     <div class="muted-note">
-                        Only approved access can open liquidation details.
+                        Church Income = Overall Balance for the selected visible period.
                     </div>
                 </div>
 
@@ -677,6 +639,10 @@
                         <thead>
                             <tr>
                                 <th>Church</th>
+                                <th class="text-end">Church Income</th>
+                                <th class="text-end">Restricted Balance</th>
+                                <th class="text-end">Unrestricted Balance</th>
+                                <th class="text-center">Period</th>
                                 <th class="text-center no-print">Access</th>
                             </tr>
                         </thead>
@@ -697,13 +663,38 @@
                                         </div>
                                     </td>
 
+                                    <td class="text-end">
+                                        <div class="num-col val-income fw-bold">
+                                            ₱{{ row.ChurchIncome }}
+                                        </div>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <div class="num-col text-primary fw-semibold">
+                                            ₱{{ row.RestrictedBalance }}
+                                        </div>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <div class="num-col text-success fw-semibold">
+                                            ₱{{ row.UnrestrictedBalance }}
+                                        </div>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span class="status-badge status-closed">
+                                            <i class="bi bi-calendar-week"></i>
+                                            {{ row.CurrentPeriodLabel|default:"No locked period" }}
+                                        </span>
+                                    </td>
+
                                     <td class="text-center no-print">
                                         <div class="action-box align-items-center">
                                             {% if row.can_view_liquidation %}
                                                 <span class="status-badge status-approved">
                                                     <i class="bi bi-check-circle-fill"></i> Approved
                                                 </span>
-                                                <a href="?selected_church={{ row.ChurchID }}&report_type={{ current_report_type|default:'weekly' }}"
+                                                <a href="?selected_church={{ row.ChurchID }}&report_type={{ current_report_type|default:'weekly' }}{% if current_filter %}&date_filter={{ current_filter|urlencode }}{% endif %}"
                                                    class="btn btn-sm btn-primary">
                                                     <i class="bi bi-eye-fill me-1"></i>View Liquidation
                                                 </a>
@@ -754,14 +745,14 @@
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td colspan="2">
+                                    <td colspan="6">
                                         <div class="empty-state">
                                             <div class="icon">
                                                 <i class="bi bi-inbox-fill"></i>
                                             </div>
                                             <h5 class="fw-bold mb-2">No Data Found</h5>
                                             <p class="text-muted mb-0">
-                                                There are no churches or unrestricted financial records available under this denomination.
+                                                There are no churches or visible financial records available under this denomination.
                                             </p>
                                         </div>
                                     </td>
@@ -775,7 +766,7 @@
                     <div class="d-flex align-items-start gap-2 text-secondary small">
                         <i class="bi bi-info-circle mt-1"></i>
                         <span>
-                            This section now shows church access control only. Financial amount columns have been removed from the table.
+                            Church Income now follows the same balance-based output used in the Weekly Report view.
                         </span>
                     </div>
                 </div>
@@ -1093,6 +1084,5 @@
 
         </div>
     </div>
-
 </body>
 </html>
