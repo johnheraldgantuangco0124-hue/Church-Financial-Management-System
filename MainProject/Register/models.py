@@ -1883,7 +1883,12 @@ class BudgetExpense(models.Model):
         null=True,
         blank=True,
     )
-    ministry = models.ForeignKey("Ministry", on_delete=models.CASCADE, null=True, blank=True)
+    ministry = models.ForeignKey(
+        "Ministry",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
 
     release = models.ForeignKey(
         "ReleasedBudget",
@@ -1897,7 +1902,7 @@ class BudgetExpense(models.Model):
     description = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
 
-    # NEW: audit field only; does not deduct central ledgers again
+    # audit field only; does not deduct central ledgers again
     paid_from = models.CharField(
         max_length=10,
         choices=PAID_FROM_CHOICES,
@@ -1905,7 +1910,12 @@ class BudgetExpense(models.Model):
         help_text="How this ministry expense was paid. For audit/reference only.",
     )
 
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     receipt_proof = models.FileField(
@@ -1939,6 +1949,7 @@ class BudgetExpense(models.Model):
         if hasattr(church, "accounting_settings") and church.accounting_settings:
             lock_date = church.accounting_settings.lock_date
 
+        # optional: make this <= if you want exact match with your form validation
         if lock_date and self.date_incurred and self.date_incurred < lock_date:
             raise ValidationError({
                 "__all__": [
@@ -1947,31 +1958,39 @@ class BudgetExpense(models.Model):
                 ]
             })
 
-        if self.amount is None or Decimal(self.amount) <= Decimal("0.00"):
+        if self.amount is None or Decimal(str(self.amount)) <= Decimal("0.00"):
             raise ValidationError({"amount": "Amount must be greater than 0."})
 
         if self.paid_from not in {self.PAID_CASH, self.PAID_BANK}:
             raise ValidationError({"paid_from": "Invalid payment source."})
 
         if not self.release_id:
-            raise ValidationError({"release": "A budget expense must be linked to a released budget."})
+            raise ValidationError({
+                "release": "A budget expense must be linked to a released budget."
+            })
 
-        release_amount = Decimal(self.release.amount or 0)
-        returned_amount = Decimal(self.release.amount_returned or 0)
+        release_amount = Decimal(str(self.release.amount or 0))
 
-        already_spent = self.release.expenses.exclude(pk=self.pk).aggregate(
-            total=Sum("amount")
-        )["total"] or Decimal("0.00")
+        already_spent_except_this = (
+            self.release.expenses
+            .exclude(pk=self.pk)
+            .aggregate(total=Sum("amount"))["total"]
+            or Decimal("0.00")
+        )
 
-        available = release_amount - returned_amount - already_spent
-        if available < Decimal("0.00"):
-            available = Decimal("0.00")
+        current_amount = Decimal(str(self.amount or 0))
+        projected_total_spent = already_spent_except_this + current_amount
 
-        if Decimal(self.amount) > available:
+        if projected_total_spent > release_amount:
+            remaining_allowed = release_amount - already_spent_except_this
+            if remaining_allowed < Decimal("0.00"):
+                remaining_allowed = Decimal("0.00")
+
             raise ValidationError({
                 "amount": (
-                    f"Expense exceeds available released balance. "
-                    f"Available: ₱{available:,.2f}."
+                    f"Expense exceeds total budget released. "
+                    f"Maximum allowed for this entry: ₱{remaining_allowed:,.2f}. "
+                    f"Released Budget: ₱{release_amount:,.2f}."
                 )
             })
 
