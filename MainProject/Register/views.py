@@ -4927,6 +4927,134 @@ class TreasurerEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return qs
 
 
+def _normalize_financial_transaction_type(transaction_type):
+    tx = (transaction_type or "").strip()
+
+    aliases = {
+        "Tithe": "Tithe",
+        "TITHE": "Tithe",
+        "Offering": "Offering",
+        "OFFERING": "Offering",
+        "Donations": "Donations",
+        "Donation": "Donations",
+        "DONATION": "Donations",
+        "DONATIONS": "Donations",
+        "OtherIncome": "OtherIncome",
+        "Other Income": "OtherIncome",
+        "OTHER_INCOME": "OtherIncome",
+        "Expense": "Expense",
+        "EXPENSE": "Expense",
+        "Transfer": "Transfer",
+        "TRANSFER": "Transfer",
+        "ReleasedBudget": "ReleasedBudget",
+    }
+    return aliases.get(tx, tx)
+
+
+def _financial_source_type_map(transaction_type):
+    transaction_type = _normalize_financial_transaction_type(transaction_type)
+
+    return {
+        "Tithe": "TITHE",
+        "Offering": "OFFERING",
+        "Donations": "DONATION",
+        "OtherIncome": "OTHER_INCOME",
+        "Expense": "EXPENSE",
+        "Transfer": "EXPENSE",
+    }.get(transaction_type)
+
+
+def _build_inline_file_response(file_field):
+    if not file_field:
+        raise Http404("File not found.")
+
+    try:
+        file_name = file_field.name.split("/")[-1]
+    except Exception:
+        file_name = "file"
+
+    guessed_type, _ = mimetypes.guess_type(file_name)
+    content_type = guessed_type or "application/octet-stream"
+
+    response = FileResponse(
+        file_field.open("rb"),
+        content_type=content_type,
+        as_attachment=False,
+    )
+
+    response["Content-Disposition"] = f'inline; filename="{file_name}"'
+    return response
+
+
+@login_required
+def preview_financial_transaction_receipt(request, transaction_type, transaction_id):
+    transaction_type = _normalize_financial_transaction_type(transaction_type)
+    church_id = getattr(request.user, "church_id", None)
+
+    if not church_id:
+        raise Http404("No church is assigned to this account.")
+
+    Tithe = apps.get_model("Register", "Tithe")
+    Offering = apps.get_model("Register", "Offering")
+    Donations = apps.get_model("Register", "Donations")
+    OtherIncome = apps.get_model("Register", "OtherIncome")
+    Expense = apps.get_model("Register", "Expense")
+
+    model_map = {
+        "Tithe": (Tithe, "file"),
+        "Offering": (Offering, "proof_document"),
+        "Donations": (Donations, "file"),
+        "OtherIncome": (OtherIncome, "file"),
+        "Expense": (Expense, "file"),
+        "Transfer": (Expense, "file"),
+    }
+
+    if transaction_type not in model_map:
+        raise Http404("Unsupported transaction type for receipt preview.")
+
+    model_class, file_attr = model_map[transaction_type]
+
+    obj = get_object_or_404(
+        model_class,
+        pk=transaction_id,
+        church_id=church_id,
+    )
+
+    file_field = getattr(obj, file_attr, None)
+    if not file_field:
+        raise Http404("No receipt file attached to this transaction.")
+
+    return _build_inline_file_response(file_field)
+
+
+@login_required
+def preview_financial_transaction_movement_proof(request, transaction_type, transaction_id):
+    transaction_type = _normalize_financial_transaction_type(transaction_type)
+    church_id = getattr(request.user, "church_id", None)
+
+    if not church_id:
+        raise Http404("No church is assigned to this account.")
+
+    source_type = _financial_source_type_map(transaction_type)
+    if not source_type:
+        raise Http404("Unsupported transaction type for movement proof preview.")
+
+    CashBankMovement = apps.get_model("Register", "CashBankMovement")
+
+    movement = get_object_or_404(
+        CashBankMovement,
+        church_id=church_id,
+        source_type=source_type,
+        source_id=transaction_id,
+    )
+
+    proof_file = getattr(movement, "proof_file", None)
+    if not proof_file:
+        raise Http404("No movement proof file attached.")
+
+    return _build_inline_file_response(proof_file)
+
+
 @login_required
 def preview_budget_receipt(request, expense_id):
     expense = get_object_or_404(

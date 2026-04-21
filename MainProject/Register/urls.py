@@ -11,7 +11,7 @@ from .views import (RegisterView, CustomLoginView, UnifiedIncomeEntryPageView, C
                     ReviewExpensesView,AddDonationsView, preview_budget_receipt,
                     SelectExpensesNumberView, TitheCreateView, ReviewTitheView, ExpenseFraudDetectionSettingsView,
                     AddExpenseView, TreasurerLoginView,
-                    MemberLoginView,FinanceOverview, CustomUserDetailView, CustomUserUpdateView, FinanceChartView, ChangePasswordView,TemplateView)
+                    MemberLoginView,FinanceOverview, preview_financial_transaction_receipt, preview_financial_transaction_movement_proof, CustomUserDetailView, CustomUserUpdateView, FinanceChartView, ChangePasswordView,TemplateView)
 from django.urls import path
 from django.urls import path
 from .views import WeeklyReportView, UploadTempReceiptView, OpenAIPrescriptiveBudgetOptimizersView, api_run_optimizer_openai
@@ -169,6 +169,16 @@ path('donations/manage-types/', AddDonationCategoryView.as_view(), name='add_don
     name="preview_budget_receipt",
     ),
 
+    path(
+        "financial/preview/<str:transaction_type>/<int:transaction_id>/receipt/",
+        preview_financial_transaction_receipt,
+        name="preview_financial_transaction_receipt",
+    ),
+    path(
+        "financial/preview/<str:transaction_type>/<int:transaction_id>/movement-proof/",
+        preview_financial_transaction_movement_proof,
+        name="preview_financial_transaction_movement_proof",
+    ),
 
     path('monthly-summary/', MonthlyFinancialSummaryView.as_view(), name='monthly_summary'),
 
