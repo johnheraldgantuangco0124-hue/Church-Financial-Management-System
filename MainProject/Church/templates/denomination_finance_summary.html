@@ -843,12 +843,6 @@
                                         <h6 class="report-period-title">{{ item.week }}</h6>
                                         <div class="muted-note">Detailed financial liquidation snapshot</div>
                                     </div>
-                                    <div class="text-lg-end">
-                                        <div class="muted-note">Net Fund Flow</div>
-                                        <div class="fw-bold mono {% if item.summary.net_fund_flow < 0 %}text-danger{% else %}text-primary{% endif %}">
-                                            ₱{{ item.summary.net_fund_flow|floatformat:2 }}
-                                        </div>
-                                    </div>
                                 </div>
 
                                 <div class="report-period-body">
