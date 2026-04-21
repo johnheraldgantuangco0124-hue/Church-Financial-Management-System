@@ -512,6 +512,11 @@ class DenominationFinanceOverview(IsDenominationAdmin, TemplateView):
                 pass
 
     def _get_unrestricted_net_row(self, church_id):
+        """
+        Keep this only for legacy unrestricted detail columns
+        like Tithes, Offerings, Unrestricted Donations, etc.
+        Do NOT use this anymore for Church Income.
+        """
         try:
             with connection.cursor() as cursor:
                 cursor.execute("CALL Finance_UnrestrictedNet(%s)", [church_id])
@@ -675,6 +680,84 @@ class DenominationFinanceOverview(IsDenominationAdmin, TemplateView):
             return False
 
         return period_end <= lock_date
+
+    # =========================================================
+    #  CHURCH-INCOME SNAPSHOT
+    #  MATCH WEEKLYREPORTVIEW BALANCE LOGIC
+    # =========================================================
+    def _zero_period_balance_payload(self):
+        return {
+            "unrestricted_income": Decimal("0.00"),
+            "unrestricted_expenses": Decimal("0.00"),
+            "unrestricted_balance": Decimal("0.00"),
+            "total_restricted_income": Decimal("0.00"),
+            "total_restricted_expenses": Decimal("0.00"),
+            "total_restricted_balance": Decimal("0.00"),
+            "overall_income": Decimal("0.00"),
+            "overall_expenses": Decimal("0.00"),
+            "overall_balance": Decimal("0.00"),
+            "period_label": "",
+            "raw_label": "",
+            "sort_key": "",
+        }
+
+    def _get_church_income_snapshot(self, church_id, report_type, date_filter=""):
+        """
+        Use the same balance source as WeeklyReportView:
+        Finance_PeriodBalancesSummary -> overall_balance
+
+        If date_filter is supplied, use that exact visible period.
+        If date_filter is blank, use the latest locked/visible period.
+        """
+        AccountingSettings = self._accounting_settings_model()
+        settings_obj = AccountingSettings.objects.filter(church_id=church_id).first()
+        lock_date = settings_obj.lock_date if settings_obj else None
+
+        try:
+            balance_rows = self.sp_all("Finance_PeriodBalancesSummary", [church_id, report_type])
+        except Exception:
+            return self._zero_period_balance_payload()
+
+        visible_rows = []
+
+        for r in balance_rows:
+            sort_key = str(r[0] or "")
+            raw_label = str(r[1] or "")
+            display_label = self._format_period_label(report_type, raw_label)
+
+            if raw_label and not self._can_view_period(report_type, raw_label, lock_date):
+                continue
+
+            payload = {
+                "unrestricted_income": Decimal(str(r[2] or 0)),
+                "unrestricted_expenses": Decimal(str(r[3] or 0)),
+                "unrestricted_balance": Decimal(str(r[4] or 0)),
+                "total_restricted_income": Decimal(str(r[5] or 0)),
+                "total_restricted_expenses": Decimal(str(r[6] or 0)),
+                "total_restricted_balance": Decimal(str(r[7] or 0)),
+                "overall_income": Decimal(str(r[8] or 0)),
+                "overall_expenses": Decimal(str(r[9] or 0)),
+                "overall_balance": Decimal(str(r[10] or 0)),
+                "period_label": display_label,
+                "raw_label": raw_label,
+                "sort_key": sort_key,
+            }
+            visible_rows.append(payload)
+
+        if not visible_rows:
+            return self._zero_period_balance_payload()
+
+        if date_filter:
+            for item in visible_rows:
+                if item["period_label"] == date_filter:
+                    return item
+            return self._zero_period_balance_payload()
+
+        visible_rows.sort(
+            key=lambda x: self._get_period_end_date(report_type, x["raw_label"]) or date.min,
+            reverse=True,
+        )
+        return visible_rows[0]
 
     # =========================================================
     #  NORMALIZE REPORT TX TYPE
@@ -1146,24 +1229,52 @@ class DenominationFinanceOverview(IsDenominationAdmin, TemplateView):
         latest_request_by_church = self._get_latest_requests_map(churches)
 
         formatted_rows = []
+        report_type = context["current_report_type"]
+        date_filter = context["current_filter"]
 
         for church in churches:
+            # Keep unrestricted-net details for legacy denomination columns
             row = self._get_unrestricted_net_row(church.id)
+
+            # THIS is now the authoritative church-income source,
+            # matching WeeklyReportView balance logic
+            balance_payload = self._get_church_income_snapshot(
+                church_id=church.id,
+                report_type=report_type,
+                date_filter=date_filter,
+            )
 
             access_req = latest_request_by_church.get(church.id)
             request_status = access_req.status if access_req else None
 
+            church_income_amount = balance_payload["overall_balance"]
+            unrestricted_balance_amount = balance_payload["unrestricted_balance"]
+            restricted_balance_amount = balance_payload["total_restricted_balance"]
+
             formatted_rows.append({
                 "ChurchID": church.id,
                 "ChurchName": church.name,
+
+                # legacy unrestricted detail columns
                 "TotalTithes": self.money(row[0] if len(row) > 0 else 0),
                 "TotalOfferings": self.money(row[1] if len(row) > 1 else 0),
                 "TotalUnrestrictedDonations": self.money(row[2] if len(row) > 2 else 0),
                 "TotalUnrestrictedOtherIncome": self.money(row[3] if len(row) > 3 else 0),
                 "TotalBudgetReturnsToUnrestricted": self.money(row[4] if len(row) > 4 else 0),
-                "GrandTotalUnrestricted": self.money(row[5] if len(row) > 5 else 0),
                 "TotalUnrestrictedExpenses": self.money(row[6] if len(row) > 6 else 0),
                 "NetGrandTotalUnrestricted": self.money(row[7] if len(row) > 7 else 0),
+
+                # authoritative church-income values
+                "ChurchIncome": self.money(church_income_amount),
+                "RestrictedBalance": self.money(restricted_balance_amount),
+                "UnrestrictedBalance": self.money(unrestricted_balance_amount),
+                "CurrentPeriodLabel": balance_payload.get("period_label", ""),
+
+                # compatibility mapping:
+                # if your template still prints GrandTotalUnrestricted,
+                # it will now show the same Church Income value as WeeklyReportView
+                "GrandTotalUnrestricted": self.money(church_income_amount),
+
                 "request_status": request_status,
                 "can_view_liquidation": request_status == RequestModel.STATUS_APPROVED,
                 "is_pending": request_status == RequestModel.STATUS_PENDING,
@@ -1174,7 +1285,6 @@ class DenominationFinanceOverview(IsDenominationAdmin, TemplateView):
         context["daily_summary"] = formatted_rows
         self._attach_selected_liquidation(context, churches, latest_request_by_church)
         return context
-
 
 @login_required
 @require_POST
