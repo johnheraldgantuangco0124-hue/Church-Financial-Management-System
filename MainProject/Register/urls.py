@@ -51,7 +51,7 @@ DonationListView,
 ManageBankView,
     BankDepositView,
     BankMovementCreateView,
-    BankMovementHistoryView, DenominationAdminHomeView
+    BankMovementHistoryView, DenominationAdminHomeView,  preview_financial_movement_proof_by_id
 
 )
 from .views import (
@@ -174,6 +174,11 @@ path('donations/manage-types/', AddDonationCategoryView.as_view(), name='add_don
         preview_financial_transaction_receipt,
         name="preview_financial_transaction_receipt",
     ),
+path(
+    "financial/preview/movement/<int:movement_id>/proof/",
+    preview_financial_movement_proof_by_id,
+    name="preview_financial_movement_proof_by_id",
+),
     path(
         "financial/preview/<str:transaction_type>/<int:transaction_id>/movement-proof/",
         preview_financial_transaction_movement_proof,

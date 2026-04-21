@@ -738,10 +738,12 @@
                                     <a href="{% url 'preview_financial_transaction_receipt' transaction.transaction_type transaction.transaction_id %}" target="_blank" rel="noopener" class="btn btn-sm btn-light border text-primary">
                                         <i class="fas fa-eye mr-1"></i>Preview
                                     </a>
-                                {% elif transaction.movement_proof_file %}
-                                    <a href="{% url 'preview_financial_transaction_movement_proof' transaction.transaction_type transaction.transaction_id %}" target="_blank" rel="noopener" class="btn btn-sm btn-light border text-info">
+                                {% elif transaction.movement_proof_file and transaction.movement_id %}
+                                    <a href="{% url 'preview_financial_movement_proof_by_id' transaction.movement_id %}" target="_blank" rel="noopener" class="btn btn-sm btn-light border text-info">
                                         <i class="fas fa-university mr-1"></i>Movement Proof
                                     </a>
+                                {% elif transaction.movement_proof_file %}
+                                    <span class="text-muted small">Movement proof unavailable</span>
                                 {% else %}
                                     <span class="text-muted small">-</span>
                                 {% endif %}
@@ -1036,10 +1038,12 @@
                                     <a href="{% url 'preview_financial_transaction_receipt' transaction.transaction_type transaction.transaction_id %}" target="_blank" rel="noopener" class="btn btn-sm btn-light border text-info">
                                         <i class="fas fa-eye mr-1"></i>Preview
                                     </a>
-                                {% elif transaction.movement_proof_file %}
-                                    <a href="{% url 'preview_financial_transaction_movement_proof' transaction.transaction_type transaction.transaction_id %}" target="_blank" rel="noopener" class="btn btn-sm btn-light border text-primary">
+                                {% elif transaction.movement_proof_file and transaction.movement_id %}
+                                    <a href="{% url 'preview_financial_movement_proof_by_id' transaction.movement_id %}" target="_blank" rel="noopener" class="btn btn-sm btn-light border text-primary">
                                         <i class="fas fa-university mr-1"></i>Movement Proof
                                     </a>
+                                {% elif transaction.movement_proof_file %}
+                                    <span class="text-muted small">Movement proof unavailable</span>
                                 {% else %}
                                     <span class="text-muted">-</span>
                                 {% endif %}

@@ -5078,6 +5078,26 @@ def preview_budget_receipt(request, expense_id):
         as_attachment=False,
     )
 
+@login_required
+def preview_financial_movement_proof_by_id(request, movement_id):
+    church_id = getattr(request.user, "church_id", None)
+    if not church_id:
+        raise Http404("No church is assigned to this account.")
+
+    CashBankMovement = apps.get_model("Register", "CashBankMovement")
+
+    movement = get_object_or_404(
+        CashBankMovement,
+        pk=movement_id,
+        church_id=church_id,
+    )
+
+    proof_file = getattr(movement, "proof_file", None)
+    if not proof_file:
+        raise Http404("No movement proof file attached.")
+
+    return _build_inline_file_response(proof_file)
+
 
 class FinancialOverviewView(TemplateView):
     template_name = "financial_overview.html"
