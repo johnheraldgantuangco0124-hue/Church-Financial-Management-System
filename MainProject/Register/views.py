@@ -57,6 +57,7 @@ from .models import BankAccount
 from .models import Expense, ExpenseCategory, TemporaryExpenseFile
 from .forms import BankInfoForm, BankBalanceForm, BankDepositForm
 import calendar
+import mimetypes
 from django.db.models import Max
 from django.apps import apps
 from datetime import datetime
@@ -4976,12 +4977,18 @@ def _build_inline_file_response(file_field):
     guessed_type, _ = mimetypes.guess_type(file_name)
     content_type = guessed_type or "application/octet-stream"
 
+    try:
+        opened_file = file_field.open("rb")
+    except FileNotFoundError:
+        raise Http404("The file exists in the database, but is missing from storage.")
+    except Exception as e:
+        raise Http404(f"Unable to open the requested file: {e}")
+
     response = FileResponse(
-        file_field.open("rb"),
+        opened_file,
         content_type=content_type,
         as_attachment=False,
     )
-
     response["Content-Disposition"] = f'inline; filename="{file_name}"'
     return response
 
