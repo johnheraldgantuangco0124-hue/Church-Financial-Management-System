@@ -168,7 +168,7 @@ class VerifyEmailView(View):
     def get(self, request):
         if 'verification_code' not in request.session:
             messages.error(request, "Session expired or invalid. Please register again.")
-            return redirect('Register:login')
+            return redirect('login')
         return render(request, self.template_name)
 
     def post(self, request):
@@ -212,7 +212,7 @@ class VerifyEmailView(View):
             request.session.modified = True
 
             messages.success(request, "Email verified successfully! Please log in.")
-            return redirect('Register:login')
+            return redirect('login')
 
         except User.DoesNotExist:
             messages.error(request, "User not found. Please register again.")
