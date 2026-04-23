@@ -159,6 +159,9 @@ class DenominationSignupView(View):
 # =========================================================
 # 3. VERIFY CODE VIEW (NEW LOGIC)
 # =========================================================
+import traceback
+from django.http import HttpResponse
+
 class VerifyEmailView(View):
     template_name = 'verify_email.html'
 
@@ -203,7 +206,7 @@ class VerifyEmailView(View):
                 getattr(user, "status", None),
             )
 
-            # Activate user according to CustomUser.save() behavior
+            # Activate user
             user.status = User.Status.ACTIVE
             user.save()
             logger.info(
@@ -213,7 +216,7 @@ class VerifyEmailView(View):
                 getattr(user, "is_active", None),
             )
 
-            # Auto-login user
+            # Auto-login
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             logger.info("Login passed | user_id=%s", user.id)
 
@@ -221,7 +224,7 @@ class VerifyEmailView(View):
             request.session.pop('verification_code', None)
             request.session.pop('pending_user_id', None)
 
-            # Set welcome/session flags
+            # Welcome/session flags
             request.session['show_welcome_guide'] = True
             request.session['registered_role'] = user.user_type
 
@@ -241,8 +244,9 @@ class VerifyEmailView(View):
 
             messages.success(request, "Email verified successfully! Welcome.")
 
-            # TEMPORARY DEBUG RESULT:
-            # Keep this first. If this page appears, verification is working and the crash is in the next page.
+            # TEMPORARY HARD DEBUG:
+            # If this page appears, VerifyEmailView is working
+            # and the crash is in the destination page after redirect.
             return HttpResponse(
                 f"""
                 <h2>VERIFY OK</h2>
@@ -254,10 +258,11 @@ class VerifyEmailView(View):
                 <p><strong>Status:</strong> {getattr(user, "status", None)}</p>
                 <p><strong>is_active:</strong> {getattr(user, "is_active", None)}</p>
                 <p>Verification succeeded. The next step is to debug the destination page.</p>
-                """
+                """,
+                status=200,
             )
 
-            # AFTER YOU CONFIRM VERIFY OK, replace the HttpResponse above with this:
+            # AFTER YOU SEE "VERIFY OK", replace the HttpResponse above with this:
             #
             # if user.user_type == User.UserType.CHURCH_ADMIN:
             #     logger.info("Redirecting ChurchAdmin user_id=%s to home", user.id)
@@ -292,7 +297,6 @@ class VerifyEmailView(View):
                 f"<h2>UNEXPECTED ERROR</h2><p>{type(e).__name__}: {e}</p><pre>{traceback.format_exc()}</pre>",
                 status=500,
             )
-
 # =========================================================
 # 4. APPLICATION & MANAGEMENT VIEWS (Unchanged)
 # =========================================================
