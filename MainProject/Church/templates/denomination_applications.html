@@ -338,6 +338,25 @@
             font-weight: 600;
         }
 
+        #confirmationActionModal .modal-content {
+            border: none;
+            border-radius: 22px;
+            box-shadow: 0 24px 80px rgba(15, 23, 42, 0.18);
+        }
+
+        #confirmationActionModal .modal-header {
+            border-bottom: 1px solid #eef2f7;
+        }
+
+        #confirmationActionModal .modal-footer {
+            border-top: none;
+        }
+
+        #confirmationModalIconWrap {
+            margin-bottom: 0;
+            flex-shrink: 0;
+        }
+
         @media (max-width: 768px) {
             .modal-dialog {
                 margin: 0.75rem;
@@ -460,7 +479,7 @@
     </div>
 </div>
 
-<!-- ONE MODAL WITH 3 TABS -->
+<!-- MAIN APPLICATION CENTER MODAL -->
 <div class="modal fade" id="applicationCenterModal" tabindex="-1" aria-labelledby="applicationCenterModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -548,24 +567,32 @@
 
                                             <td class="text-end">
                                                 <div class="d-flex justify-content-end gap-2 flex-wrap">
-                                                    <form action="{% url 'Church:application_action' app.pk %}" method="post">
+                                                    <form id="approve-form-{{ app.pk }}" action="{% url 'Church:application_action' app.pk %}" method="post">
                                                         {% csrf_token %}
-                                                        <button type="submit"
-                                                                name="action"
-                                                                value="approve"
-                                                                class="btn-approve"
-                                                                onclick="return confirm('Confirm approval for {{ app.church.name }}?');">
+                                                        <input type="hidden" name="action" value="approve">
+                                                        <button type="button"
+                                                                class="btn-approve open-confirmation-modal"
+                                                                data-form-id="approve-form-{{ app.pk }}"
+                                                                data-action-label="Approve"
+                                                                data-church-name="{{ app.church.name|escapejs }}"
+                                                                data-message="Confirm approval for {{ app.church.name|escapejs }}?"
+                                                                data-confirm-class="btn-success"
+                                                                data-icon-type="success">
                                                             <i class="bi bi-check-lg me-1"></i> Approve
                                                         </button>
                                                     </form>
 
-                                                    <form action="{% url 'Church:application_action' app.pk %}" method="post">
+                                                    <form id="reject-form-{{ app.pk }}" action="{% url 'Church:application_action' app.pk %}" method="post">
                                                         {% csrf_token %}
-                                                        <button type="submit"
-                                                                name="action"
-                                                                value="reject"
-                                                                class="btn-soft-danger"
-                                                                onclick="return confirm('Are you sure you want to reject {{ app.church.name }}?');">
+                                                        <input type="hidden" name="action" value="reject">
+                                                        <button type="button"
+                                                                class="btn-soft-danger open-confirmation-modal"
+                                                                data-form-id="reject-form-{{ app.pk }}"
+                                                                data-action-label="Reject"
+                                                                data-church-name="{{ app.church.name|escapejs }}"
+                                                                data-message="Are you sure you want to reject {{ app.church.name|escapejs }}?"
+                                                                data-confirm-class="btn-danger"
+                                                                data-icon-type="danger">
                                                             <i class="bi bi-x-lg"></i>
                                                         </button>
                                                     </form>
@@ -744,6 +771,46 @@
     </div>
 </div>
 
+<!-- CONFIRMATION MODAL -->
+<div class="modal fade" id="confirmationActionModal" tabindex="-1" aria-labelledby="confirmationActionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title mb-1" id="confirmationActionModalLabel">Confirm Action</h5>
+                    <div class="mini-muted" id="confirmationActionModalSubtext">Please review this action before continuing.</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body px-4 py-4">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="summary-icon icon-warning" id="confirmationModalIconWrap">
+                        <i class="bi bi-exclamation-circle-fill" id="confirmationModalIcon"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-2 text-dark" id="confirmationModalHeading">Are you sure?</h6>
+                        <p class="text-muted mb-0" id="confirmationModalMessage">
+                            This action needs your confirmation.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer px-4 pb-4">
+                <button type="button" class="btn btn-light border rounded-pill px-4" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+                <button type="button" class="btn rounded-pill px-4" id="confirmationModalSubmitBtn">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const triggerButtons = document.querySelectorAll('.open-management-modal');
@@ -758,6 +825,64 @@
                     tab.show();
                 }
             });
+        });
+
+        const confirmButtons = document.querySelectorAll('.open-confirmation-modal');
+        const confirmationModalElement = document.getElementById('confirmationActionModal');
+        const confirmationModal = new bootstrap.Modal(confirmationModalElement);
+
+        const modalTitle = document.getElementById('confirmationActionModalLabel');
+        const modalSubtext = document.getElementById('confirmationActionModalSubtext');
+        const modalHeading = document.getElementById('confirmationModalHeading');
+        const modalMessage = document.getElementById('confirmationModalMessage');
+        const modalSubmitBtn = document.getElementById('confirmationModalSubmitBtn');
+        const modalIconWrap = document.getElementById('confirmationModalIconWrap');
+        const modalIcon = document.getElementById('confirmationModalIcon');
+
+        let selectedFormId = null;
+
+        confirmButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                selectedFormId = this.dataset.formId;
+                const actionLabel = this.dataset.actionLabel || 'Confirm';
+                const churchName = this.dataset.churchName || 'this church';
+                const message = this.dataset.message || 'Are you sure?';
+                const confirmClass = this.dataset.confirmClass || 'btn-primary';
+                const iconType = this.dataset.iconType || 'warning';
+
+                modalTitle.textContent = actionLabel + ' Application';
+                modalSubtext.textContent = 'Church: ' + churchName;
+                modalHeading.textContent = actionLabel + ' this application?';
+                modalMessage.textContent = message;
+
+                modalSubmitBtn.className = 'btn rounded-pill px-4 ' + confirmClass;
+                modalSubmitBtn.textContent = actionLabel;
+
+                modalIconWrap.classList.remove('icon-warning', 'icon-success', 'icon-danger');
+                modalIcon.className = '';
+
+                if (iconType === 'success') {
+                    modalIconWrap.classList.add('icon-success');
+                    modalIcon.className = 'bi bi-check-circle-fill';
+                } else if (iconType === 'danger') {
+                    modalIconWrap.classList.add('icon-danger');
+                    modalIcon.className = 'bi bi-x-octagon-fill';
+                } else {
+                    modalIconWrap.classList.add('icon-warning');
+                    modalIcon.className = 'bi bi-exclamation-circle-fill';
+                }
+
+                confirmationModal.show();
+            });
+        });
+
+        modalSubmitBtn.addEventListener('click', function () {
+            if (selectedFormId) {
+                const form = document.getElementById(selectedFormId);
+                if (form) {
+                    form.submit();
+                }
+            }
         });
     });
 </script>
