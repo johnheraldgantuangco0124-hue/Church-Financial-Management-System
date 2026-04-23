@@ -187,24 +187,31 @@ class VerifyEmailView(View):
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 
                 # C. Clear Session Data (Security)
-                if 'verification_code' in request.session:
-                    del request.session['verification_code']
-                if 'pending_user_id' in request.session:
-                    del request.session['pending_user_id']
+                request.session.pop('verification_code', None)
+                request.session.pop('pending_user_id', None)
 
                 # D. Set Welcome Flags (For the popup)
                 request.session['show_welcome_guide'] = True
                 request.session['registered_role'] = user.user_type
 
-                if user.church:
+                if getattr(user, 'church', None):
                     request.session['registered_org_name'] = user.church.name
-                elif user.denomination:
+                elif getattr(user, 'denomination', None):
                     request.session['registered_org_name'] = user.denomination.name
+                else:
+                    request.session['registered_org_name'] = ""
 
                 request.session.modified = True
 
                 messages.success(request, "Email verified successfully! Welcome.")
-                return redirect('Register:denomination_dashboard')
+
+                # E. Redirect based on user type
+                if user.user_type == 'ChurchAdmin':
+                    return redirect('home')
+                elif user.user_type == 'DenominationAdmin':
+                    return redirect('Register:denomination_dashboard')
+                else:
+                    return redirect('home')
 
             except User.DoesNotExist:
                 messages.error(request, "User not found. Please register again.")
