@@ -171,6 +171,20 @@ class VerifyEmailView(View):
             return redirect('login')
         return render(request, self.template_name)
 
+    def _get_post_verify_url_name(self, user):
+        role = getattr(user, "user_type", None)
+
+        if role == "Member":
+            return "weekly_financial_report"
+
+        if role == "DenominationAdmin":
+            return "denomination_dashboard"
+
+        if role in ["Admin", "Treasurer", "ChurchAdmin", "Pastor"]:
+            return "home"
+
+        return "home"
+
     def post(self, request):
         entered_code = (request.POST.get('code') or '').strip()
         session_code = str(request.session.get('verification_code') or '').strip()
@@ -194,11 +208,14 @@ class VerifyEmailView(View):
             user.status = User.Status.ACTIVE
             user.save()
 
-            # Clear verification session
+            # Auto-login
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+
+            # Clear OTP session data
             request.session.pop('verification_code', None)
             request.session.pop('pending_user_id', None)
 
-            # Keep welcome info for after manual login
+            # Welcome flags
             request.session['show_welcome_guide'] = True
             request.session['registered_role'] = user.user_type
 
@@ -211,8 +228,8 @@ class VerifyEmailView(View):
 
             request.session.modified = True
 
-            messages.success(request, "Email verified successfully! Please log in.")
-            return redirect('login')
+            messages.success(request, "Email verified successfully! Welcome.")
+            return redirect(self._get_post_verify_url_name(user))
 
         except User.DoesNotExist:
             messages.error(request, "User not found. Please register again.")

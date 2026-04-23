@@ -95,7 +95,7 @@ urlpatterns = [
     path('optimizer/', PrescriptiveBudgetOptimizerView.as_view(), name='optimizer'),
 
     path('register/', RegisterView.as_view(), name='register'),
-    path('login/', CustomLoginView.as_view(), name='login'),
+    path('login/', CustomLoginView.as_view(), name='register_login'),
     path('register-home/', HomeView.as_view(), name='register_home'),
 
     path('logout/', CustomLogoutView.as_view(), name='logout'),
