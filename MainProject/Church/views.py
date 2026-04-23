@@ -224,13 +224,13 @@ class VerifyEmailView(View):
                 # E. Redirect based on user type
                 if user.user_type == 'ChurchAdmin':
                     logger.info("Redirecting ChurchAdmin user_id=%s to home", user.id)
-                    return redirect('Register:home')
+                    return redirect('home')
                 elif user.user_type == 'DenominationAdmin':
                     logger.info("Redirecting DenominationAdmin user_id=%s to denomination_dashboard", user.id)
-                    return redirect('Register:denomination_dashboard')
+                    return redirect('denomination_dashboard')
                 else:
                     logger.info("Redirecting default user_id=%s to home", user.id)
-                    return redirect('Register:home')
+                    return redirect('home')
 
             except User.DoesNotExist:
                 logger.exception("VerifyEmailView failed: user does not exist. pending_user_id=%s", user_id)
