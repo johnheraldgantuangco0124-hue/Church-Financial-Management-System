@@ -24,6 +24,8 @@ from django.views.generic import UpdateView
 from .forms import ChurchProfileForm
 from .models import Denomination
 from .forms import DenominationForm
+import traceback
+from django.http import HttpResponse
 # Import your forms and models
 from .models import Church, Denomination, ChurchApplication
 from .forms import ChurchSignupForm, DenominationSignupForm, ChurchApplicationForm
@@ -159,8 +161,6 @@ class DenominationSignupView(View):
 # =========================================================
 # 3. VERIFY CODE VIEW (NEW LOGIC)
 # =========================================================
-import traceback
-from django.http import HttpResponse
 
 class VerifyEmailView(View):
     template_name = 'verify_email.html'
@@ -206,7 +206,6 @@ class VerifyEmailView(View):
                 getattr(user, "status", None),
             )
 
-            # Activate user
             user.status = User.Status.ACTIVE
             user.save()
             logger.info(
@@ -216,15 +215,12 @@ class VerifyEmailView(View):
                 getattr(user, "is_active", None),
             )
 
-            # Auto-login
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             logger.info("Login passed | user_id=%s", user.id)
 
-            # Clear verification session data
             request.session.pop('verification_code', None)
             request.session.pop('pending_user_id', None)
 
-            # Welcome/session flags
             request.session['show_welcome_guide'] = True
             request.session['registered_role'] = user.user_type
 
@@ -244,59 +240,33 @@ class VerifyEmailView(View):
 
             messages.success(request, "Email verified successfully! Welcome.")
 
-            # TEMPORARY HARD DEBUG:
-            # If this page appears, VerifyEmailView is working
-            # and the crash is in the destination page after redirect.
-            return HttpResponse(
-                f"""
-                <h2>VERIFY OK</h2>
-                <p><strong>User ID:</strong> {user.id}</p>
-                <p><strong>Username:</strong> {user.username}</p>
-                <p><strong>User Type:</strong> {user.user_type}</p>
-                <p><strong>Church ID:</strong> {user.church_id}</p>
-                <p><strong>Denomination ID:</strong> {user.denomination_id}</p>
-                <p><strong>Status:</strong> {getattr(user, "status", None)}</p>
-                <p><strong>is_active:</strong> {getattr(user, "is_active", None)}</p>
-                <p>Verification succeeded. The next step is to debug the destination page.</p>
-                """,
-                status=200,
-            )
-
-            # AFTER YOU SEE "VERIFY OK", replace the HttpResponse above with this:
-            #
-            # if user.user_type == User.UserType.CHURCH_ADMIN:
-            #     logger.info("Redirecting ChurchAdmin user_id=%s to home", user.id)
-            #     return redirect('home')
-            # elif user.user_type == User.UserType.DENOMINATION_ADMIN:
-            #     logger.info("Redirecting DenominationAdmin user_id=%s to denomination_dashboard", user.id)
-            #     return redirect('denomination_dashboard')
-            # elif user.user_type == User.UserType.MEMBER:
-            #     logger.info("Redirecting Member user_id=%s to weekly_financial_report", user.id)
-            #     return redirect('weekly_financial_report')
-            # else:
-            #     logger.info("Redirecting default user_id=%s to home", user.id)
-            #     return redirect('home')
+            if user.user_type == User.UserType.CHURCH_ADMIN:
+                logger.info("Redirecting ChurchAdmin user_id=%s to home", user.id)
+                return redirect('home')
+            elif user.user_type == User.UserType.DENOMINATION_ADMIN:
+                logger.info("Redirecting DenominationAdmin user_id=%s to denomination_dashboard", user.id)
+                return redirect('denomination_dashboard')
+            elif user.user_type == User.UserType.MEMBER:
+                logger.info("Redirecting Member user_id=%s to weekly_financial_report", user.id)
+                return redirect('weekly_financial_report')
+            else:
+                logger.info("Redirecting default user_id=%s to home", user.id)
+                return redirect('home')
 
         except User.DoesNotExist:
             logger.exception("VerifyEmailView failed: user does not exist | pending_user_id=%s", user_id)
-            return HttpResponse(
-                f"<h2>ERROR</h2><p>User does not exist. pending_user_id={user_id}</p>",
-                status=500,
-            )
+            messages.error(request, "User not found. Please register again.")
+            return redirect('Church:church_signup')
 
         except ValidationError as e:
             logger.exception("VerifyEmailView validation error | pending_user_id=%s | error=%s", user_id, e)
-            return HttpResponse(
-                f"<h2>VALIDATION ERROR</h2><p>{e}</p><pre>{traceback.format_exc()}</pre>",
-                status=500,
-            )
+            messages.error(request, f"Validation error: {e}")
+            return render(request, self.template_name)
 
         except Exception as e:
             logger.exception("VerifyEmailView unexpected error | pending_user_id=%s | error=%s", user_id, e)
-            return HttpResponse(
-                f"<h2>UNEXPECTED ERROR</h2><p>{type(e).__name__}: {e}</p><pre>{traceback.format_exc()}</pre>",
-                status=500,
-            )
+            messages.error(request, "Server error during email verification. Check logs.")
+            return render(request, self.template_name)
 # =========================================================
 # 4. APPLICATION & MANAGEMENT VIEWS (Unchanged)
 # =========================================================
