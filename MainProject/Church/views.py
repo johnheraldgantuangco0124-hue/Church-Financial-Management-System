@@ -62,27 +62,25 @@ class ChurchSignupView(View):
         # 1) Create Church
         church = form.save()
 
-        # 2) Create the ChurchAdmin (Inactive initially)
+        # 2) Create the ChurchAdmin as INACTIVE until OTP is verified
         admin = User.objects.create_user(
             username=form.cleaned_data['admin_username'],
             email=form.cleaned_data['admin_email'],
             password=form.cleaned_data['admin_password'],
-            user_type='ChurchAdmin',
-            church=church
+            user_type=User.UserType.CHURCH_ADMIN,
+            church=church,
+            status=User.Status.INACTIVE,
         )
 
-        # 3) DEACTIVATE ACCOUNT
-        admin.is_active = False
-        admin.save()
-
-        # 4) GENERATE 6-DIGIT OTP CODE
+        # 3) Generate 6-digit OTP
         otp_code = str(random.randint(100000, 999999))
 
-        # 5) STORE OTP & USER ID IN SESSION (Temporary Memory)
+        # 4) Store OTP + pending user in session
         request.session['pending_user_id'] = admin.id
         request.session['verification_code'] = otp_code
+        request.session.modified = True
 
-        # 6) SEND EMAIL WITH CODE (Using Fast Threading)
+        # 5) Send verification email
         subject = "Your Verification Code"
         message = (
             f"Hello {admin.username},\n\n"
@@ -96,9 +94,8 @@ class ChurchSignupView(View):
         except Exception:
             messages.warning(request, "Account created, but email failed. Contact support.")
 
-        # 7) REDIRECT TO VERIFICATION PAGE (Not Login)
+        # 6) Go to OTP verification page
         return redirect('Church:verify_email')
-
 
 # =========================================================
 # 2. DENOMINATION SIGNUP VIEW (OTP VERSION)
@@ -118,27 +115,25 @@ class DenominationSignupView(View):
         # 1) Create Denomination
         denom = form.save()
 
-        # 2) Create the DenominationAdmin (Inactive initially)
+        # 2) Create the DenominationAdmin as INACTIVE until OTP is verified
         admin = User.objects.create_user(
             username=form.cleaned_data['admin_username'],
             email=form.cleaned_data['admin_email'],
             password=form.cleaned_data['admin_password'],
-            user_type='DenominationAdmin',
-            denomination=denom
+            user_type=User.UserType.DENOMINATION_ADMIN,
+            denomination=denom,
+            status=User.Status.INACTIVE,
         )
 
-        # 3) DEACTIVATE ACCOUNT
-        admin.is_active = False
-        admin.save()
-
-        # 4) GENERATE 6-DIGIT OTP CODE
+        # 3) Generate 6-digit OTP
         otp_code = str(random.randint(100000, 999999))
 
-        # 5) STORE OTP & USER ID IN SESSION
+        # 4) Store OTP + pending user in session
         request.session['pending_user_id'] = admin.id
         request.session['verification_code'] = otp_code
+        request.session.modified = True
 
-        # 6) SEND EMAIL WITH CODE
+        # 5) Send verification email
         subject = "Your Verification Code"
         message = (
             f"Hello {admin.username},\n\n"
@@ -152,7 +147,7 @@ class DenominationSignupView(View):
         except Exception:
             messages.warning(request, "Account created, but email failed. Contact support.")
 
-        # 7) REDIRECT TO VERIFICATION PAGE
+        # 6) Redirect to verification page
         return redirect('Church:verify_email')
 
 
