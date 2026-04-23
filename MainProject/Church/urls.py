@@ -16,6 +16,7 @@ from .views import cancel_application, revoke_membership
 app_name = 'Church'
 
 urlpatterns = [
+
     # --- Signup Views ---
     path('signup/church/', ChurchSignupView.as_view(), name='church_signup'),
     path('signup/denomination/', DenominationSignupView.as_view(), name='denomination_signup'),
