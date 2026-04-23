@@ -26,7 +26,7 @@ from .forms import DenominationForm
 # Import your forms and models
 from .models import Church, Denomination, ChurchApplication
 from .forms import ChurchSignupForm, DenominationSignupForm, ChurchApplicationForm
-
+from django.http import HttpResponse
 # --- IMPORT THE FAST EMAIL UTILITY ---
 from .utils import send_html_email
 
@@ -173,88 +173,124 @@ class VerifyEmailView(View):
         user_id = request.session.get('pending_user_id')
 
         logger.info(
-            "VerifyEmailView POST started. user_id=%s entered_code=%s session_code_exists=%s",
+            "VerifyEmailView POST started | user_id=%s | entered_code=%s | session_code_exists=%s",
             user_id,
             entered_code,
             bool(session_code),
         )
 
-        if entered_code == session_code and user_id:
-            try:
-                user = User.objects.get(pk=user_id)
+        if entered_code != session_code or not user_id:
+            logger.warning(
+                "VerifyEmailView invalid code | user_id=%s | entered_code=%s | session_code=%s",
+                user_id,
+                entered_code,
+                session_code,
+            )
+            messages.error(request, "Invalid code. Please try again.")
+            return render(request, self.template_name)
 
-                logger.info(
-                    "Verification matched for user_id=%s username=%s user_type=%s church_id=%s denomination_id=%s",
-                    user.id,
-                    user.username,
-                    user.user_type,
-                    user.church_id,
-                    user.denomination_id,
-                )
+        try:
+            user = User.objects.select_related('church', 'denomination').get(pk=user_id)
 
-                # A. Activate User
-                user.status = User.Status.ACTIVE
-                user.save()
-                logger.info("User activation save passed for user_id=%s", user.id)
+            logger.info(
+                "Verification matched | user_id=%s | username=%s | user_type=%s | church_id=%s | denomination_id=%s | current_status=%s",
+                user.id,
+                user.username,
+                user.user_type,
+                user.church_id,
+                user.denomination_id,
+                getattr(user, "status", None),
+            )
 
-                # B. Auto-Login User
-                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-                logger.info("Login passed for user_id=%s", user.id)
+            # Activate user according to CustomUser.save() behavior
+            user.status = User.Status.ACTIVE
+            user.save()
+            logger.info(
+                "User activation save passed | user_id=%s | status=%s | is_active=%s",
+                user.id,
+                getattr(user, "status", None),
+                getattr(user, "is_active", None),
+            )
 
-                # C. Clear Session Data
-                request.session.pop('verification_code', None)
-                request.session.pop('pending_user_id', None)
+            # Auto-login user
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            logger.info("Login passed | user_id=%s", user.id)
 
-                # D. Set Welcome Flags
-                request.session['show_welcome_guide'] = True
-                request.session['registered_role'] = user.user_type
+            # Clear verification session data
+            request.session.pop('verification_code', None)
+            request.session.pop('pending_user_id', None)
 
-                if getattr(user, 'church', None):
-                    request.session['registered_org_name'] = user.church.name
-                elif getattr(user, 'denomination', None):
-                    request.session['registered_org_name'] = user.denomination.name
-                else:
-                    request.session['registered_org_name'] = ""
+            # Set welcome/session flags
+            request.session['show_welcome_guide'] = True
+            request.session['registered_role'] = user.user_type
 
-                request.session.modified = True
-                logger.info("Session update passed for user_id=%s", user.id)
+            if user.church:
+                request.session['registered_org_name'] = user.church.name
+            elif user.denomination:
+                request.session['registered_org_name'] = user.denomination.name
+            else:
+                request.session['registered_org_name'] = ""
 
-                messages.success(request, "Email verified successfully! Welcome.")
+            request.session.modified = True
+            logger.info(
+                "Session update passed | user_id=%s | registered_org_name=%s",
+                user.id,
+                request.session.get('registered_org_name', ''),
+            )
 
-                # E. Redirect based on user type
-                if user.user_type == 'ChurchAdmin':
-                    logger.info("Redirecting ChurchAdmin user_id=%s to home", user.id)
-                    return redirect('home')
-                elif user.user_type == 'DenominationAdmin':
-                    logger.info("Redirecting DenominationAdmin user_id=%s to denomination_dashboard", user.id)
-                    return redirect('denomination_dashboard')
-                else:
-                    logger.info("Redirecting default user_id=%s to home", user.id)
-                    return redirect('home')
+            messages.success(request, "Email verified successfully! Welcome.")
 
-            except User.DoesNotExist:
-                logger.exception("VerifyEmailView failed: user does not exist. pending_user_id=%s", user_id)
-                messages.error(request, "User not found. Please register again.")
-                return redirect('church_signup')
+            # TEMPORARY DEBUG RESULT:
+            # Keep this first. If this page appears, verification is working and the crash is in the next page.
+            return HttpResponse(
+                f"""
+                <h2>VERIFY OK</h2>
+                <p><strong>User ID:</strong> {user.id}</p>
+                <p><strong>Username:</strong> {user.username}</p>
+                <p><strong>User Type:</strong> {user.user_type}</p>
+                <p><strong>Church ID:</strong> {user.church_id}</p>
+                <p><strong>Denomination ID:</strong> {user.denomination_id}</p>
+                <p><strong>Status:</strong> {getattr(user, "status", None)}</p>
+                <p><strong>is_active:</strong> {getattr(user, "is_active", None)}</p>
+                <p>Verification succeeded. The next step is to debug the destination page.</p>
+                """
+            )
 
-            except ValidationError as e:
-                logger.exception("VerifyEmailView validation error for pending_user_id=%s: %s", user_id, e)
-                messages.error(request, f"Validation error: {e}")
-                return render(request, self.template_name)
+            # AFTER YOU CONFIRM VERIFY OK, replace the HttpResponse above with this:
+            #
+            # if user.user_type == User.UserType.CHURCH_ADMIN:
+            #     logger.info("Redirecting ChurchAdmin user_id=%s to home", user.id)
+            #     return redirect('home')
+            # elif user.user_type == User.UserType.DENOMINATION_ADMIN:
+            #     logger.info("Redirecting DenominationAdmin user_id=%s to denomination_dashboard", user.id)
+            #     return redirect('denomination_dashboard')
+            # elif user.user_type == User.UserType.MEMBER:
+            #     logger.info("Redirecting Member user_id=%s to weekly_financial_report", user.id)
+            #     return redirect('weekly_financial_report')
+            # else:
+            #     logger.info("Redirecting default user_id=%s to home", user.id)
+            #     return redirect('home')
 
-            except Exception as e:
-                logger.exception("VerifyEmailView unexpected error for pending_user_id=%s: %s", user_id, e)
-                messages.error(request, "Server error during email verification. Check logs.")
-                return render(request, self.template_name)
+        except User.DoesNotExist:
+            logger.exception("VerifyEmailView failed: user does not exist | pending_user_id=%s", user_id)
+            return HttpResponse(
+                f"<h2>ERROR</h2><p>User does not exist. pending_user_id={user_id}</p>",
+                status=500,
+            )
 
-        logger.warning(
-            "VerifyEmailView invalid code. pending_user_id=%s entered_code=%s session_code=%s",
-            user_id,
-            entered_code,
-            session_code,
-        )
-        messages.error(request, "Invalid code. Please try again.")
-        return render(request, self.template_name)
+        except ValidationError as e:
+            logger.exception("VerifyEmailView validation error | pending_user_id=%s | error=%s", user_id, e)
+            return HttpResponse(
+                f"<h2>VALIDATION ERROR</h2><p>{e}</p><pre>{traceback.format_exc()}</pre>",
+                status=500,
+            )
+
+        except Exception as e:
+            logger.exception("VerifyEmailView unexpected error | pending_user_id=%s | error=%s", user_id, e)
+            return HttpResponse(
+                f"<h2>UNEXPECTED ERROR</h2><p>{type(e).__name__}: {e}</p><pre>{traceback.format_exc()}</pre>",
+                status=500,
+            )
 
 # =========================================================
 # 4. APPLICATION & MANAGEMENT VIEWS (Unchanged)
