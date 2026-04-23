@@ -225,9 +225,9 @@ class VerifyEmailView(View):
                 if user.user_type == 'ChurchAdmin':
                     logger.info("Redirecting ChurchAdmin user_id=%s to home", user.id)
                     return redirect('Register:home')
-                elif user.user_type == 'Register:DenominationAdmin':
+                elif user.user_type == 'DenominationAdmin':
                     logger.info("Redirecting DenominationAdmin user_id=%s to denomination_dashboard", user.id)
-                    return redirect('denomination_dashboard')
+                    return redirect('Register:denomination_dashboard')
                 else:
                     logger.info("Redirecting default user_id=%s to home", user.id)
                     return redirect('Register:home')

@@ -49,7 +49,6 @@ from collections import defaultdict
 from .forms import RoleAwareAuthenticationForm
 from django.apps import apps
 from django.contrib.auth.decorators import login_required
-from openpyxl.styles import Font
 from django.http import HttpResponse
 from collections import defaultdict
 from .models import BankAccount
