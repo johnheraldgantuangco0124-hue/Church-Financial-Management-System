@@ -27,7 +27,7 @@ urlpatterns = [
     # =========================================================
 
     # This is where users go after login/register
-    path('home/', views.HomeView.as_view(), name='home'),
+    path('1home/', views.HomeView.as_view(), name='home'),
     # This is required for the navbar "Logout" button
     path('logout/', auth_views.LogoutView.as_view(next_page='landing'), name='logout'),
 
