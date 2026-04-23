@@ -212,7 +212,7 @@ class VerifyEmailView(View):
             request.session.modified = True
 
             messages.success(request, "Email verified successfully! Please log in.")
-            return redirect('login')
+            return redirect('Register:login')
 
         except User.DoesNotExist:
             messages.error(request, "User not found. Please register again.")
