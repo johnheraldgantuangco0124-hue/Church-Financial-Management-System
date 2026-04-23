@@ -193,7 +193,7 @@ class VerifyEmailView(View):
                 )
 
                 # A. Activate User
-                user.is_active = True
+                user.status = User.Status.ACTIVE
                 user.save()
                 logger.info("User activation save passed for user_id=%s", user.id)
 
@@ -224,13 +224,13 @@ class VerifyEmailView(View):
                 # E. Redirect based on user type
                 if user.user_type == 'ChurchAdmin':
                     logger.info("Redirecting ChurchAdmin user_id=%s to home", user.id)
-                    return redirect('home')
-                elif user.user_type == 'DenominationAdmin':
+                    return redirect('Register:home')
+                elif user.user_type == 'Register:DenominationAdmin':
                     logger.info("Redirecting DenominationAdmin user_id=%s to denomination_dashboard", user.id)
                     return redirect('denomination_dashboard')
                 else:
                     logger.info("Redirecting default user_id=%s to home", user.id)
-                    return redirect('home')
+                    return redirect('Register:home')
 
             except User.DoesNotExist:
                 logger.exception("VerifyEmailView failed: user does not exist. pending_user_id=%s", user_id)
