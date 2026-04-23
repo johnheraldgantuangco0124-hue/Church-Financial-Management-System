@@ -340,146 +340,9 @@
             font-weight: 600;
         }
 
-        /* TRUE CONFIRMATION MODAL */
-        .confirmation-dialog {
-            max-width: 460px;
-        }
-
-        .confirmation-content {
-            border: none;
-            border-radius: 28px;
-            overflow: hidden;
-            background: #ffffff;
-            box-shadow: 0 30px 90px rgba(15, 23, 42, 0.28);
-            position: relative;
-        }
-
-        .confirmation-topbar {
-            height: 6px;
-            background: linear-gradient(90deg, #2563eb 0%, #10b981 100%);
-        }
-
-        .confirmation-shell {
-            position: relative;
-            padding: 2rem 1.75rem 1.75rem;
-        }
-
-        .confirmation-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            z-index: 2;
-        }
-
-        .confirmation-icon-wrap {
-            width: 82px;
-            height: 82px;
-            border-radius: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.2rem;
-            font-size: 2rem;
-            border: 1px solid transparent;
-            transition: all 0.2s ease;
-        }
-
-        .confirmation-icon-wrap.is-approve {
-            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-            color: #047857;
-            border-color: #a7f3d0;
-            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.14);
-        }
-
-        .confirmation-icon-wrap.is-reject {
-            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-            color: #b91c1c;
-            border-color: #fecaca;
-            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.14);
-        }
-
-        .confirmation-icon-wrap.is-warning {
-            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-            color: #b45309;
-            border-color: #fde68a;
-            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.14);
-        }
-
-        .confirmation-eyebrow {
-            font-size: 0.78rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: #64748b;
-            margin-bottom: 0.4rem;
-        }
-
-        .confirmation-title {
-            font-weight: 800;
-            font-size: 1.5rem;
-            color: #0f172a;
-        }
-
-        .confirmation-heading {
-            font-size: 1rem;
-            font-weight: 700;
-            color: #1e293b;
-        }
-
-        .confirmation-message {
-            color: #64748b;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            max-width: 340px;
-            margin-inline: auto;
-        }
-
-        .confirmation-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.9rem;
-            margin-top: 1.7rem;
-        }
-
-        .btn-cancel-confirmation,
-        .btn-submit-confirmation {
-            border-radius: 999px;
-            padding: 0.85rem 1rem;
-            font-weight: 700;
-            font-size: 0.95rem;
-        }
-
-        .btn-cancel-confirmation {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            color: #334155;
-        }
-
-        .btn-cancel-confirmation:hover {
-            background: #f1f5f9;
-            color: #0f172a;
-        }
-
-        .btn-submit-confirmation {
-            border: none;
-            color: #fff;
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            box-shadow: 0 10px 24px rgba(37, 99, 235, 0.22);
-        }
-
-        .btn-submit-confirmation.btn-approve-style {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            box-shadow: 0 10px 24px rgba(16, 185, 129, 0.22);
-        }
-
-        .btn-submit-confirmation.btn-reject-style {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            box-shadow: 0 10px 24px rgba(239, 68, 68, 0.22);
-        }
-
-        .btn-submit-confirmation:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
+        .action-inline-form {
+            display: inline-block;
+            margin: 0;
         }
 
         @media (max-width: 768px) {
@@ -493,16 +356,6 @@
 
             .hero-card .d-flex {
                 gap: 0.75rem;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .confirmation-shell {
-                padding: 1.6rem 1rem 1rem;
-            }
-
-            .confirmation-actions {
-                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -726,30 +579,18 @@
 
                                             <td class="text-end">
                                                 <div class="d-flex justify-content-end gap-2 flex-wrap">
-                                                    <form id="approve-form-{{ app.pk }}" action="{% url 'Church:application_action' app.pk %}" method="post">
+                                                    <form class="action-inline-form" action="{% url 'Church:application_action' app.pk %}" method="post">
                                                         {% csrf_token %}
                                                         <input type="hidden" name="action" value="approve">
-                                                        <button type="button"
-                                                                class="btn-approve open-confirmation-modal"
-                                                                data-form-id="approve-form-{{ app.pk }}"
-                                                                data-action-label="Approve"
-                                                                data-church-name="{{ app.church.name|escapejs }}"
-                                                                data-message="Confirm approval for {{ app.church.name|escapejs }}?"
-                                                                data-icon-type="success">
+                                                        <button type="submit" class="btn-approve">
                                                             <i class="bi bi-check-lg me-1"></i> Approve
                                                         </button>
                                                     </form>
 
-                                                    <form id="reject-form-{{ app.pk }}" action="{% url 'Church:application_action' app.pk %}" method="post">
+                                                    <form class="action-inline-form" action="{% url 'Church:application_action' app.pk %}" method="post">
                                                         {% csrf_token %}
                                                         <input type="hidden" name="action" value="reject">
-                                                        <button type="button"
-                                                                class="btn-soft-danger open-confirmation-modal"
-                                                                data-form-id="reject-form-{{ app.pk }}"
-                                                                data-action-label="Reject"
-                                                                data-church-name="{{ app.church.name|escapejs }}"
-                                                                data-message="Are you sure you want to reject {{ app.church.name|escapejs }}?"
-                                                                data-icon-type="danger">
+                                                        <button type="submit" class="btn-soft-danger">
                                                             <i class="bi bi-x-lg"></i>
                                                         </button>
                                                     </form>
@@ -928,66 +769,6 @@
     </div>
 </div>
 
-<!-- TRUE CONFIRMATION MODAL -->
-<div class="modal fade"
-     id="confirmationActionModal"
-     tabindex="-1"
-     aria-labelledby="confirmationActionModalLabel"
-     aria-hidden="true"
-     data-bs-backdrop="static"
-     data-bs-keyboard="false">
-    <div class="modal-dialog modal-dialog-centered confirmation-dialog">
-        <div class="modal-content confirmation-content">
-            <div class="confirmation-topbar"></div>
-
-            <div class="modal-body p-0">
-                <div class="confirmation-shell">
-                    <button type="button"
-                            class="btn-close confirmation-close"
-                            data-bs-dismiss="modal"
-                            aria-label="Close"></button>
-
-                    <div class="confirmation-icon-wrap is-warning" id="confirmationModalIconWrap">
-                        <i class="bi bi-shield-check" id="confirmationModalIcon"></i>
-                    </div>
-
-                    <div class="text-center">
-                        <div class="confirmation-eyebrow" id="confirmationActionModalSubtext">
-                            Please review carefully
-                        </div>
-
-                        <h4 class="confirmation-title mb-2" id="confirmationActionModalLabel">
-                            Confirm Action
-                        </h4>
-
-                        <p class="confirmation-heading mb-2" id="confirmationModalHeading">
-                            Are you sure you want to continue?
-                        </p>
-
-                        <p class="confirmation-message mb-0" id="confirmationModalMessage">
-                            This action requires your confirmation.
-                        </p>
-                    </div>
-
-                    <div class="confirmation-actions">
-                        <button type="button"
-                                class="btn btn-cancel-confirmation"
-                                data-bs-dismiss="modal">
-                            Cancel
-                        </button>
-
-                        <button type="button"
-                                class="btn btn-submit-confirmation"
-                                id="confirmationModalSubmitBtn">
-                            Yes, Continue
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
@@ -1004,76 +785,6 @@
                     tab.show();
                 }
             });
-        });
-
-        const confirmButtons = document.querySelectorAll('.open-confirmation-modal');
-        const confirmationModalElement = document.getElementById('confirmationActionModal');
-        const confirmationModal = new bootstrap.Modal(confirmationModalElement);
-
-        const modalTitle = document.getElementById('confirmationActionModalLabel');
-        const modalSubtext = document.getElementById('confirmationActionModalSubtext');
-        const modalHeading = document.getElementById('confirmationModalHeading');
-        const modalMessage = document.getElementById('confirmationModalMessage');
-        const modalSubmitBtn = document.getElementById('confirmationModalSubmitBtn');
-        const modalIconWrap = document.getElementById('confirmationModalIconWrap');
-        const modalIcon = document.getElementById('confirmationModalIcon');
-
-        let selectedFormId = null;
-        let submitting = false;
-
-        confirmButtons.forEach(button => {
-            button.addEventListener('click', function () {
-                selectedFormId = this.dataset.formId;
-                const actionLabel = this.dataset.actionLabel || 'Confirm';
-                const churchName = this.dataset.churchName || 'this church';
-                const message = this.dataset.message || 'Are you sure you want to continue?';
-                const iconType = this.dataset.iconType || 'warning';
-
-                modalTitle.textContent = actionLabel + ' Application';
-                modalSubtext.textContent = 'Church: ' + churchName;
-                modalHeading.textContent = actionLabel + ' this application?';
-                modalMessage.textContent = message;
-
-                modalSubmitBtn.textContent = actionLabel;
-                modalSubmitBtn.className = 'btn btn-submit-confirmation';
-
-                modalIconWrap.classList.remove('is-approve', 'is-reject', 'is-warning');
-
-                if (iconType === 'success') {
-                    modalIconWrap.classList.add('is-approve');
-                    modalIcon.className = 'bi bi-check-circle-fill';
-                    modalSubmitBtn.classList.add('btn-approve-style');
-                } else if (iconType === 'danger') {
-                    modalIconWrap.classList.add('is-reject');
-                    modalIcon.className = 'bi bi-x-octagon-fill';
-                    modalSubmitBtn.classList.add('btn-reject-style');
-                } else {
-                    modalIconWrap.classList.add('is-warning');
-                    modalIcon.className = 'bi bi-exclamation-triangle-fill';
-                }
-
-                modalSubmitBtn.disabled = false;
-                submitting = false;
-                confirmationModal.show();
-            });
-        });
-
-        modalSubmitBtn.addEventListener('click', function () {
-            if (submitting || !selectedFormId) return;
-
-            const form = document.getElementById(selectedFormId);
-            if (!form) return;
-
-            submitting = true;
-            modalSubmitBtn.disabled = true;
-            modalSubmitBtn.textContent = 'Processing...';
-            form.submit();
-        });
-
-        confirmationModalElement.addEventListener('hidden.bs.modal', function () {
-            selectedFormId = null;
-            submitting = false;
-            modalSubmitBtn.disabled = false;
         });
     });
 </script>
