@@ -207,7 +207,7 @@ class VerifyEmailView(View):
 
                 # E. Redirect based on user type
                 if user.user_type == 'ChurchAdmin':
-                    return redirect('home')
+                    return redirect('Register:home')
                 elif user.user_type == 'DenominationAdmin':
                     return redirect('Register:denomination_dashboard')
                 else:
