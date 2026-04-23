@@ -184,43 +184,21 @@ class VerifyEmailView(View):
         )
 
         if entered_code != session_code or not user_id:
-            logger.warning(
-                "VerifyEmailView invalid code | user_id=%s | entered_code=%s | session_code=%s",
-                user_id,
-                entered_code,
-                session_code,
-            )
             messages.error(request, "Invalid code. Please try again.")
             return render(request, self.template_name)
 
         try:
             user = User.objects.select_related('church', 'denomination').get(pk=user_id)
 
-            logger.info(
-                "Verification matched | user_id=%s | username=%s | user_type=%s | church_id=%s | denomination_id=%s | current_status=%s",
-                user.id,
-                user.username,
-                user.user_type,
-                user.church_id,
-                user.denomination_id,
-                getattr(user, "status", None),
-            )
-
+            # Activate account
             user.status = User.Status.ACTIVE
             user.save()
-            logger.info(
-                "User activation save passed | user_id=%s | status=%s | is_active=%s",
-                user.id,
-                getattr(user, "status", None),
-                getattr(user, "is_active", None),
-            )
 
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            logger.info("Login passed | user_id=%s", user.id)
-
+            # Clear verification session
             request.session.pop('verification_code', None)
             request.session.pop('pending_user_id', None)
 
+            # Keep welcome info for after manual login
             request.session['show_welcome_guide'] = True
             request.session['registered_role'] = user.user_type
 
@@ -232,40 +210,21 @@ class VerifyEmailView(View):
                 request.session['registered_org_name'] = ""
 
             request.session.modified = True
-            logger.info(
-                "Session update passed | user_id=%s | registered_org_name=%s",
-                user.id,
-                request.session.get('registered_org_name', ''),
-            )
 
-            messages.success(request, "Email verified successfully! Welcome.")
-
-            if user.user_type == User.UserType.CHURCH_ADMIN:
-                logger.info("Redirecting ChurchAdmin user_id=%s to home", user.id)
-                return redirect('home')
-            elif user.user_type == User.UserType.DENOMINATION_ADMIN:
-                logger.info("Redirecting DenominationAdmin user_id=%s to denomination_dashboard", user.id)
-                return redirect('denomination_dashboard')
-            elif user.user_type == User.UserType.MEMBER:
-                logger.info("Redirecting Member user_id=%s to weekly_financial_report", user.id)
-                return redirect('weekly_financial_report')
-            else:
-                logger.info("Redirecting default user_id=%s to home", user.id)
-                return redirect('home')
+            messages.success(request, "Email verified successfully! Please log in.")
+            return redirect('login')
 
         except User.DoesNotExist:
-            logger.exception("VerifyEmailView failed: user does not exist | pending_user_id=%s", user_id)
             messages.error(request, "User not found. Please register again.")
             return redirect('Church:church_signup')
 
         except ValidationError as e:
-            logger.exception("VerifyEmailView validation error | pending_user_id=%s | error=%s", user_id, e)
             messages.error(request, f"Validation error: {e}")
             return render(request, self.template_name)
 
         except Exception as e:
-            logger.exception("VerifyEmailView unexpected error | pending_user_id=%s | error=%s", user_id, e)
-            messages.error(request, "Server error during email verification. Check logs.")
+            logger.exception("VerifyEmailView unexpected error: %s", e)
+            messages.error(request, f"Unexpected error: {type(e).__name__}: {e}")
             return render(request, self.template_name)
 # =========================================================
 # 4. APPLICATION & MANAGEMENT VIEWS (Unchanged)
