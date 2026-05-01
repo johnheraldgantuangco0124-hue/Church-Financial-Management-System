@@ -3,7 +3,7 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from django.apps import apps
 from django.db import connection
-from django.db.models import Sum, DecimalField, Q,Exists, OuterRef
+from django.db.models import Sum, DecimalField, Q, Exists, OuterRef
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
@@ -336,9 +336,42 @@ def calculate_financial_health90D(church_id):
 # ==========================================
 # 4. PROJECTED EXPENSES
 # ==========================================
-def _recent_valid_expenses_qs(church_id):
+def _start_of_month(value):
+    """Return the first day of the month for a date object."""
+    return value.replace(day=1)
+
+
+def _add_months(value, months):
     """
-    Base queryset for last-90-days valid expenses.
+    Add or subtract months without requiring python-dateutil.
+
+    Example:
+      _add_months(date(2026, 1, 1), -1) -> date(2025, 12, 1)
+    """
+    month_index = (value.year * 12) + (value.month - 1) + int(months)
+    year = month_index // 12
+    month = (month_index % 12) + 1
+    return value.replace(year=year, month=month, day=1)
+
+
+def _last_n_month_keys(as_of_date, months=12):
+    """
+    Return chronological (year, month) keys for the last N calendar months,
+    including the current month.
+    """
+    current_month = _start_of_month(as_of_date)
+    first_month = _add_months(current_month, -(months - 1))
+
+    keys = []
+    for i in range(months):
+        d = _add_months(first_month, i)
+        keys.append((d.year, d.month))
+    return keys
+
+
+def _valid_expenses_qs_since(church_id, start_date):
+    """
+    Base queryset for valid expenses from a given date.
 
     Excludes:
       - Declined / Rejected expenses
@@ -346,6 +379,9 @@ def _recent_valid_expenses_qs(church_id):
       - transfer categories
       - expenses linked to cash/bank transfer movements
         (CASH_TO_BANK, BANK_TO_CASH)
+
+    This is used by the adjusted projection logic so that one emergency
+    month does not automatically distort the projected monthly bills.
     """
     Expense = get_model_safe("Expense")
     CashBankMovement = get_model_safe("CashBankMovement")
@@ -353,20 +389,17 @@ def _recent_valid_expenses_qs(church_id):
     if not Expense:
         return None
 
-    today = timezone.now().date()
-    ninety_days_ago = today - timedelta(days=90)
-
     qs = (
         Expense.objects.filter(
             church_id=church_id,
-            expense_date__gte=ninety_days_ago
+            expense_date__gte=start_date,
         )
         .exclude(status__in=["Declined", "Rejected"])
         .exclude(category__is_system=True)
         .exclude(category__is_transfer=True)
     )
 
-    # Exclude expenses that are tied to cash/bank transfer movement records
+    # Exclude expenses tied to cash/bank transfer movement records.
     if CashBankMovement:
         transfer_link = CashBankMovement.objects.filter(
             church_id=church_id,
@@ -383,57 +416,291 @@ def _recent_valid_expenses_qs(church_id):
 
     return qs
 
+
+def _recent_valid_expenses_qs(church_id):
+    """
+    Backward-compatible helper for old 90-day computations.
+
+    NOTE:
+    The AI budget optimizer should use get_projected_expenses_unrestricted(),
+    which now uses adjusted 12-month behavior-based projection instead of
+    a plain 90-day average.
+    """
+    today = timezone.now().date()
+    ninety_days_ago = today - timedelta(days=90)
+    return _valid_expenses_qs_since(church_id, ninety_days_ago)
+
+
+def _median_decimal(values):
+    """
+    Median helper for Decimal values.
+
+    Median is safer than a simple average because one emergency month will
+    not automatically pull the monthly projection upward.
+    """
+    cleaned = sorted([
+        _to_decimal(v, "0.00")
+        for v in values
+        if _to_decimal(v, "0.00") > 0
+    ])
+
+    if not cleaned:
+        return Decimal("0.00")
+
+    n = len(cleaned)
+    mid = n // 2
+
+    if n % 2 == 1:
+        return cleaned[mid].quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+    return ((cleaned[mid - 1] + cleaned[mid]) / Decimal("2")).quantize(
+        Decimal("0.01"),
+        rounding=ROUND_HALF_UP,
+    )
+
+
+def _classify_monthly_spending_pattern(monthly_totals):
+    """
+    Classify spending behavior and return an adjusted monthly need.
+
+    Why this exists:
+      A plain average can be misleading when:
+        1. one month has a large emergency expense, or
+        2. the church spends for a ministry/event only once per year.
+
+    Behavior rules:
+      - no_history:
+          no spending history found.
+      - annual_or_event_based:
+          1 to 2 active months only. Treat as annual/event reserve.
+      - seasonal:
+          3 to 5 active months. Spread as monthly reserve.
+      - emergency_spike_adjusted:
+          regular spending exists, but one month is more than 3x the median.
+          Use the median as regular baseline and exclude the spike excess.
+      - recurring:
+          normal recurring spending. Use median monthly spending.
+    """
+    monthly = [_to_decimal(x, "0.00") for x in monthly_totals]
+    total = sum(monthly, Decimal("0.00")).quantize(
+        Decimal("0.01"),
+        rounding=ROUND_HALF_UP,
+    )
+
+    nonzero = [x for x in monthly if x > 0]
+    active_months = len(nonzero)
+
+    if total <= 0 or active_months == 0:
+        return {
+            "behavior": "no_history",
+            "raw_avg_monthly": Decimal("0.00"),
+            "adjusted_need_monthly": Decimal("0.00"),
+            "annual_reserve_monthly": Decimal("0.00"),
+            "emergency_excluded_amount": Decimal("0.00"),
+            "active_months": 0,
+            "total_last_12_months": Decimal("0.00"),
+        }
+
+    raw_avg_monthly = (total / Decimal("12")).quantize(
+        Decimal("0.01"),
+        rounding=ROUND_HALF_UP,
+    )
+    median_nonzero = _median_decimal(nonzero)
+    max_month = max(nonzero)
+
+    # Rare or once-a-year spending: treat as planned reserve.
+    # Example: annual church anniversary, yearly equipment maintenance.
+    if active_months <= 2:
+        return {
+            "behavior": "annual_or_event_based",
+            "raw_avg_monthly": raw_avg_monthly,
+            "adjusted_need_monthly": raw_avg_monthly,
+            "annual_reserve_monthly": raw_avg_monthly,
+            "emergency_excluded_amount": Decimal("0.00"),
+            "active_months": active_months,
+            "total_last_12_months": total,
+        }
+
+    # Seasonal spending: spread the annual/seasonal amount across 12 months.
+    # Example: vacation bible school, yearly outreach season, December programs.
+    if 3 <= active_months <= 5:
+        return {
+            "behavior": "seasonal",
+            "raw_avg_monthly": raw_avg_monthly,
+            "adjusted_need_monthly": raw_avg_monthly,
+            "annual_reserve_monthly": raw_avg_monthly,
+            "emergency_excluded_amount": Decimal("0.00"),
+            "active_months": active_months,
+            "total_last_12_months": total,
+        }
+
+    # Recurring spending with one abnormal spike.
+    # Example: normal monthly bills are around 5k, but one emergency repair is 50k.
+    spike_threshold = median_nonzero * Decimal("3.00")
+    if median_nonzero > 0 and max_month > spike_threshold:
+        emergency_excess = (max_month - median_nonzero).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP,
+        )
+
+        return {
+            "behavior": "emergency_spike_adjusted",
+            "raw_avg_monthly": raw_avg_monthly,
+            "adjusted_need_monthly": median_nonzero,
+            "annual_reserve_monthly": Decimal("0.00"),
+            "emergency_excluded_amount": emergency_excess,
+            "active_months": active_months,
+            "total_last_12_months": total,
+        }
+
+    # Normal recurring spending: use median, not simple average.
+    return {
+        "behavior": "recurring",
+        "raw_avg_monthly": raw_avg_monthly,
+        "adjusted_need_monthly": median_nonzero,
+        "annual_reserve_monthly": Decimal("0.00"),
+        "emergency_excluded_amount": Decimal("0.00"),
+        "active_months": active_months,
+        "total_last_12_months": total,
+    }
+
+
+def _monthly_totals_from_expense_qs(qs, as_of_date=None, months=12):
+    """
+    Convert an Expense queryset into a chronological list of monthly totals.
+
+    The list always has `months` entries. Missing months are represented as 0.
+    """
+    as_of_date = as_of_date or timezone.now().date()
+    month_keys = _last_n_month_keys(as_of_date, months=months)
+
+    monthly_map = {key: Decimal("0.00") for key in month_keys}
+
+    rows = (
+        qs.values("expense_date__year", "expense_date__month")
+        .annotate(total_amt=Coalesce(Sum("amount"), Decimal("0.00")))
+        .order_by("expense_date__year", "expense_date__month")
+    )
+
+    for row in rows:
+        try:
+            key = (
+                int(row["expense_date__year"]),
+                int(row["expense_date__month"]),
+            )
+        except (TypeError, ValueError, KeyError):
+            continue
+
+        if key in monthly_map:
+            monthly_map[key] = _to_decimal(row.get("total_amt"), "0.00")
+
+    return [monthly_map[key] for key in month_keys]
+
+
+def _projected_expenses_details(church_id, *, scope="all"):
+    """
+    Shared adjusted projection helper.
+
+    scope values:
+      - all
+      - unrestricted
+      - restricted
+
+    Returns a dictionary so views can display/audit the behavior if needed.
+    """
+    today = timezone.now().date()
+    first_month = _add_months(_start_of_month(today), -11)
+
+    qs = _valid_expenses_qs_since(church_id, first_month)
+    if qs is None:
+        return {
+            "projected_monthly": Decimal("0.00"),
+            "behavior": "no_expense_model",
+            "raw_avg_monthly": Decimal("0.00"),
+            "annual_reserve_monthly": Decimal("0.00"),
+            "emergency_excluded_amount": Decimal("0.00"),
+            "active_months": 0,
+            "total_last_12_months": Decimal("0.00"),
+            "monthly_totals": [Decimal("0.00")] * 12,
+        }
+
+    if scope == "unrestricted":
+        qs = qs.exclude(category__is_restricted=True)
+    elif scope == "restricted":
+        qs = qs.filter(category__is_restricted=True)
+
+    monthly_totals = _monthly_totals_from_expense_qs(qs, as_of_date=today, months=12)
+    pattern = _classify_monthly_spending_pattern(monthly_totals)
+
+    return {
+        "projected_monthly": _to_decimal(pattern["adjusted_need_monthly"], "0.00").quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP,
+        ),
+        "behavior": pattern["behavior"],
+        "raw_avg_monthly": pattern["raw_avg_monthly"],
+        "annual_reserve_monthly": pattern["annual_reserve_monthly"],
+        "emergency_excluded_amount": pattern["emergency_excluded_amount"],
+        "active_months": pattern["active_months"],
+        "total_last_12_months": pattern["total_last_12_months"],
+        "monthly_totals": monthly_totals,
+    }
+
+
 def get_projected_expenses_all(church_id):
     """
-    General projected bills using actual valid expenses from the last 90 days.
-    Includes both restricted and unrestricted expenses.
+    Adjusted projected monthly bills for all valid expenses.
+
+    This replaces plain last-90-days / 3 averaging with behavior-based
+    classification using the last 12 calendar months.
     """
-    qs = _recent_valid_expenses_qs(church_id)
-    if qs is None:
-        return 0.0
-
-    total_fixed = qs.aggregate(
-        t=Coalesce(Sum("amount"), Decimal("0.00"))
-    )["t"]
-
-    total_fixed = _to_decimal(total_fixed)
-    return float((total_fixed / Decimal("3")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+    details = _projected_expenses_details(church_id, scope="all")
+    return float(details["projected_monthly"])
 
 
 def get_projected_expenses_unrestricted(church_id):
     """
-    Projected unrestricted bills using actual unrestricted expenses
-    from the last 90 days.
+    Adjusted projected monthly unrestricted bills.
+
+    This is the function the OpenAI budget optimizer should use.
+    It prevents one-time emergency spending from inflating the normal
+    monthly reserve while still converting annual/event spending into
+    a monthly reserve amount.
     """
-    qs = _recent_valid_expenses_qs(church_id)
-    if qs is None:
-        return 0.0
+    details = _projected_expenses_details(church_id, scope="unrestricted")
+    return float(details["projected_monthly"])
 
-    total_fixed = (
-        qs.exclude(category__is_restricted=True)
-        .aggregate(t=Coalesce(Sum("amount"), Decimal("0.00")))["t"]
-    )
 
-    total_fixed = _to_decimal(total_fixed)
-    return float((total_fixed / Decimal("3")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+def get_projected_expenses_unrestricted_details(church_id):
+    """
+    Optional audit/debug version for the UI or logs.
+
+    Useful fields:
+      - behavior
+      - raw_avg_monthly
+      - projected_monthly
+      - annual_reserve_monthly
+      - emergency_excluded_amount
+      - monthly_totals
+    """
+    details = _projected_expenses_details(church_id, scope="unrestricted")
+    return {
+        **details,
+        "projected_monthly": float(details["projected_monthly"]),
+        "raw_avg_monthly": float(details["raw_avg_monthly"]),
+        "annual_reserve_monthly": float(details["annual_reserve_monthly"]),
+        "emergency_excluded_amount": float(details["emergency_excluded_amount"]),
+        "total_last_12_months": float(details["total_last_12_months"]),
+        "monthly_totals": [float(_to_decimal(x, "0.00")) for x in details["monthly_totals"]],
+    }
 
 
 def get_projected_expenses_restricted(church_id):
     """
-    Projected restricted bills using actual restricted expenses
-    from the last 90 days.
+    Adjusted projected monthly restricted bills.
     """
-    qs = _recent_valid_expenses_qs(church_id)
-    if qs is None:
-        return 0.0
-
-    total_fixed = (
-        qs.filter(category__is_restricted=True)
-        .aggregate(t=Coalesce(Sum("amount"), Decimal("0.00")))["t"]
-    )
-
-    total_fixed = _to_decimal(total_fixed)
-    return float((total_fixed / Decimal("3")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+    details = _projected_expenses_details(church_id, scope="restricted")
+    return float(details["projected_monthly"])
 
 
 # Default projected expenses for the optimizer page = unrestricted-aware
