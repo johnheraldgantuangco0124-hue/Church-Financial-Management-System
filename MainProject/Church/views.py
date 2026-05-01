@@ -1,5 +1,7 @@
 import random
 import traceback
+from typing import Any
+
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
@@ -991,7 +993,7 @@ class DenominationFinanceOverview(IsDenominationAdmin, TemplateView):
             raw_label = str(r[1] or "")
             display_label = self._format_period_label(report_type, raw_label)
 
-            payload = {
+            payload: dict[str, Decimal | list[Any]] = {
                 "unrestricted_income": Decimal(str(r[2] or 0)),
                 "unrestricted_expenses": Decimal(str(r[3] or 0)),
                 "unrestricted_balance": Decimal(str(r[4] or 0)),

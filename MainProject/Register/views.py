@@ -14731,33 +14731,72 @@ def _call_openai_optimizer_for_budget(
     use_history,
     historical_year,
     ministry_data,
+    inflation_context=None,
 ):
     """
     Ask OpenAI for proposed MONTHLY allocations.
-    We still validate and normalize server-side afterwards.
+
+    Important:
+    - OpenAI receives only summarized/structured budget data.
+    - Inflation context is provided by the backend.
+    - OpenAI must not guess the inflation rate.
+    - The backend still validates and normalizes the output server-side.
     """
     client = _get_openai_client()
     model_name = _get_openai_budget_model()
 
+    inflation_context = inflation_context or {}
+
     payload = {
         "church_id": church_id,
         "mode": "Historical" if use_history else "Manual",
-        "historical_year": historical_year,
+        "historical_year": historical_year if use_history else None,
         "timeframe_for_ui": timeframe,
         "optimizer_unit": "monthly",
         "monthly_pool": float(_to_decimal(monthly_pool, "0.00")),
+
+        # Inflation is supplied by the backend, not guessed by OpenAI.
+        "inflation_context": inflation_context,
+
         "ministries": [
             {
                 "ministry_id": str(m["id"]),
                 "ministry_name": m["name"],
+
+                # Main constraints used for optimization
                 "min_req_monthly": float(_to_decimal(m["min_req"], "0.00")),
                 "max_cap_monthly": float(_to_decimal(m["max_cap"], "0.00")),
                 "priority_score": int(m["priority_score"]),
-                "spent_ytd": float(_to_decimal(m.get("spent_ytd", 0), "0.00")),
                 "priority_source": m.get("priority_source", "unknown"),
+                "spent_ytd": float(_to_decimal(m.get("spent_ytd", 0), "0.00")),
+
+                # Inflation audit/explainability fields
+                "inflation_adjusted": bool(m.get("inflation_adjusted", False)),
+                "inflation_rate_percent": float(
+                    _to_decimal(m.get("inflation_rate_percent", 0), "0.00")
+                ),
+                "base_budget_before_inflation": float(
+                    _to_decimal(m.get("base_budget_before_inflation", 0), "0.00")
+                ),
+                "base_budget_after_inflation": float(
+                    _to_decimal(m.get("base_budget_after_inflation", 0), "0.00")
+                ),
+                "spending_need_before_inflation": float(
+                    _to_decimal(m.get("spending_need_before_inflation", 0), "0.00")
+                ),
+                "spending_need_after_inflation": float(
+                    _to_decimal(m.get("spending_need_after_inflation", 0), "0.00")
+                ),
+
+                # Debug/support values from backend computation
+                "db_min_monthly": float(_to_decimal(m.get("db_min_monthly", 0), "0.00")),
+                "db_max_monthly": float(_to_decimal(m.get("db_max_monthly", 0), "0.00")),
+                "base_budget_monthly": float(_to_decimal(m.get("base_budget_monthly", 0), "0.00")),
+                "spent_avg_monthly": float(_to_decimal(m.get("spent_avg_monthly", 0), "0.00")),
             }
             for m in ministry_data
         ],
+
         "rules": [
             "Return allocations in MONTHLY units only.",
             "Do not allocate negative values.",
@@ -14767,6 +14806,15 @@ def _call_openai_optimizer_for_budget(
             "Respect max_cap_monthly if it is greater than zero.",
             "If funds are insufficient, higher priority_score ministries should receive relatively more.",
             "Put any leftover into reserve_amount_monthly.",
+
+            # Inflation-specific rules
+            "Use the provided inflation_context only as an explanation and adjustment context.",
+            "Do not guess, search, or invent a different inflation rate.",
+            "The backend already applied inflation to budget needs and historical references where applicable.",
+            "Do not apply inflation again to min_req_monthly.",
+            "Do not apply inflation to actual cash on hand, restricted funds, unrestricted cash, safe-to-spend amount, or monthly_pool.",
+            "Total allocation must still not exceed monthly_pool.",
+            "Explain in the summary that inflation-adjusted needs may increase estimated ministry requirements, but not actual available funds.",
         ],
     }
 
@@ -14778,7 +14826,10 @@ def _call_openai_optimizer_for_budget(
                 "role": "system",
                 "content": (
                     "You are a church budget optimization engine. "
-                    "Return only valid structured JSON that matches the required schema."
+                    "Return only valid structured JSON that matches the required schema. "
+                    "Use the backend-provided inflation_context only for explanation. "
+                    "Do not invent or independently estimate inflation values. "
+                    "The backend has already applied inflation adjustments to the ministry need fields when applicable."
                 ),
             },
             {
@@ -14802,7 +14853,10 @@ def _call_openai_optimizer_for_budget(
     return {
         "model_name": model_name,
         "summary": parsed.get("summary", ""),
-        "reserve_amount_monthly": _to_decimal(parsed.get("reserve_amount_monthly", 0), "0.00"),
+        "reserve_amount_monthly": _to_decimal(
+            parsed.get("reserve_amount_monthly", 0),
+            "0.00"
+        ),
         "allocations": parsed.get("allocations", []),
     }
 
@@ -15002,6 +15056,41 @@ def _compute_effective_priority(
 
     return _clamp_int(int(weighted.quantize(Decimal("1"), rounding=ROUND_HALF_UP)), 1, 10)
 
+def get_current_ph_inflation_rate():
+    """
+    Latest official Philippine headline inflation rate.
+
+    Update this monthly after PSA releases the new inflation report.
+    """
+    return {
+        "country": "Philippines",
+        "rate": Decimal("4.10"),
+        "period": "March 2026",
+        "source": "Philippine Statistics Authority",
+        "release_date": "April 7, 2026",
+    }
+
+
+def apply_inflation_adjustment(amount, inflation_rate):
+    """
+    Applies inflation only to budget need or historical reference.
+    Do not apply this to actual cash balance.
+    """
+    amount = _to_decimal(amount, "0.00")
+    inflation_rate = _to_decimal(inflation_rate, "0.00")
+
+    if amount <= 0 or inflation_rate <= 0:
+        return amount
+
+    multiplier = Decimal("1.00") + (inflation_rate / Decimal("100"))
+
+    return (amount * multiplier).quantize(
+        Decimal("0.01"),
+        rounding=ROUND_HALF_UP
+    )
+
+
+
 @csrf_exempt
 @require_POST
 @login_required
@@ -15023,6 +15112,25 @@ def api_run_optimizer_openai(request):
         ReleasedBudget = apps.get_model("Register", "ReleasedBudget")
         Ministry = apps.get_model("Register", "Ministry")
         MinistryBudget = apps.get_model("Register", "MinistryBudget")
+
+        # =========================================================
+        # INFLATION CONTEXT
+        # =========================================================
+        inflation_info = get_current_ph_inflation_rate()
+        inflation_rate = _to_decimal(inflation_info.get("rate"), "0.00")
+
+        inflation_context = {
+            "country": inflation_info.get("country", "Philippines"),
+            "rate_percent": float(inflation_rate),
+            "period": inflation_info.get("period", ""),
+            "source": inflation_info.get("source", "Philippine Statistics Authority"),
+            "release_date": inflation_info.get("release_date", ""),
+            "rule": (
+                "Inflation is applied only to budget needs, projected needs, and historical references. "
+                "Inflation must not increase actual cash on hand, restricted funds, unrestricted cash, "
+                "or safe-to-spend amount."
+            ),
+        }
 
         # =========================
         # Configurable weights
@@ -15073,6 +15181,10 @@ def api_run_optimizer_openai(request):
         monthly_pool = Decimal("0.00")
         pool_used_ui = Decimal("0.00")
 
+        # Raw values before inflation, useful for audit/debug
+        budget_need_monthly_before_inflation = Decimal("0.00")
+        spend_need_monthly_before_inflation = Decimal("0.00")
+
         # =========================================================
         # 1) BUILD MONTHLY POOL
         # =========================================================
@@ -15089,14 +15201,31 @@ def api_run_optimizer_openai(request):
                     status=400
                 )
 
+            # Do not inflate actual available income/pool.
             monthly_pool = (annual_income / Decimal("12")).quantize(Decimal("0.01"))
             pool_used_ui = monthly_pool if timeframe == "monthly" else (monthly_pool * Decimal("12"))
 
         else:
-            income_basis = "current_unrestricted_cash_minus_projected_unrestricted_bills_capped_by_need"
+            income_basis = (
+                "current_unrestricted_cash_minus_projected_unrestricted_bills_"
+                "capped_by_current_budget_and_inflation_adjusted_need"
+            )
 
-            # All-years historical need signals
-            budget_map, budget_need_monthly = _all_years_budget_monthly_map(church_id)
+            today = timezone.now().date()
+
+            # =====================================================
+            # CURRENT FUND MODE:
+            # Use current BudgetManage period, not all-years average.
+            # This prevents old budgets from affecting current recommendations.
+            # =====================================================
+            budget_map, budget_need_monthly, budget_need_yearly = _manual_budget_effective_map(
+                church_id=church_id,
+                year=today.year,
+                month=today.month,
+            )
+
+            # Spending history is still allowed as a supporting signal,
+            # but it should not replace the current approved budget.
             spent_map, months_observed = _all_years_spent_monthly_map(church_id)
 
             # Current financial capacity
@@ -15106,19 +15235,40 @@ def api_run_optimizer_openai(request):
             restricted_held = _to_decimal(funds.get("restricted_balance_outstanding"), "0.00")
             unrestricted_cash = _to_decimal(funds.get("unrestricted_cash_available"), "0.00")
 
+            # Keep projected bills based on your adjusted forecasting.py.
+            # Do not inflate actual cash; projected bills are already estimated by the backend.
             projected_bills = _to_decimal(get_projected_expenses_unrestricted(church_id), "0.00")
 
-            # Simple reserve rule
+            # Simple reserve rule: protect projected unrestricted bills.
             reserve_target_monthly = projected_bills
 
             affordable_pool_monthly = unrestricted_cash - reserve_target_monthly
             if affordable_pool_monthly < 0:
                 affordable_pool_monthly = Decimal("0.00")
 
-            spend_need_monthly = sum(
+            spend_need_monthly_before_inflation = sum(
                 (_to_decimal(v, "0.00") for v in spent_map.values()),
                 Decimal("0.00")
             ).quantize(Decimal("0.01"))
+
+            budget_need_monthly_before_inflation = _to_decimal(
+                budget_need_monthly,
+                "0.00"
+            ).quantize(Decimal("0.01"))
+
+            # =====================================================
+            # APPLY INFLATION ONLY TO NEED SIGNALS
+            # Do not apply inflation to actual cash or safe-to-spend.
+            # =====================================================
+            budget_need_monthly = apply_inflation_adjustment(
+                budget_need_monthly_before_inflation,
+                inflation_rate
+            )
+
+            spend_need_monthly = apply_inflation_adjustment(
+                spend_need_monthly_before_inflation,
+                inflation_rate
+            )
 
             # Overall baseline pool need signal
             if months_observed and months_observed >= 3:
@@ -15127,7 +15277,10 @@ def api_run_optimizer_openai(request):
                     (spend_need_monthly * SPEND_WEIGHT)
                 ).quantize(Decimal("0.01"))
             else:
-                baseline_need_monthly = _to_decimal(budget_need_monthly, "0.00").quantize(Decimal("0.01"))
+                baseline_need_monthly = _to_decimal(
+                    budget_need_monthly,
+                    "0.00"
+                ).quantize(Decimal("0.01"))
 
             monthly_pool = (
                 min(affordable_pool_monthly, baseline_need_monthly)
@@ -15144,10 +15297,28 @@ def api_run_optimizer_openai(request):
                 "projected_unrestricted_bills_monthly": float(projected_bills.quantize(Decimal("0.01"))),
                 "reserve_target_monthly": float(reserve_target_monthly.quantize(Decimal("0.01"))),
                 "affordable_pool_monthly": float(affordable_pool_monthly.quantize(Decimal("0.01"))),
-                "budget_need_monthly": float(_to_decimal(budget_need_monthly, "0.00").quantize(Decimal("0.01"))),
+
+                "budget_need_monthly_before_inflation": float(
+                    budget_need_monthly_before_inflation.quantize(Decimal("0.01"))
+                ),
+                "spend_need_monthly_before_inflation": float(
+                    spend_need_monthly_before_inflation.quantize(Decimal("0.01"))
+                ),
+
+                "budget_need_monthly": float(
+                    _to_decimal(budget_need_monthly, "0.00").quantize(Decimal("0.01"))
+                ),
                 "spend_need_monthly": float(spend_need_monthly.quantize(Decimal("0.01"))),
                 "baseline_need_monthly": float(baseline_need_monthly.quantize(Decimal("0.01"))),
                 "initial_recommended_pool_monthly": float(monthly_pool.quantize(Decimal("0.01"))),
+
+                "inflation_adjusted": True,
+                "inflation_country": inflation_context["country"],
+                "inflation_rate_percent": inflation_context["rate_percent"],
+                "inflation_period": inflation_context["period"],
+                "inflation_source": inflation_context["source"],
+                "inflation_release_date": inflation_context["release_date"],
+                "inflation_rule": "Applied only to budget needs and spending references, not actual cash.",
             }
 
         # =========================================================
@@ -15267,11 +15438,25 @@ def api_run_optimizer_openai(request):
             db_min_monthly = _to_decimal(getattr(m, "min_monthly_budget", 0), "0.00")
             db_max_monthly = _to_decimal(getattr(m, "max_monthly_cap", 0), "0.00")
 
+            base_budget_m_before_inflation = Decimal("0.00")
+            spent_avg_m_before_inflation = Decimal("0.00")
+            base_budget_m = Decimal("0.00")
+            spent_avg_m = Decimal("0.00")
+            inflation_adjusted = False
+
             if use_history:
                 annual_spent = historical_net_spent_annual.get(m.id, Decimal("0.00"))
-                hist_avg_monthly = (annual_spent / Decimal("12")) if annual_spent > 0 else Decimal("0.00")
+                hist_avg_monthly_raw = (annual_spent / Decimal("12")) if annual_spent > 0 else Decimal("0.00")
 
-                # Historical mode stays spending-based
+                # Historical references are inflation-adjusted so old spending
+                # is not treated as equal to present-day costs.
+                hist_avg_monthly = apply_inflation_adjustment(
+                    hist_avg_monthly_raw,
+                    inflation_rate
+                )
+
+                inflation_adjusted = hist_avg_monthly_raw > 0
+
                 min_req_m = max(db_min_monthly, hist_avg_monthly).quantize(Decimal("0.01"))
 
                 hist_cap_m = (hist_avg_monthly * Decimal("1.20")) if hist_avg_monthly > 0 else Decimal("0.00")
@@ -15280,15 +15465,28 @@ def api_run_optimizer_openai(request):
                 spent_ytd_val = float(annual_spent.quantize(Decimal("0.01")))
                 base_budget_m = Decimal("0.00")
                 spent_avg_m = hist_avg_monthly
+                spent_avg_m_before_inflation = hist_avg_monthly_raw
 
             else:
-                base_budget_m = _to_decimal(budget_map.get(m.id, 0), "0.00")
-                spent_avg_m = _to_decimal(spent_map.get(m.id, 0), "0.00")
+                base_budget_m_before_inflation = _to_decimal(budget_map.get(m.id, 0), "0.00")
+                spent_avg_m_before_inflation = _to_decimal(spent_map.get(m.id, 0), "0.00")
 
-                # =====================================================
-                # UPDATED LOGIC:
-                # Blend budget basis with actual spending pattern
-                # =====================================================
+                # Apply inflation only to need signals.
+                base_budget_m = apply_inflation_adjustment(
+                    base_budget_m_before_inflation,
+                    inflation_rate
+                )
+                spent_avg_m = apply_inflation_adjustment(
+                    spent_avg_m_before_inflation,
+                    inflation_rate
+                )
+
+                inflation_adjusted = (
+                    base_budget_m_before_inflation > 0 or
+                    spent_avg_m_before_inflation > 0
+                )
+
+                # Blend current approved budget basis with spending behavior.
                 if base_budget_m > 0 and spent_avg_m > 0:
                     blended_need_m = (
                         (base_budget_m * BUDGET_WEIGHT) +
@@ -15305,6 +15503,7 @@ def api_run_optimizer_openai(request):
                 min_req_m = min_req_m.quantize(Decimal("0.01"))
 
                 if db_max_monthly > 0:
+                    # Do not inflate a hard cap set by the church.
                     max_cap_m = db_max_monthly
                 else:
                     cap_from_budget = (base_budget_m * Decimal("1.25")) if base_budget_m > 0 else Decimal("0.00")
@@ -15344,6 +15543,14 @@ def api_run_optimizer_openai(request):
                 "spent_avg_monthly": float(spent_avg_m),
                 "db_min_monthly": float(db_min_monthly),
                 "db_max_monthly": float(db_max_monthly),
+
+                # Inflation audit fields
+                "inflation_adjusted": bool(inflation_adjusted),
+                "inflation_rate_percent": float(inflation_rate),
+                "base_budget_before_inflation": float(base_budget_m_before_inflation),
+                "base_budget_after_inflation": float(base_budget_m),
+                "spending_need_before_inflation": float(spent_avg_m_before_inflation),
+                "spending_need_after_inflation": float(spent_avg_m),
             })
 
         # De-duplicate by ministry id while preserving the last computed value
@@ -15358,7 +15565,10 @@ def api_run_optimizer_openai(request):
                 Decimal("0.00")
             ).quantize(Decimal("0.01"))
 
-            need_total_monthly = max(baseline_need_monthly, summed_ministry_need_monthly).quantize(Decimal("0.01"))
+            need_total_monthly = max(
+                baseline_need_monthly,
+                summed_ministry_need_monthly
+            ).quantize(Decimal("0.01"))
 
             monthly_pool = (
                 min(affordable_pool_monthly, need_total_monthly)
@@ -15383,6 +15593,66 @@ def api_run_optimizer_openai(request):
             return JsonResponse(payload, status=400)
 
         # =========================================================
+        # DRY RUN:
+        # Used by the page to display the computed fund pool.
+        # This avoids calling OpenAI on every page load/change.
+        # =========================================================
+        if dry_run:
+            multiplier = Decimal("1") if timeframe == "monthly" else Decimal("12")
+            display_unit = "monthly" if timeframe == "monthly" else "yearly"
+
+            projected_bills_ui = (projected_bills * multiplier).quantize(Decimal("0.01"))
+            affordable_pool_ui = (affordable_pool_monthly * multiplier).quantize(Decimal("0.01"))
+            budget_need_ui = (_to_decimal(budget_need_monthly, "0.00") * multiplier).quantize(Decimal("0.01"))
+            spend_need_ui = (spend_need_monthly * multiplier).quantize(Decimal("0.01"))
+            baseline_need_ui = (baseline_need_monthly * multiplier).quantize(Decimal("0.01"))
+            summed_ministry_need_ui = (summed_ministry_need_monthly * multiplier).quantize(Decimal("0.01"))
+            need_total_ui = (need_total_monthly * multiplier).quantize(Decimal("0.01"))
+
+            return JsonResponse({
+                "allocations": [],
+                "meta": {
+                    "mode": "Historical" if use_history else "Manual",
+                    "reference_year": historical_year if use_history else None,
+                    "ui_timeframe": timeframe,
+                    "display_unit": display_unit,
+
+                    "optimizer_unit": "monthly",
+                    "optimizer_internal_unit": "monthly",
+                    "projected_bills_unit": "monthly_estimate",
+                    "affordable_capacity_unit": "current_capacity",
+
+                    "income_basis": income_basis,
+
+                    "pool_used_ui": float(pool_used_ui.quantize(Decimal("0.01"))),
+                    "pool_used_monthly": float(monthly_pool.quantize(Decimal("0.01"))),
+                    "pool_equivalent_yearly": float((monthly_pool * Decimal("12")).quantize(Decimal("0.01"))),
+
+                    "projected_unrestricted_bills_ui": float(projected_bills_ui),
+                    "affordable_pool_ui": float(affordable_pool_ui),
+                    "budget_need_ui": float(budget_need_ui),
+                    "spend_need_ui": float(spend_need_ui),
+                    "baseline_need_ui": float(baseline_need_ui),
+                    "summed_ministry_need_ui": float(summed_ministry_need_ui),
+                    "need_total_ui": float(need_total_ui),
+
+                    "optimizer_source": "dry_run_backend_calculation",
+                    "optimizer_status": "dry_run_success",
+                    "manual_override_count": manual_override_count,
+
+                    "inflation_context": inflation_context,
+                    "inflation_country": inflation_context["country"],
+                    "inflation_rate_percent": inflation_context["rate_percent"],
+                    "inflation_period": inflation_context["period"],
+                    "inflation_source": inflation_context["source"],
+                    "inflation_release_date": inflation_context["release_date"],
+                    "inflation_rule": inflation_context["rule"],
+
+                    **manual_funds_meta,
+                }
+            })
+
+        # =========================================================
         # 4) OPENAI OPTIMIZATION
         # =========================================================
         ai_result = _call_openai_optimizer_for_budget(
@@ -15392,6 +15662,7 @@ def api_run_optimizer_openai(request):
             use_history=use_history,
             historical_year=historical_year,
             ministry_data=ministry_data,
+            inflation_context=inflation_context,
         )
 
         allocations_monthly, rationale_map, reserve_amount_monthly = _normalize_openai_allocations(
@@ -15447,6 +15718,13 @@ def api_run_optimizer_openai(request):
                 "spent_ytd": float(_to_decimal(md.get("spent_ytd", 0.0), "0.00")),
                 "spent_signal_display": float(_to_decimal(md.get("spent_ytd", 0.0), "0.00")),
 
+                "inflation_adjusted": bool(md.get("inflation_adjusted", False)),
+                "inflation_rate_percent": float(md.get("inflation_rate_percent", 0.0)),
+                "base_budget_before_inflation": float(md.get("base_budget_before_inflation", 0.0)),
+                "base_budget_after_inflation": float(md.get("base_budget_after_inflation", 0.0)),
+                "spending_need_before_inflation": float(md.get("spending_need_before_inflation", 0.0)),
+                "spending_need_after_inflation": float(md.get("spending_need_after_inflation", 0.0)),
+
                 "rationale": rationale_map.get(mid, ""),
             })
 
@@ -15489,6 +15767,14 @@ def api_run_optimizer_openai(request):
                 "ai_model_name": ai_result.get("model_name"),
                 "openai_summary": ai_result.get("summary"),
 
+                "inflation_context": inflation_context,
+                "inflation_country": inflation_context["country"],
+                "inflation_rate_percent": inflation_context["rate_percent"],
+                "inflation_period": inflation_context["period"],
+                "inflation_source": inflation_context["source"],
+                "inflation_release_date": inflation_context["release_date"],
+                "inflation_rule": inflation_context["rule"],
+
                 **manual_funds_meta,
             }
         }
@@ -15510,6 +15796,13 @@ def api_run_optimizer_openai(request):
                         "spent_avg_monthly": float(mm.get("spent_avg_monthly", 0.0)),
                         "db_min_monthly": float(mm.get("db_min_monthly", 0.0)),
                         "db_max_monthly": float(mm.get("db_max_monthly", 0.0)),
+
+                        "inflation_adjusted": bool(mm.get("inflation_adjusted", False)),
+                        "inflation_rate_percent": float(mm.get("inflation_rate_percent", 0.0)),
+                        "base_budget_before_inflation": float(mm.get("base_budget_before_inflation", 0.0)),
+                        "base_budget_after_inflation": float(mm.get("base_budget_after_inflation", 0.0)),
+                        "spending_need_before_inflation": float(mm.get("spending_need_before_inflation", 0.0)),
+                        "spending_need_after_inflation": float(mm.get("spending_need_after_inflation", 0.0)),
                     }
                     for mm in ministry_data
                 }
@@ -15538,6 +15831,7 @@ def api_run_optimizer_openai(request):
         print("--- OPENAI OPTIMIZER ERROR ---")
         print(traceback.format_exc())
         return JsonResponse({"error": str(e)}, status=500)
+
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class OpenAIPrescriptiveBudgetOptimizersView(PrescriptiveBudgetOptimizersView):

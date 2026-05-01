@@ -527,6 +527,44 @@
             transition: opacity 0.2s ease;
         }
 
+        .rule-modal-section {
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            background: #ffffff;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .rule-modal-section h6 {
+            font-weight: 800;
+            margin-bottom: .65rem;
+            color: var(--text-main);
+        }
+
+        .rule-modal-list {
+            padding-left: 1.15rem;
+            margin-bottom: 0;
+            color: #475569;
+            font-size: .92rem;
+        }
+
+        .rule-modal-list li {
+            margin-bottom: .48rem;
+        }
+
+        .rule-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            border-radius: 999px;
+            padding: .45rem .7rem;
+            background: #eef2ff;
+            color: var(--primary);
+            border: 1px solid #d9e1ff;
+            font-size: .78rem;
+            font-weight: 800;
+        }
+
         @media (max-width: 991.98px) {
             .result-summary-grid {
                 grid-template-columns: 1fr;
@@ -579,11 +617,19 @@
                 <h1 class="h3 fw-bold text-dark mb-2">{{ page_heading|default:"AI Budget Optimizer" }}</h1>
                 <p class="text-muted mb-0">{{ page_subheading|default:"Define constraints or use historical data to generate the optimal allocation." }}</p>
             </div>
-            <div class="text-lg-end">
+            <div class="text-lg-end d-flex flex-column flex-sm-row flex-lg-column align-items-sm-end align-items-lg-end gap-2">
                 <span class="system-pill">
                     <i class="fas fa-server text-success"></i>
                     {{ system_badge|default:"System Online" }}
                 </span>
+
+                <button type="button"
+                        class="btn btn-outline-primary btn-sm fw-bold rounded-pill px-3 no-print"
+                        data-bs-toggle="modal"
+                        data-bs-target="#optimizerRulesModal">
+                    <i class="fas fa-circle-info me-1"></i>
+                    View Optimizer Rules
+                </button>
             </div>
         </div>
     </div>
@@ -619,7 +665,16 @@
                         <i class="fas fa-sliders-h text-primary"></i>
                         <span>Configuration</span>
                     </div>
-                    <span class="fund-badge">OpenAI Optimizer</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button"
+                                class="btn btn-light border btn-sm fw-bold rounded-pill no-print"
+                                data-bs-toggle="modal"
+                                data-bs-target="#optimizerRulesModal">
+                            <i class="fas fa-list-check me-1 text-primary"></i>
+                            Rules
+                        </button>
+                        <span class="fund-badge">OpenAI Optimizer</span>
+                    </div>
                 </div>
 
                 <div class="card-body">
@@ -941,6 +996,157 @@
     </div>
 </div>
 
+
+<!-- OPTIMIZER RULES MODAL -->
+<div class="modal fade" id="optimizerRulesModal" tabindex="-1" aria-labelledby="optimizerRulesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+            <div class="modal-header bg-primary-subtle border-0">
+                <div>
+                    <div class="rule-pill mb-2">
+                        <i class="fas fa-brain"></i>
+                        OpenAI Prescriptive Budget Optimizer
+                    </div>
+                    <h5 class="modal-title fw-bold text-dark" id="optimizerRulesModalLabel">
+                        Optimizer Data Processing Rules
+                    </h5>
+                    <p class="text-muted small mb-0">
+                        These rules explain how the system prepares data, how OpenAI uses the prepared data, and how the backend validates the final allocation.
+                    </p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body bg-light">
+                <div class="row g-3">
+                    <div class="col-lg-6">
+                        <div class="rule-modal-section h-100">
+                            <h6><i class="fas fa-database text-primary me-2"></i>1. Data Sent to OpenAI</h6>
+                            <ul class="rule-modal-list">
+                                <li>The system does not send the full church database to OpenAI.</li>
+                                <li>Only summarized budget data is sent, such as monthly pool, ministry requirements, caps, priorities, and spending references.</li>
+                                <li>Raw receipts, passwords, complete transaction tables, and unrelated personal data are not included in the optimizer payload.</li>
+                                <li>The backend prepares the data first before OpenAI receives it.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="rule-modal-section h-100">
+                            <h6><i class="fas fa-wallet text-success me-2"></i>2. Current Fund Mode Rules</h6>
+                            <ul class="rule-modal-list">
+                                <li>Current Fund mode uses current unrestricted financial capacity.</li>
+                                <li>The system starts with unrestricted cash available.</li>
+                                <li>Projected unrestricted bills are reserved first before optimization.</li>
+                                <li>The monthly pool is limited by the actual affordable amount and ministry need.</li>
+                                <li>Old budgets from many years should not equally control Current Fund mode.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="rule-modal-section h-100">
+                            <h6><i class="fas fa-history text-info me-2"></i>3. Historical Mode Rules</h6>
+                            <ul class="rule-modal-list">
+                                <li>Historical mode uses the selected historical year as reference.</li>
+                                <li>It considers historical unrestricted income and ministry spending activity from that year.</li>
+                                <li>Historical mode is used for reference planning, not as the live cash position.</li>
+                                <li>Historical recommendations may differ from Current Fund mode because the basis is different.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="rule-modal-section h-100">
+                            <h6><i class="fas fa-triangle-exclamation text-danger me-2"></i>4. Emergency Expense Rules</h6>
+                            <ul class="rule-modal-list">
+                                <li>The system does not rely on simple averaging alone.</li>
+                                <li>Large abnormal expenses are treated as possible emergency spikes.</li>
+                                <li>Emergency spikes are not automatically treated as normal monthly expenses.</li>
+                                <li>The backend uses adjusted spending behavior before sending the need values to OpenAI.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="rule-modal-section h-100">
+                            <h6><i class="fas fa-calendar-check text-warning me-2"></i>5. Annual or Seasonal Expense Rules</h6>
+                            <ul class="rule-modal-list">
+                                <li>If a ministry spends only once or twice a year, the system classifies it as annual or event-based spending.</li>
+                                <li>Annual/event spending is converted into a monthly reserve amount.</li>
+                                <li>Seasonal expenses are also spread as a monthly reserve.</li>
+                                <li>This prevents one-time annual spending from being misread as monthly spending.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="rule-modal-section h-100">
+                            <h6><i class="fas fa-arrow-trend-up text-primary me-2"></i>6. Inflation Rules</h6>
+                            <ul class="rule-modal-list">
+                                <li>The backend provides the inflation context to OpenAI.</li>
+                                <li>OpenAI must not guess or invent the inflation rate.</li>
+                                <li>Inflation is applied only to budget needs, spending references, and historical references.</li>
+                                <li>Inflation must not increase actual cash on hand, restricted funds, unrestricted cash, safe-to-spend amount, or monthly pool.</li>
+                                <li>The final allocation is still limited by real available funds.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="rule-modal-section h-100">
+                            <h6><i class="fas fa-scale-balanced text-success me-2"></i>7. Allocation Rules</h6>
+                            <ul class="rule-modal-list">
+                                <li>OpenAI must return allocations in monthly units only.</li>
+                                <li>Do not allocate negative values.</li>
+                                <li>Use every eligible ministry exactly once.</li>
+                                <li>Do not exceed the provided monthly pool.</li>
+                                <li>Respect ministry maximum caps when configured.</li>
+                                <li>If funds are insufficient, higher-priority ministries may receive relatively more.</li>
+                                <li>Any leftover amount is placed into reserve or unallocated balance.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="rule-modal-section h-100">
+                            <h6><i class="fas fa-shield-halved text-primary me-2"></i>8. Backend Validation Rules</h6>
+                            <ul class="rule-modal-list">
+                                <li>OpenAI output is treated as a recommendation, not an automatic final decision.</li>
+                                <li>The backend validates the returned allocations.</li>
+                                <li>The backend prevents over-allocation beyond the available pool.</li>
+                                <li>The backend prevents negative amounts and invalid ministry IDs.</li>
+                                <li>The final plan is still reviewable by authorized church finance personnel.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="alert alert-primary border-0 rounded-4 mb-0">
+                            <div class="d-flex align-items-start gap-3">
+                                <i class="fas fa-lightbulb fs-4 mt-1"></i>
+                                <div>
+                                    <strong>Panel Defense Summary:</strong>
+                                    <div class="small mt-1">
+                                        The optimizer uses processed and summarized church financial data. It handles emergency spikes, annual/event-based expenses, current fund limitations, and inflation-aware needs. OpenAI generates a recommendation from these constraints, while the backend validates the output to ensure the allocation does not exceed the actual available funds.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer bg-white border-0">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 window.currentMode = 'manual';
 window.historySuggestedScores = {};
