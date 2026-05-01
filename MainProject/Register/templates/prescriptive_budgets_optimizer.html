@@ -29,52 +29,190 @@
             --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding-bottom: 40px; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding-bottom: 40px;
+        }
+
         .navbar { background: #1e293b; box-shadow: var(--shadow-md); }
         .navbar-brand { font-weight: 700; letter-spacing: -0.5px; }
 
-        .card { background: var(--surface); border: 1px solid var(--border-color); border-radius: var(--card-radius); box-shadow: var(--shadow-sm); overflow: hidden; }
-        .card-header { background: #fff; border-bottom: 1px solid var(--border-color); padding: 1.25rem 1.5rem; font-weight: 600; color: var(--text-main); display: flex; align-items: center; }
-        .card-body { padding: 1.5rem; }
-
-        .card-highlight { border: 1px solid var(--primary-light); box-shadow: var(--shadow-md); }
-        .card-highlight .card-header { background: linear-gradient(to right, #eff6ff, #fff); color: var(--primary); }
-
-        .form-control, .form-select { border-radius: 8px; border: 1px solid var(--border-color); padding: 0.6rem 0.8rem; font-size: 0.95rem; font-weight: 600; color: var(--text-main); }
-        .form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
-        .input-group-text { background-color: #f1f5f9; border-color: var(--border-color); color: var(--text-muted); }
-
-        .nav-pills .nav-link { color: var(--text-muted); font-weight: 500; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
-        .nav-pills .nav-link:hover { background-color: #f1f5f9; }
-        .nav-pills .nav-link.active { background-color: var(--primary-light); color: var(--primary); font-weight: 700; }
-
-        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; margin: 12px 0; }
-        input[type=range]:focus { outline: none; }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; cursor: pointer; background: #e2e8f0; border-radius: 999px; }
-        input[type=range]::-webkit-slider-thumb {
-            height: 20px; width: 20px; border-radius: 50%; background: var(--surface);
-            border: 2px solid var(--primary); cursor: pointer; -webkit-appearance: none; margin-top: -6px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.1s ease;
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
         }
 
-        .ministry-card { background: #ffffff; border: 1px solid var(--border-color) !important; border-radius: 12px; transition: border-color 0.3s; }
-        .ministry-card:hover { border-color: var(--primary-light) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-        .ministry-card.border-info { border-color: var(--primary) !important; background-color: #f5f3ff; }
+        .card-header {
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.25rem 1.5rem;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+        }
+
+        .card-body { padding: 1.5rem; }
+
+        .card-highlight {
+            border: 1px solid var(--primary-light);
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-highlight .card-header {
+            background: linear-gradient(to right, #eff6ff, #fff);
+            color: var(--primary);
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            padding: 0.6rem 0.8rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .input-group-text {
+            background-color: #f1f5f9;
+            border-color: var(--border-color);
+            color: var(--text-muted);
+        }
+
+        .nav-pills .nav-link {
+            color: var(--text-muted);
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-pills .nav-link:hover { background-color: #f1f5f9; }
+
+        .nav-pills .nav-link.active {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            margin: 12px 0;
+        }
+
+        input[type=range]:focus { outline: none; }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #e2e8f0;
+            border-radius: 999px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 2px solid var(--primary);
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.1s ease;
+        }
+
+        .ministry-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 12px;
+            transition: border-color 0.3s;
+        }
+
+        .ministry-card:hover {
+            border-color: var(--primary-light) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .ministry-card.border-info {
+            border-color: var(--primary) !important;
+            background-color: #f5f3ff;
+        }
 
         .btn-primary-custom {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
-            border: none; color: white; padding: 0.75rem 1.5rem; font-weight: 600;
-            border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3); transition: transform 0.1s;
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+            transition: transform 0.1s;
         }
-        .btn-primary-custom:hover { transform: translateY(-1px); color: white; }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-1px);
+            color: white;
+        }
 
         .fund-line { font-size: 0.95rem; }
         .transition-opacity { transition: opacity 0.2s ease; }
 
+        .ai-rule-card {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+        }
+
+        .ai-rule-icon {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: var(--primary-light);
+            color: var(--primary);
+            flex: 0 0 auto;
+        }
+
+        .ai-rule-list,
+        .explanation-list {
+            padding-left: 1.1rem;
+            margin-bottom: 0;
+        }
+
+        .ai-rule-list li,
+        .explanation-list li {
+            margin-bottom: 0.35rem;
+        }
+
         @media print {
             body * { visibility: hidden; }
-            #resultsContainer, #resultsContainer * { visibility: visible; }
-            #resultsContainer { position: absolute; left: 0; top: 0; width: 100%; }
+            #resultsContainer,
+            #resultsContainer * { visibility: visible; }
+            #resultsContainer {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
             .no-print { display: none !important; }
         }
     </style>
@@ -92,7 +230,7 @@
         </div>
         <div class="d-none d-md-block text-end">
             <span class="badge bg-white border text-secondary shadow-sm px-3 py-2">
-              <i class="fas fa-server text-success me-1"></i> System Online
+                <i class="fas fa-server text-success me-1"></i> System Online
             </span>
         </div>
     </div>
@@ -149,7 +287,7 @@
                         <div class="bg-light rounded p-3 mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-2 fund-line">
                                 <span class="text-muted small"><i class="fas fa-wallet me-2"></i>Total Cash on Hand</span>
-                                <span class="fw-bold">{{ total_cash|floatformat:2|intcomma }}</span>
+                                <span class="fw-bold">₱{{ total_cash|floatformat:2|intcomma }}</span>
                             </div>
 
                             <div class="d-flex justify-content-between align-items-center mb-2 fund-line text-warning">
@@ -211,6 +349,94 @@
                                 This value is prescribed by AI using unrestricted available funds, projected unrestricted bills, and ministry baselines.
                             </div>
                         </div>
+
+                        <!-- OPENAI DATA PROCESSING RULES -->
+                        <div class="ai-rule-card p-3 mb-4">
+                            <div class="d-flex align-items-start gap-3 mb-2">
+                                <div class="ai-rule-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">How OpenAI Processes the Data</h6>
+                                    <p class="small text-muted mb-0">
+                                        The system does not send the whole church database to OpenAI. The backend first prepares summarized budget data, then sends only the values needed to generate an allocation recommendation.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="accordion accordion-flush" id="aiProcessAccordion">
+                                <div class="accordion-item bg-transparent">
+                                    <h2 class="accordion-header" id="aiHeadingData">
+                                        <button class="accordion-button collapsed bg-transparent px-0 py-2 small fw-bold" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#aiDataUsed" aria-expanded="false" aria-controls="aiDataUsed">
+                                            1. What data is used?
+                                        </button>
+                                    </h2>
+                                    <div id="aiDataUsed" class="accordion-collapse collapse" aria-labelledby="aiHeadingData" data-bs-parent="#aiProcessAccordion">
+                                        <div class="accordion-body px-0 pt-0 small text-muted">
+                                            <ul class="ai-rule-list">
+                                                <li>Unrestricted cash available</li>
+                                                <li>Projected unrestricted bills</li>
+                                                <li>Safe-to-spend amount</li>
+                                                <li>Ministry budget baseline and minimum requirement</li>
+                                                <li>Maximum cap per ministry</li>
+                                                <li>Priority score per ministry</li>
+                                                <li>Historical or current ministry spending reference</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="accordion-item bg-transparent">
+                                    <h2 class="accordion-header" id="aiHeadingProcess">
+                                        <button class="accordion-button collapsed bg-transparent px-0 py-2 small fw-bold" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#aiProcessingRules" aria-expanded="false" aria-controls="aiProcessingRules">
+                                            2. How is the data processed before OpenAI?
+                                        </button>
+                                    </h2>
+                                    <div id="aiProcessingRules" class="accordion-collapse collapse" aria-labelledby="aiHeadingProcess" data-bs-parent="#aiProcessAccordion">
+                                        <div class="accordion-body px-0 pt-0 small text-muted">
+                                            The backend computes the available unrestricted funds, subtracts projected unrestricted bills, determines the safe-to-spend amount, and compares this with ministry budget needs. Spending is adjusted before optimization so that emergency spikes, annual events, and seasonal expenses do not distort the recommendation as simple averages.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="accordion-item bg-transparent">
+                                    <h2 class="accordion-header" id="aiHeadingOutput">
+                                        <button class="accordion-button collapsed bg-transparent px-0 py-2 small fw-bold" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#aiWhyOutput" aria-expanded="false" aria-controls="aiWhyOutput">
+                                            3. Why does OpenAI produce that output?
+                                        </button>
+                                    </h2>
+                                    <div id="aiWhyOutput" class="accordion-collapse collapse" aria-labelledby="aiHeadingOutput" data-bs-parent="#aiProcessAccordion">
+                                        <div class="accordion-body px-0 pt-0 small text-muted">
+                                            OpenAI generates the recommendation based on the available fund pool, ministry minimum requirements, maximum caps, priority scores, spending behavior, and the instruction that allocations must not exceed the available funds. Higher-priority ministries with valid needs may receive more, but the backend still validates and repairs the final output.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="accordion-item bg-transparent">
+                                    <h2 class="accordion-header" id="aiHeadingSafety">
+                                        <button class="accordion-button collapsed bg-transparent px-0 py-2 small fw-bold" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#aiSafetyRules" aria-expanded="false" aria-controls="aiSafetyRules">
+                                            4. What safety rules are applied?
+                                        </button>
+                                    </h2>
+                                    <div id="aiSafetyRules" class="accordion-collapse collapse" aria-labelledby="aiHeadingSafety" data-bs-parent="#aiProcessAccordion">
+                                        <div class="accordion-body px-0 pt-0 small text-muted">
+                                            <ul class="ai-rule-list">
+                                                <li>Do not allocate negative amounts.</li>
+                                                <li>Do not exceed the total funds available for optimization.</li>
+                                                <li>Respect each ministry's maximum cap.</li>
+                                                <li>Use each ministry only once.</li>
+                                                <li>Place any remaining amount into reserve or unallocated balance.</li>
+                                                <li>Allow authorized users to review and adjust before final approval.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- HISTORY MODE -->
@@ -218,7 +444,7 @@
                         <div class="alert alert-info border-0 d-flex align-items-start shadow-sm mb-3">
                             <i class="fas fa-info-circle mt-1 me-2"></i>
                             <div class="small" style="font-size: 0.8rem;">
-                                <strong>Analysis:</strong> Select a year. The AI will calculate the available funds from that year's unrestricted basis.
+                                <strong>Analysis:</strong> Select a year. The system will calculate the available funds from that year's unrestricted basis.
                             </div>
                         </div>
 
@@ -349,7 +575,7 @@
                                     <i class="fas fa-check-circle fs-3 me-3"></i>
                                     <div>
                                         <h5 class="fw-bold mb-0">Optimization Complete</h5>
-                                        <small id="resultMetaText">Based on your priorities & constraints.</small>
+                                        <small id="resultMetaText">Based on your priorities and constraints.</small>
                                     </div>
                                 </div>
                                 <div class="text-end">
@@ -359,6 +585,14 @@
                         </div>
 
                         <ul class="list-group list-group-flush" id="allocationList"></ul>
+
+                        <div id="aiExplanationBox" class="p-4 border-top bg-white d-none">
+                            <h6 class="fw-bold text-dark mb-2">
+                                <i class="fas fa-lightbulb text-warning me-2"></i>
+                                Why This Allocation Was Generated
+                            </h6>
+                            <div id="aiExplanationText" class="small text-muted mb-0"></div>
+                        </div>
 
                         <div class="p-4 bg-light border-top text-end no-print">
                             <button class="btn btn-white border shadow-sm text-secondary me-2" onclick="window.print()">
@@ -380,30 +614,31 @@
 <script>
 window.currentMode = 'manual';
 
-// --- CSRF cookie helper ---
 function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(";").shift();
+    if (parts.length === 2) return parts.pop().split(';').shift();
     return null;
 }
-const CSRFTOKEN = getCookie("csrftoken");
 
-// URLs
+const CSRFTOKEN = getCookie('csrftoken');
 const URL_HIST_STATS = "{% url 'api_get_historical_stats' %}";
 const URL_MINISTRY_YEAR = "{% url 'api_get_ministry_stats_year' %}";
-const URL_RUN_OPT = "{% url 'api_run_optimizer' %}";
+const URL_RUN_OPT = "{% if optimizer_post_url %}{{ optimizer_post_url }}{% else %}{% url 'api_run_optimizer' %}{% endif %}";
 
 function fmtPeso(num) {
-    return "₱" + parseFloat(num || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-function fmtPeso0(num) {
-    return "₱" + parseFloat(num || 0).toLocaleString('en-US', { maximumFractionDigits: 0 });
+    return '₱' + parseFloat(num || 0).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
 }
 
-// =========
-// MODE SWITCH
-// =========
+function fmtPeso0(num) {
+    return '₱' + parseFloat(num || 0).toLocaleString('en-US', {
+        maximumFractionDigits: 0
+    });
+}
+
 window.setMode = async function(mode) {
     window.currentMode = mode;
 
@@ -427,9 +662,6 @@ window.setMode = async function(mode) {
     }
 };
 
-// =========
-// MANUAL: sync AI-prescribed unrestricted-safe pool
-// =========
 window.onManualChange = async function() {
     const timeframe = document.getElementById('manualTimeframe').value;
 
@@ -448,11 +680,11 @@ window.onManualChange = async function() {
     });
 
     try {
-        const response = await fetch(URL_RUN_OPT + "?_=" + Date.now(), {
-            method: "POST",
+        const response = await fetch(URL_RUN_OPT + '?_=' + Date.now(), {
+            method: 'POST',
             headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": CSRFTOKEN
+                'Content-Type': 'application/json',
+                'X-CSRFToken': CSRFTOKEN
             },
             body: JSON.stringify({
                 use_history: false,
@@ -463,22 +695,20 @@ window.onManualChange = async function() {
         });
 
         const data = await response.json();
+
         if (!response.ok || data.error) {
-            dispFunds.innerText = "Error";
-            dispLabel.innerText = data.error || "Unable to calculate AI-prescribed funds.";
-            totalFunds.value = "0.00";
-            console.error(data.error || response.status);
+            dispFunds.innerText = 'Error';
+            dispLabel.innerText = data.error || 'Unable to calculate AI-prescribed funds.';
+            totalFunds.value = '0.00';
         } else {
             const meta = data.meta || {};
             const poolUI = parseFloat(meta.pool_used_ui || 0);
+            const unrestrictedCash = parseFloat(meta.unrestricted_cash_available || 0);
+            const projected = parseFloat(meta.projected_unrestricted_bills || meta.projected_unrestricted_bills_ui || 0);
+            const safe = parseFloat(meta.safe_to_spend || 0);
 
             dispFunds.innerText = fmtPeso(poolUI);
             totalFunds.value = (poolUI || 0).toFixed(2);
-
-            const unrestrictedCash = parseFloat(meta.unrestricted_cash_available || 0);
-            const projected = parseFloat(meta.projected_unrestricted_bills || 0);
-            const safe = parseFloat(meta.safe_to_spend || 0);
-
             dispLabel.innerText =
                 `Unrestricted available: ${fmtPeso(unrestrictedCash)} • ` +
                 `Projected unrestricted bills: ${fmtPeso(projected)} • ` +
@@ -486,27 +716,21 @@ window.onManualChange = async function() {
         }
     } catch (e) {
         console.error(e);
-        dispFunds.innerText = "Connection Error";
-        dispLabel.innerText = "Please try again.";
-        totalFunds.value = "0.00";
+        dispFunds.innerText = 'Connection Error';
+        dispLabel.innerText = 'Please try again.';
+        totalFunds.value = '0.00';
     } finally {
         loader.classList.add('d-none');
         content.style.opacity = '1';
     }
 };
 
-// =========
-// HISTORY: one handler for year/timeframe changes
-// =========
 window.onHistoryChange = async function() {
     await fetchHistoricalStats();
     const year = document.getElementById('histYear').value;
     await fetchMinistryStatsForYear(year);
 };
 
-// =========
-// HISTORY: funds card
-// =========
 window.fetchHistoricalStats = async function() {
     const year = document.getElementById('histYear').value;
     const timeframe = document.getElementById('histTimeframe').value;
@@ -520,38 +744,42 @@ window.fetchHistoricalStats = async function() {
     content.style.opacity = '0.3';
 
     try {
-        const response = await fetch(URL_HIST_STATS + "?_=" + Date.now(), {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "X-CSRFToken": CSRFTOKEN },
-            body: JSON.stringify({ year: year, timeframe: timeframe })
+        const response = await fetch(URL_HIST_STATS + '?_=' + Date.now(), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': CSRFTOKEN
+            },
+            body: JSON.stringify({
+                year: year,
+                timeframe: timeframe
+            })
         });
+
         const data = await response.json();
 
         if (!response.ok || data.error) {
-            dispFunds.innerText = "Error";
-            dispLabel.innerText = data.error || ("HTTP " + response.status);
+            dispFunds.innerText = 'Error';
+            dispLabel.innerText = data.error || ('HTTP ' + response.status);
         } else {
             const funds = parseFloat(data.funds_to_optimize || 0);
-            dispFunds.innerText = fmtPeso(funds);
+            const label = timeframe === 'monthly' ? 'Monthly Average' : 'Whole Year';
 
-            const label = (timeframe === 'monthly') ? "Monthly Average" : "Whole Year";
+            dispFunds.innerText = fmtPeso(funds);
             dispLabel.innerText = `Based on ${year} ${label} unrestricted basis`;
         }
     } catch (error) {
         console.error(error);
-        dispFunds.innerText = "Connection Error";
-        dispLabel.innerText = "Please try again.";
+        dispFunds.innerText = 'Connection Error';
+        dispLabel.innerText = 'Please try again.';
     } finally {
         loader.classList.add('d-none');
         content.style.opacity = '1';
     }
 };
 
-// =========
-// HISTORY: ministry list by year
-// =========
 window.fetchMinistryStatsForYear = async function(year) {
-    const holder = document.getElementById("ministryList");
+    const holder = document.getElementById('ministryList');
     if (!holder) return;
 
     holder.innerHTML = `
@@ -561,28 +789,34 @@ window.fetchMinistryStatsForYear = async function(year) {
         </div>`;
 
     try {
-        const response = await fetch(URL_MINISTRY_YEAR + "?_=" + Date.now(), {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "X-CSRFToken": CSRFTOKEN },
+        const response = await fetch(URL_MINISTRY_YEAR + '?_=' + Date.now(), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': CSRFTOKEN
+            },
             body: JSON.stringify({ year: year })
         });
 
         const data = await response.json();
+
         if (!response.ok || data.error) {
-            holder.innerHTML = `<div class="alert alert-danger">Error loading ministries: ${data.error || ("HTTP " + response.status)}</div>`;
+            holder.innerHTML = `<div class="alert alert-danger">Error loading ministries: ${data.error || ('HTTP ' + response.status)}</div>`;
             return;
         }
 
         const items = Array.isArray(data.items) ? data.items : [];
+
         if (!items.length) {
             holder.innerHTML = `<div class="alert alert-warning border-0 shadow-sm text-center">No ministries found for ${year}.</div>`;
             return;
         }
 
-        holder.innerHTML = "";
+        holder.innerHTML = '';
+
         items.forEach(m => {
             const id = m.ministry_id;
-            const name = m.ministry_name || ("Ministry #" + id);
+            const name = m.ministry_name || ('Ministry #' + id);
             const spent = m.spent || 0;
             const minReq = m.min_req || 0;
             const suggested = m.suggested_score || 5;
@@ -621,20 +855,18 @@ window.fetchMinistryStatsForYear = async function(year) {
                     </div>
                 </div>`;
         });
-
     } catch (e) {
         console.error(e);
         holder.innerHTML = `<div class="alert alert-danger">Connection error loading ministries.</div>`;
     }
 };
 
-// =========
-// Apply suggestion
-// =========
 window.applySuggestion = function(ministryId, suggestedValue) {
     const slider = document.getElementById('slider-' + ministryId);
+
     if (slider) {
         slider.value = suggestedValue;
+
         const valEl = document.getElementById('val-' + ministryId);
         if (valEl) valEl.innerText = suggestedValue;
 
@@ -646,16 +878,15 @@ window.applySuggestion = function(ministryId, suggestedValue) {
     }
 };
 
-// =========
-// RUN OPTIMIZER (real run)
-// =========
 window.runOptimizer = async function() {
     const spinner = document.getElementById('loadingSpinner');
     const emptyState = document.getElementById('emptyState');
     const resultsArea = document.getElementById('resultsArea');
+    const aiExplanationBox = document.getElementById('aiExplanationBox');
 
     emptyState.classList.add('d-none');
     resultsArea.classList.add('d-none');
+    if (aiExplanationBox) aiExplanationBox.classList.add('d-none');
     spinner.classList.remove('d-none');
 
     const priorities = {};
@@ -676,8 +907,11 @@ window.runOptimizer = async function() {
 
     try {
         const response = await fetch(URL_RUN_OPT, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "X-CSRFToken": CSRFTOKEN },
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': CSRFTOKEN
+            },
             body: JSON.stringify(payload)
         });
 
@@ -685,35 +919,33 @@ window.runOptimizer = async function() {
         spinner.classList.add('d-none');
 
         if (!response.ok || data.error) {
-            alert("Error: " + (data.error || ("HTTP " + response.status)));
+            alert('Error: ' + (data.error || ('HTTP ' + response.status)));
             emptyState.classList.remove('d-none');
         } else {
             renderResults(data);
         }
-
     } catch (error) {
         console.error(error);
-        alert("Connection failed.");
+        alert('Connection failed.');
         spinner.classList.add('d-none');
         emptyState.classList.remove('d-none');
     }
 };
 
-// =========
-// RENDER RESULTS
-// =========
 function renderResults(data) {
     const list = document.getElementById('allocationList');
     const resultsArea = document.getElementById('resultsArea');
     const metaText = document.getElementById('resultMetaText');
     const metaBadge = document.getElementById('resultMetaBadge');
+    const aiExplanationBox = document.getElementById('aiExplanationBox');
+    const aiExplanationText = document.getElementById('aiExplanationText');
 
     const meta = data.meta || {};
-    const mode = meta.mode || "Manual";
+    const mode = meta.mode || 'Manual';
 
-    if (mode === "Historical") {
-        const year = meta.basis_year || meta.reference_year || meta.year || "N/A";
-        const tf = (meta.ui_timeframe || "yearly");
+    if (mode === 'Historical') {
+        const year = meta.basis_year || meta.reference_year || meta.year || 'N/A';
+        const tf = meta.ui_timeframe || 'yearly';
         const tfLabel = tf.charAt(0).toUpperCase() + tf.slice(1);
 
         metaBadge.innerText = `${year} (${tfLabel})`;
@@ -723,11 +955,10 @@ function renderResults(data) {
             `Based on <strong>${year}</strong> unrestricted historical basis.<br>` +
             `Funds Used: <strong>${fmtPeso(meta.pool_used_ui)}</strong>`;
     } else {
-        const tf = (meta.ui_timeframe || "yearly");
+        const tf = meta.ui_timeframe || 'yearly';
         const tfLabel = tf.charAt(0).toUpperCase() + tf.slice(1);
-
         const unrestrictedCash = parseFloat(meta.unrestricted_cash_available || 0);
-        const projected = parseFloat(meta.projected_unrestricted_bills || 0);
+        const projected = parseFloat(meta.projected_unrestricted_bills || meta.projected_unrestricted_bills_ui || 0);
         const safe = parseFloat(meta.safe_to_spend || 0);
 
         metaBadge.innerText = `Manual (${tfLabel})`;
@@ -742,7 +973,9 @@ function renderResults(data) {
     }
 
     list.innerHTML = '';
+
     const allocations = Array.isArray(data.allocations) ? data.allocations : [];
+
     if (!allocations.length) {
         list.innerHTML = `<li class="list-group-item text-center text-muted py-4">No allocations returned.</li>`;
         resultsArea.classList.remove('d-none');
@@ -752,12 +985,14 @@ function renderResults(data) {
     allocations.sort((a, b) => (parseFloat(b.allocated_amount) || 0) - (parseFloat(a.allocated_amount) || 0));
 
     let grandTotal = 0;
+
     allocations.forEach(row => {
         const ministryId = row.ministry_id;
         const amount = parseFloat(row.allocated_amount || 0);
         grandTotal += amount;
 
         let name = row.ministry_name;
+
         if (!name) {
             const slider = document.querySelector(`.priority-slider[data-id="${ministryId}"]`);
             name = slider
@@ -765,18 +1000,30 @@ function renderResults(data) {
                 : `Ministry #${ministryId}`;
         }
 
+        const priority = row.priority_score || 0;
+        const source = row.priority_source || 'system';
+        const minReq = row.min_req_display || row.min_req_monthly || 0;
+        const maxCap = row.max_cap_display || row.max_cap_monthly || 0;
+        const rationale = row.rationale || '';
+
         list.innerHTML += `
-            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                <div class="d-flex align-items-center">
-                    <div class="bg-light rounded p-2 me-3 text-secondary"><i class="fas fa-users"></i></div>
-                    <div>
-                        <h6 class="mb-0 text-dark fw-bold">${name}</h6>
-                        <small class="text-muted">Recommended Budget</small>
+            <li class="list-group-item py-3">
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div class="d-flex align-items-start">
+                        <div class="bg-light rounded p-2 me-3 text-secondary">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1 text-dark fw-bold">${name}</h6>
+                            <small class="text-muted d-block">Priority: ${priority} • Source: ${source}</small>
+                            <small class="text-muted d-block">Min Req: ${fmtPeso(minReq)} • Max Cap: ${fmtPeso(maxCap)}</small>
+                            ${rationale ? `<small class="text-muted d-block mt-1"><strong>Reason:</strong> ${rationale}</small>` : ''}
+                        </div>
                     </div>
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success fw-bold px-3 py-2 fs-6">
+                        ${fmtPeso(amount)}
+                    </span>
                 </div>
-                <span class="badge bg-success bg-opacity-10 text-success border border-success fw-bold px-3 py-2 fs-6">
-                    ${fmtPeso(amount)}
-                </span>
             </li>`;
     });
 
@@ -786,11 +1033,79 @@ function renderResults(data) {
             <span class="text-dark fw-bold fs-5">${fmtPeso(grandTotal)}</span>
         </li>`;
 
+    renderAIExplanation(meta, mode);
     resultsArea.classList.remove('d-none');
 }
 
-// init: manual sync pool on load
-document.addEventListener("DOMContentLoaded", async () => {
+function renderAIExplanation(meta, mode) {
+    const aiExplanationBox = document.getElementById('aiExplanationBox');
+    const aiExplanationText = document.getElementById('aiExplanationText');
+
+    if (!aiExplanationBox || !aiExplanationText) return;
+
+    const poolUsed = parseFloat(meta.pool_used_ui || 0);
+    const poolMonthly = parseFloat(meta.pool_used_monthly || 0);
+    const unrestrictedCash = parseFloat(meta.unrestricted_cash_available || 0);
+    const projectedBills = parseFloat(meta.projected_unrestricted_bills || meta.projected_unrestricted_bills_ui || 0);
+    const safeToSpend = parseFloat(meta.safe_to_spend || 0);
+    const budgetNeed = parseFloat(meta.budget_need_monthly || meta.budget_need_ui || 0);
+    const spendNeed = parseFloat(meta.spend_need_monthly || meta.spend_need_ui || 0);
+    const baselineNeed = parseFloat(meta.baseline_need_monthly || meta.baseline_need_ui || 0);
+    const needTotal = parseFloat(meta.need_total_monthly || meta.need_total_ui || 0);
+    const optimizerSource = meta.optimizer_source || 'optimizer_engine';
+    const openaiSummary = meta.openai_summary || '';
+
+    let explanation = '';
+
+    if (mode === 'Historical') {
+        const referenceYear = meta.reference_year || meta.basis_year || meta.year || 'selected year';
+
+        explanation = `
+            <p class="mb-2">
+                The system used <strong>${referenceYear}</strong> as the historical basis. It computed the unrestricted financial basis for that year and converted it according to the selected timeframe.
+            </p>
+            <ul class="explanation-list">
+                <li><strong>Mode:</strong> Historical</li>
+                <li><strong>Funds used:</strong> ${fmtPeso(poolUsed)}</li>
+                <li><strong>Monthly equivalent:</strong> ${fmtPeso(poolMonthly)}</li>
+                <li><strong>Optimizer source:</strong> ${optimizerSource}</li>
+            </ul>
+            <p class="mb-0">
+                The allocation was generated by comparing available funds with ministry requirements, priority scores, maximum caps, and spending references. The backend validates the result so the total allocation does not exceed the available pool.
+            </p>`;
+    } else {
+        explanation = `
+            <p class="mb-2">
+                The system used the current/manual financial basis. It first identified unrestricted cash, deducted projected unrestricted bills, and used the safe-to-spend amount as the protection limit before generating the allocation.
+            </p>
+            <ul class="explanation-list">
+                <li><strong>Unrestricted cash available:</strong> ${fmtPeso(unrestrictedCash)}</li>
+                <li><strong>Projected unrestricted bills:</strong> ${fmtPeso(projectedBills)}</li>
+                <li><strong>Safe to spend:</strong> ${fmtPeso(safeToSpend)}</li>
+                <li><strong>Budget need reference:</strong> ${fmtPeso(budgetNeed)}</li>
+                <li><strong>Spending need reference:</strong> ${fmtPeso(spendNeed)}</li>
+                <li><strong>Adjusted baseline need:</strong> ${fmtPeso(baselineNeed)}</li>
+                <li><strong>Total adjusted need:</strong> ${fmtPeso(needTotal)}</li>
+                <li><strong>Funds used for optimization:</strong> ${fmtPeso(poolUsed)}</li>
+                <li><strong>Optimizer source:</strong> ${optimizerSource}</li>
+            </ul>
+            <p class="mb-0">
+                The final recommendation balances available funds, ministry minimum requirements, maximum caps, priority scores, and adjusted spending behavior. Emergency or unusual spending is not automatically treated as a normal monthly need because the backend adjusts the spending pattern before optimization.
+            </p>`;
+    }
+
+    if (openaiSummary) {
+        explanation += `
+            <div class="alert alert-primary border-0 mt-3 mb-0 small">
+                <strong>OpenAI Summary:</strong> ${openaiSummary}
+            </div>`;
+    }
+
+    aiExplanationText.innerHTML = explanation;
+    aiExplanationBox.classList.remove('d-none');
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
     await onManualChange();
 });
 </script>

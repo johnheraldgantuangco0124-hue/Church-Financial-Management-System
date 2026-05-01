@@ -10665,32 +10665,6 @@ def _get_current_fund_balances(church_id: int):
     }
 
 
-def get_projected_expenses_unrestricted(church_id):
-    Expense = apps.get_model("Register", "Expense")
-
-    today = date.today()
-    start_date = today - timedelta(days=90)
-
-    fixed_keywords = [
-        "Utilities", "Electric Bill", "Water Bill", "Internet",
-        "Salaries", "Wages", "Honorarium", "Pastor's Honorarium",
-        "Rent", "Lease", "Fixed Costs"
-    ]
-
-    recent_bills = (
-        Expense.objects.filter(
-            church_id=church_id,
-            expense_date__gte=start_date,
-            category__name__in=fixed_keywords
-        )
-        .filter(Q(category__is_restricted=False) | Q(category__is_restricted__isnull=True))
-        .exclude(status__in=["Declined", "Rejected"])
-        .aggregate(t=Coalesce(Sum("amount"), Decimal("0.00")))["t"]
-    )
-
-    projected = _to_decimal(recent_bills) / Decimal("3")
-    return projected.quantize(Decimal("0.01"))
-
 from ai_analytics.forecasting import (
     calculate_financial_health,
     get_current_fund_balances,
@@ -11028,102 +11002,232 @@ def _safe_int(v, default=None):
         return default
 
 
-def _latest_budget_monthly_map(church_id: int):
-    MinistryBudget = apps.get_model("Register", "MinistryBudget")
 
-    # Pull all budgets for church; only what we need
-    rows = (
-        MinistryBudget.objects
-        .filter(church_id=church_id, is_active=True)
-        .values("ministry_id", "year", "month", "amount_allocated")
-        .order_by("ministry_id", "-year", "-month")  # latest year first; month 12..0
-    )
+def _median_decimal(values):
+    values = sorted([
+        _to_decimal(v, "0.00")
+        for v in values
+        if _to_decimal(v, "0.00") > 0
+    ])
 
-    latest = {}  # ministry_id -> (year, month, amount_decimal)
-    for r in rows:
-        mid = r["ministry_id"]
-        if mid in latest:
-            continue  # keep first (latest by ordering)
+    if not values:
+        return Decimal("0.00")
 
-        amt = r["amount_allocated"]
-        try:
-            amt = Decimal(str(amt or "0.00"))
-        except Exception:
-            amt = Decimal("0.00")
+    n = len(values)
+    mid = n // 2
 
-        latest[mid] = (int(r["year"] or 0), int(r["month"] or 0), amt)
+    if n % 2 == 1:
+        return values[mid].quantize(Decimal("0.01"))
 
-    latest_monthly = {}
-    for mid, (y, mo, amt) in latest.items():
-        if mo == 0:
-            # yearly pool -> monthly equivalent
-            m_amt = (amt / Decimal("12")) if amt > 0 else Decimal("0.00")
-        else:
-            # monthly budget
-            m_amt = amt
-        latest_monthly[mid] = m_amt
+    return ((values[mid - 1] + values[mid]) / Decimal("2")).quantize(Decimal("0.01"))
 
-    budget_need_monthly = sum(latest_monthly.values(), Decimal("0.00"))
-    return latest_monthly, budget_need_monthly
 
+def _classify_monthly_spending_pattern(monthly_totals):
+    """
+    Converts ministry spending history into a safer monthly need.
+
+    This avoids simple averaging problems:
+      - one emergency month should not inflate normal monthly need
+      - annual/event-based spending should be spread as a reserve
+      - recurring spending should use median, not average
+    """
+    monthly = [_to_decimal(x, "0.00") for x in monthly_totals]
+    total = sum(monthly, Decimal("0.00")).quantize(Decimal("0.01"))
+
+    nonzero = [x for x in monthly if x > 0]
+    active_months = len(nonzero)
+
+    if total <= 0 or active_months == 0:
+        return {
+            "behavior": "no_history",
+            "adjusted_need_monthly": Decimal("0.00"),
+            "annual_reserve_monthly": Decimal("0.00"),
+            "emergency_excluded_amount": Decimal("0.00"),
+            "active_months": 0,
+        }
+
+    raw_avg_monthly = (total / Decimal("12")).quantize(Decimal("0.01"))
+    median_nonzero = _median_decimal(nonzero)
+    max_month = max(nonzero)
+
+    # Case 1: Once-a-year or rare event-based spending.
+    # Example: anniversary, major outreach, annual equipment purchase.
+    # Treatment: convert annual amount into monthly reserve.
+    if active_months <= 2:
+        return {
+            "behavior": "annual_or_event_based",
+            "adjusted_need_monthly": raw_avg_monthly,
+            "annual_reserve_monthly": raw_avg_monthly,
+            "emergency_excluded_amount": Decimal("0.00"),
+            "active_months": active_months,
+        }
+
+    # Case 2: Seasonal spending.
+    # Example: ministries active only during certain parts of the year.
+    # Treatment: spread the yearly/seasonal amount across 12 months.
+    if 3 <= active_months <= 5:
+        return {
+            "behavior": "seasonal",
+            "adjusted_need_monthly": raw_avg_monthly,
+            "annual_reserve_monthly": raw_avg_monthly,
+            "emergency_excluded_amount": Decimal("0.00"),
+            "active_months": active_months,
+        }
+
+    # Case 3: Recurring spending with one abnormal emergency spike.
+    # Example: usual spending is 5k-7k, but one month is 50k.
+    # Treatment: use median as normal baseline and exclude emergency excess.
+    spike_threshold = median_nonzero * Decimal("3.00")
+
+    if median_nonzero > 0 and max_month > spike_threshold:
+        emergency_excess = (max_month - median_nonzero).quantize(Decimal("0.01"))
+
+        return {
+            "behavior": "emergency_spike_adjusted",
+            "adjusted_need_monthly": median_nonzero.quantize(Decimal("0.01")),
+            "annual_reserve_monthly": Decimal("0.00"),
+            "emergency_excluded_amount": emergency_excess,
+            "active_months": active_months,
+        }
+
+    # Case 4: Normal recurring spending.
+    # Treatment: use median instead of average to reduce distortion.
+    return {
+        "behavior": "recurring",
+        "adjusted_need_monthly": median_nonzero.quantize(Decimal("0.01")),
+        "annual_reserve_monthly": Decimal("0.00"),
+        "emergency_excluded_amount": Decimal("0.00"),
+        "active_months": active_months,
+    }
 
 def _all_years_spent_monthly_map(church_id):
     """
     Returns:
-      spent_monthly_map: dict[ministry_id:int] -> Decimal(avg monthly net spent)
-      total_months_observed: int (months with any release activity across all ministries)
+      spent_monthly_map: dict[ministry_id:int] -> Decimal(adjusted monthly need)
+      total_months_observed: int
+
+    This version does NOT use simple average:
+      old logic: total net spent / observed months
+
+    New logic:
+      1. Build monthly net spending per ministry.
+      2. Group spending by ministry and year.
+      3. Classify each pattern:
+          - recurring
+          - seasonal
+          - annual_or_event_based
+          - emergency_spike_adjusted
+          - no_history
+      4. Return adjusted monthly need per ministry.
     """
     ReleasedBudget = apps.get_model("Register", "ReleasedBudget")
 
-    # 1) Aggregate released per ministry across all time
-    released_rows = (
-        ReleasedBudget.objects
-        .filter(church_id=church_id, ministry_id__isnull=False)
-        .values("ministry_id")
-        .annotate(released=Coalesce(Sum("amount"), Decimal("0.00")))
-    )
-    released_by_id = {r["ministry_id"]: (r["released"] or Decimal("0.00")) for r in released_rows}
-
-    # 2) Aggregate returned per ministry across all time (only liquidated with date)
-    returned_rows = (
+    # =========================================================
+    # 1) Build monthly net spending from ReleasedBudget
+    #    Net = amount released - amount returned
+    #
+    #    Important:
+    #    We group returned amounts under the release month because
+    #    the returned amount belongs to that approved release.
+    # =========================================================
+    rows = (
         ReleasedBudget.objects
         .filter(
             church_id=church_id,
             ministry_id__isnull=False,
-            is_liquidated=True,
-            liquidated_date__isnull=False,
+            date_released__isnull=False,
         )
-        .values("ministry_id")
-        .annotate(returned=Coalesce(Sum("amount_returned"), Decimal("0.00")))
+        .annotate(month_bucket=TruncMonth("date_released"))
+        .values("ministry_id", "month_bucket")
+        .annotate(
+            released=Coalesce(Sum("amount"), Decimal("0.00")),
+            returned=Coalesce(
+                Sum(
+                    "amount_returned",
+                    filter=Q(
+                        is_liquidated=True,
+                        liquidated_date__isnull=False
+                    )
+                ),
+                Decimal("0.00")
+            )
+        )
+        .order_by("ministry_id", "month_bucket")
     )
-    returned_by_id = {r["ministry_id"]: (r["returned"] or Decimal("0.00")) for r in returned_rows}
 
-    # 3) Estimate months observed (for normalization)
-    months_qs = (
-        ReleasedBudget.objects
-        .filter(church_id=church_id, ministry_id__isnull=False)
-        .annotate(m=TruncMonth("date_released"))
-        .values("m")
-        .distinct()
-    )
-    total_months_observed = months_qs.count() or 0
+    # =========================================================
+    # 2) Group into 12-month arrays per ministry-year
+    #    Example:
+    #      (Youth Ministry, 2026) -> [Jan, Feb, Mar, ..., Dec]
+    # =========================================================
+    per_ministry_year = {}
 
-    # Safety: avoid divide-by-zero; if no months, monthly is 0
-    denom = Decimal(str(total_months_observed)) if total_months_observed > 0 else Decimal("0")
+    for r in rows:
+        mid = r["ministry_id"]
+        month_bucket = r["month_bucket"]
 
-    spent_monthly = {}
-    for mid, released in released_by_id.items():
-        returned = returned_by_id.get(mid, Decimal("0.00"))
+        if not mid or not month_bucket:
+            continue
+
+        year = month_bucket.year
+        month = month_bucket.month
+
+        released = _to_decimal(r.get("released"), "0.00")
+        returned = _to_decimal(r.get("returned"), "0.00")
+
         net = released - returned
         if net < 0:
             net = Decimal("0.00")
 
-        if denom > 0:
-            spent_monthly[mid] = (net / denom)
-        else:
-            spent_monthly[mid] = Decimal("0.00")
+        key = (mid, year)
 
-    return spent_monthly, total_months_observed
+        if key not in per_ministry_year:
+            per_ministry_year[key] = [Decimal("0.00")] * 12
+
+        if 1 <= month <= 12:
+            per_ministry_year[key][month - 1] += net
+
+    # =========================================================
+    # 3) Classify each ministry-year pattern
+    # =========================================================
+    ministry_adjusted_values = {}
+    total_months_observed = 0
+
+    for (mid, year), monthly_totals in per_ministry_year.items():
+        pattern = _classify_monthly_spending_pattern(monthly_totals)
+
+        adjusted_need = _to_decimal(
+            pattern.get("adjusted_need_monthly"),
+            "0.00"
+        )
+
+        ministry_adjusted_values.setdefault(mid, []).append(adjusted_need)
+
+        total_months_observed += int(pattern.get("active_months", 0) or 0)
+
+    # =========================================================
+    # 4) Final value per ministry
+    #
+    #    If a ministry has multiple years of data, use median across
+    #    years instead of average. This prevents one abnormal year
+    #    from controlling the recommendation.
+    # =========================================================
+    spent_monthly_map = {}
+
+    for mid, values in ministry_adjusted_values.items():
+        cleaned_values = [
+            _to_decimal(v, "0.00")
+            for v in values
+            if _to_decimal(v, "0.00") > 0
+        ]
+
+        if not cleaned_values:
+            spent_monthly_map[mid] = Decimal("0.00")
+            continue
+
+        spent_monthly_map[mid] = _median_decimal(cleaned_values)
+
+    return spent_monthly_map, total_months_observed
 
 
 

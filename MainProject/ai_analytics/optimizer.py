@@ -1,502 +1,808 @@
-import logging
+from datetime import timedelta
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
-logger = logging.getLogger(__name__)
+from django.apps import apps
+from django.db import connection
+from django.db.models import Sum, DecimalField, Q, Exists, OuterRef
+from django.db.models.functions import Coalesce
+from django.utils import timezone
 
 
-def _to_float(v, default=0.0):
+def get_model_safe(model_name):
+    """Load models dynamically to avoid circular imports."""
     try:
-        if v is None or v == "":
-            return float(default)
-        return float(v)
-    except Exception:
-        return float(default)
+        return apps.get_model("Register", model_name)
+    except LookupError:
+        return None
 
 
-def _to_int(v, default=0):
+def _to_decimal(val, default="0.00") -> Decimal:
     try:
-        if v is None or v == "":
-            return int(default)
-        return int(v)
+        if val is None or val == "":
+            return Decimal(default)
+        return Decimal(str(val))
+    except (InvalidOperation, ValueError, TypeError):
+        return Decimal(default)
+
+
+# ==========================================
+# 1. CURRENT CASH / FUND BALANCE HELPERS
+# ==========================================
+def _get_total_cash(church_id: int) -> Decimal:
+    """
+    Uses SP: Calculate_CashOnHand(church_id)
+    Returns current total cash on hand (restricted + unrestricted).
+    """
+    try:
+        with connection.cursor() as cursor:
+            cursor.callproc("Calculate_CashOnHand", [church_id])
+            row = cursor.fetchone()
+        return _to_decimal(row[0] if row and row[0] is not None else "0.00")
     except Exception:
-        return int(default)
+        return Decimal("0.00")
 
 
-def _normalize_ministries(ministries_data):
+def _get_unrestricted_net_now(church_id: int) -> Decimal:
     """
-    Normalize raw ministry rows into a safe internal structure.
+    Uses SP: Finance_UnrestrictedNet(church_id)
 
-    Returns:
-      rows: list[dict]
-      all_ids: list[str]
+    Expected row shape:
+      0 TotalTithes
+      1 TotalOfferings
+      2 TotalUnrestrictedDonations
+      3 TotalUnrestrictedOtherIncome
+      4 TotalBudgetReturnsToUnrestricted
+      5 GrandTotalUnrestricted
+      6 TotalUnrestrictedExpenses
+      7 NetGrandTotalUnrestricted
+      8 TotalRealExpensesAll
+      9 TotalRestrictedExpenses
     """
-    rows = []
-    all_ids = []
-
-    for m in ministries_data or []:
-        m_id = m.get("id")
-        if m_id is None:
-            continue
-
-        mid = str(m_id)
-        priority = _to_int(m.get("priority_score"), 0)
-        min_req = max(0.0, _to_float(m.get("min_req"), 0.0))
-        max_cap = max(0.0, _to_float(m.get("max_cap"), 0.0))  # 0 means no cap
-
-        if max_cap > 0 and max_cap < min_req:
-            max_cap = min_req
-
-        rows.append({
-            "id": mid,
-            "priority_score": priority,
-            "priority": priority,   # alias for LP path
-            "min_req": min_req,
-            "max_cap": max_cap,
-            "cap": max_cap,         # alias for LP path
-        })
-        all_ids.append(mid)
-
-    return rows, all_ids
+    try:
+        with connection.cursor() as cursor:
+            cursor.callproc("Finance_UnrestrictedNet", [church_id])
+            row = cursor.fetchone()
+        return _to_decimal(row[7] if row and len(row) > 7 else "0.00")
+    except Exception:
+        return Decimal("0.00")
 
 
-def _zero_allocations_from_input(ministries_data):
+def _get_restricted_balance_now(church_id: int) -> Decimal:
+    """
+    Uses SP: Finance_RestrictedBalanceNow(church_id)
+
+    Expected row shape:
+      0 TotalRestrictedDonations
+      1 TotalRestrictedOtherIncome
+      2 TotalRestrictedExpenses
+      3 RestrictedBalanceOutstanding
+    """
+    try:
+        with connection.cursor() as cursor:
+            cursor.callproc("Finance_RestrictedBalanceNow", [church_id])
+            row = cursor.fetchone()
+        return _to_decimal(row[3] if row and len(row) > 3 else "0.00")
+    except Exception:
+        return Decimal("0.00")
+
+
+def get_current_fund_balances(church_id: int):
+    """
+    Manual optimizer source:
+      - total cash on hand
+      - restricted funds held (direct from Finance_RestrictedBalanceNow)
+      - unrestricted cash available (direct from Finance_UnrestrictedNet)
+    """
+    total_cash = _get_total_cash(church_id)
+    restricted_balance = _get_restricted_balance_now(church_id)
+    unrestricted_cash = _get_unrestricted_net_now(church_id)
+
+    if total_cash < 0:
+        total_cash = Decimal("0.00")
+    if restricted_balance < 0:
+        restricted_balance = Decimal("0.00")
+    if unrestricted_cash < 0:
+        unrestricted_cash = Decimal("0.00")
+
     return {
-        str(m.get("id")): 0.0
-        for m in (ministries_data or [])
-        if m.get("id") is not None
+        "total_cash": total_cash,
+        "restricted_balance_outstanding": restricted_balance,
+        "unrestricted_cash_available": unrestricted_cash,
     }
 
 
-def _build_optimizer_result(allocations, source, status):
-    return {
-        "allocations": allocations,
-        "optimizer_source": source,
-        "optimizer_status": status,
-    }
+# Backward-compatible alias if your view uses the underscored name
+_get_current_fund_balances = get_current_fund_balances
 
 
-def _priority_factor(priority_score, priority_boost=1.0):
+# ==========================================
+# 2. SP-BASED FINANCIAL HEALTH (YEARLY)
+# ==========================================
+def _sp_unrestricted_year_row(church_id: int, year: int):
     """
-    Converts priority 1..10 into a multiplier.
+    Reads one year row from Finance_UnrestrictedIncomeByYear.
 
-    With priority_boost=1.0:
-      priority 1  -> 1.0
-      priority 10 -> 2.0
+    Column map:
+      0  Year
+      1  TotalTithes
+      2  TotalOfferings
+      3  TotalUnrestrictedDonations
+      4  TotalUnrestrictedOtherIncome
+      5  GrandTotalUnrestricted
+      6  TotalBudgetReturnsToUnrestricted
+      7  TotalUnrestrictedExpenses
+      8  NetGrandTotalUnrestricted
+      9  TotalRealExpensesAll
+      10 TotalRestrictedExpenses
     """
-    p = max(1, _to_int(priority_score, 1))
-    boost = max(0.0, _to_float(priority_boost, 1.0))
-    return 1.0 + boost * ((p - 1) / 9.0)
-
-
-def _weighted_shortage_allocation(rows, available_pool, priority_boost=1.0, max_rounds=50):
-    """
-    Weighted shortage allocator for cases where available_pool < total minimums.
-
-    Purpose:
-      - Higher-priority ministries receive a larger share of the shortage pool
-      - No ministry can receive more than its min_req in shortage mode
-      - Total distributed amount stays within available_pool
-
-    Weight basis:
-      weight = min_req * priority_factor
-
-    Returns:
-      dict[str(ministry_id)] = allocation (rounded to 2dp)
-    """
-    available_pool = max(0.0, _to_float(available_pool, 0.0))
-    if available_pool <= 0 or not rows:
-        return {r["id"]: 0.0 for r in rows}
-
-    # Prepare working structures
-    out = {r["id"]: 0.0 for r in rows}
-    caps = {r["id"]: max(0.0, _to_float(r.get("min_req"), 0.0)) for r in rows}
-    weights = {}
+    with connection.cursor() as cursor:
+        cursor.callproc("Finance_UnrestrictedIncomeByYear", [church_id])
+        rows = cursor.fetchall() or []
 
     for r in rows:
-        min_req = caps[r["id"]]
-        priority = _to_int(r.get("priority"), r.get("priority_score", 1))
-        factor = _priority_factor(priority, priority_boost=priority_boost)
-        weights[r["id"]] = max(0.0, min_req * factor)
+        try:
+            if int(r[0]) == int(year):
+                return {
+                    "year": int(r[0]),
+                    "tithes": _to_decimal(r[1]),
+                    "offerings": _to_decimal(r[2]),
+                    "donations": _to_decimal(r[3]),
+                    "other_income": _to_decimal(r[4]),
+                    "gross_unrestricted": _to_decimal(r[5]),
+                    "budget_returns": _to_decimal(r[6]),
+                    "unrestricted_expenses": _to_decimal(r[7]),
+                    "net_unrestricted": _to_decimal(r[8]),
+                    "real_expenses_all": _to_decimal(r[9]),
+                    "restricted_expenses": _to_decimal(r[10]),
+                }
+        except Exception:
+            continue
 
-    remaining = available_pool
-    rounds = 0
-    eps = 1e-9
-
-    while remaining > eps and rounds < max_rounds:
-        rounds += 1
-
-        eligible = [
-            mid for mid in out.keys()
-            if caps[mid] > out[mid] + eps
-        ]
-        if not eligible:
-            break
-
-        total_weight = sum(weights[mid] for mid in eligible)
-        if total_weight <= eps:
-            break
-
-        distributed = 0.0
-        overflow = 0.0
-
-        for mid in eligible:
-            share = remaining * (weights[mid] / total_weight)
-            if share <= 0:
-                continue
-
-            room = max(0.0, caps[mid] - out[mid])
-            give = min(share, room)
-
-            out[mid] += give
-            distributed += give
-            overflow += (share - give)
-
-        if distributed <= eps:
-            break
-
-        remaining = overflow if overflow > eps else 0.0
-
-    # Final rounding
-    for mid in list(out.keys()):
-        val = out[mid]
-        if val < 0 and abs(val) < eps:
-            val = 0.0
-        out[mid] = round(val, 2)
-
-    return out
+    return {
+        "year": int(year),
+        "tithes": Decimal("0.00"),
+        "offerings": Decimal("0.00"),
+        "donations": Decimal("0.00"),
+        "other_income": Decimal("0.00"),
+        "gross_unrestricted": Decimal("0.00"),
+        "budget_returns": Decimal("0.00"),
+        "unrestricted_expenses": Decimal("0.00"),
+        "net_unrestricted": Decimal("0.00"),
+        "real_expenses_all": Decimal("0.00"),
+        "restricted_expenses": Decimal("0.00"),
+    }
 
 
-def optimize_budget_distribution(
-    total_funds,
-    ministries_data,
-    *,
-    max_rounds=50,
-    shortage_priority_boost=1.0,
-):
+def calculate_financial_health(church_id, year=None):
     """
-    LEGACY allocator (keep for backward compatibility).
+    SP-based financial health using Finance_UnrestrictedIncomeByYear.
 
-    Weighted proportional allocator with:
-      1) Minimums first
-      2) If minimums cannot all be met, shortage is shared using
-         min_req + priority weighting
-      3) Surplus distribution by priority
-      4) Caps enforcement + overflow redistribution
+    ratio = unrestricted_expenses / gross_unrestricted
 
-    Returns:
-      dict[str(ministry_id)] = allocation (float, 2dp)
+    Status rules:
+      - Deficit Risk: net < 0 OR ratio >= 1.00
+      - Critical:     ratio >= 0.80
+      - Warning:      ratio >= 0.50
+      - Healthy:      ratio < 0.50
     """
-    total_funds = _to_float(total_funds, 0.0)
-    if total_funds <= 0 or not ministries_data:
-        return _zero_allocations_from_input(ministries_data)
+    yr = int(year) if year else timezone.now().year
+    row = _sp_unrestricted_year_row(church_id, yr)
 
-    normalized, all_ids = _normalize_ministries(ministries_data)
-    allocations = {mid: 0.0 for mid in all_ids}
+    gross = row["gross_unrestricted"]
+    expenses = row["unrestricted_expenses"]
+    net = row["net_unrestricted"]
 
-    active = [m for m in normalized if m["priority_score"] > 0]
-    if not active:
-        return allocations
+    if gross > 0:
+        ratio = (expenses / gross).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    else:
+        ratio = Decimal("1.00") if expenses > 0 else Decimal("0.00")
 
-    total_min_req = sum(m["min_req"] for m in active)
+    if net < 0 or ratio >= Decimal("1.00"):
+        status = "Deficit Risk"
+        advice = "Spending exceeds income. Immediate cuts recommended."
+        color = "danger"
+    elif ratio >= Decimal("0.80"):
+        status = "Critical"
+        advice = "Spending is very high relative to income. Tight control is needed."
+        color = "danger"
+    elif ratio >= Decimal("0.50"):
+        status = "Warning"
+        advice = "Spending is manageable but should be monitored closely."
+        color = "warning"
+    else:
+        status = "Healthy"
+        advice = "Income safely covers spending."
+        color = "success"
 
-    # If minimums alone exceed available funds, do weighted shortage sharing.
-    if total_min_req > total_funds:
-        shortage_alloc = _weighted_shortage_allocation(
-            active,
-            total_funds,
-            priority_boost=shortage_priority_boost,
-            max_rounds=max_rounds,
+    return {
+        "status": status,
+        "ratio": float(ratio),
+        "color": color,
+        "advice": advice,
+        "year": yr,
+
+        "tithes": float(row["tithes"].quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+        "offerings": float(row["offerings"].quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+        "donations": float(row["donations"].quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+        "other_income": float(row["other_income"].quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+        "budget_returns": float(row["budget_returns"].quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+        "gross_unrestricted": float(row["gross_unrestricted"].quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+        "unrestricted_expenses": float(row["unrestricted_expenses"].quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+        "net_unrestricted": float(row["net_unrestricted"].quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+        "real_expenses_all": float(row["real_expenses_all"].quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+        "restricted_expenses": float(row["restricted_expenses"].quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+
+        # compatibility keys
+        "total_income": float(row["gross_unrestricted"].quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+        "total_expenses": float(row["unrestricted_expenses"].quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+    }
+
+
+calculate_financial_health_sp = calculate_financial_health
+
+
+# ==========================================
+# 3. OLD 90-DAY HEALTH KPI (OPTIONAL)
+# ==========================================
+def calculate_financial_health90D(church_id):
+    """
+    Old rolling 90-day health KPI.
+    """
+    Tithe = get_model_safe("Tithe")
+    Offering = get_model_safe("Offering")
+    Donations = get_model_safe("Donations")
+    OtherIncome = get_model_safe("OtherIncome")
+    Expense = get_model_safe("Expense")
+
+    today = timezone.now().date()
+    start_date = today - timedelta(days=90)
+
+    income_sources = []
+
+    if Tithe:
+        val = Tithe.objects.filter(
+            church_id=church_id,
+            date__gte=start_date
+        ).aggregate(t=Sum("amount"))["t"]
+        income_sources.append(val or 0)
+
+    if Offering:
+        val = Offering.objects.filter(
+            church_id=church_id,
+            date__gte=start_date
+        ).aggregate(t=Sum("amount"))["t"]
+        income_sources.append(val or 0)
+
+    if Donations:
+        val = Donations.objects.filter(
+            church_id=church_id,
+            donations_date__gte=start_date
+        ).aggregate(t=Sum("amount"))["t"]
+        income_sources.append(val or 0)
+
+    if OtherIncome:
+        val = OtherIncome.objects.filter(
+            church_id=church_id,
+            date__gte=start_date
+        ).aggregate(t=Sum("amount"))["t"]
+        income_sources.append(val or 0)
+
+    total_income = sum(float(x) for x in income_sources)
+
+    total_expenses = 0.0
+    if Expense:
+        val = (
+            Expense.objects.filter(
+                church_id=church_id,
+                expense_date__gte=start_date
+            )
+            .exclude(status__in=["Declined", "Rejected"])
+            .exclude(category__is_system=True)
+            .exclude(category__is_transfer=True)
+            .aggregate(t=Sum("amount"))["t"]
         )
-        for mid, amt in shortage_alloc.items():
-            allocations[mid] = amt
-        return {k: round(v, 2) for k, v in allocations.items()}
+        total_expenses = float(val or 0)
 
-    remaining = total_funds
-    for m in active:
-        allocations[m["id"]] = m["min_req"]
-        remaining -= m["min_req"]
+    if total_expenses == 0:
+        ratio = 2.0
+    elif total_income == 0:
+        ratio = 0.0
+    else:
+        ratio = total_income / total_expenses
 
-    if remaining <= 1e-9:
-        return {k: round(v, 2) for k, v in allocations.items()}
-
-    rounds = 0
-    while remaining > 1e-9 and rounds < max_rounds:
-        rounds += 1
-
-        eligible = []
-        for m in active:
-            cap = m["max_cap"]
-            current = allocations[m["id"]]
-
-            if cap <= 0:
-                eligible.append(m)
-            elif current < cap - 1e-9:
-                eligible.append(m)
-
-        if not eligible:
-            break
-
-        total_points = sum(m["priority_score"] for m in eligible)
-        if total_points <= 0:
-            break
-
-        overflow = 0.0
-        distributed = 0.0
-
-        for m in eligible:
-            share = remaining * (m["priority_score"] / total_points)
-            if share <= 0:
-                continue
-
-            cap = m["max_cap"]
-            cur = allocations[m["id"]]
-
-            if cap > 0:
-                room = max(0.0, cap - cur)
-                give = min(share, room)
-                allocations[m["id"]] = cur + give
-                distributed += give
-                overflow += (share - give)
-            else:
-                allocations[m["id"]] = cur + share
-                distributed += share
-
-        if distributed <= 1e-9:
-            break
-
-        remaining = overflow if overflow > 1e-9 else 0.0
-
-    out = {}
-    for k, v in allocations.items():
-        if v < 0 and abs(v) < 1e-9:
-            v = 0.0
-        out[k] = round(v, 2)
-
-    if remaining > 0.01:
-        logger.info("Unallocated funds due to caps/eligibility: %.2f", remaining)
-
-    return out
+    if ratio >= 1.2:
+        return {
+            "status": "Healthy",
+            "ratio": round(ratio, 2),
+            "color": "success",
+            "advice": "Surplus detected. Consider reallocating to reserves.",
+        }
+    elif 1.0 <= ratio < 1.2:
+        return {
+            "status": "Caution",
+            "ratio": round(ratio, 2),
+            "color": "warning",
+            "advice": "Tight margin. Monitor discretionary spending.",
+        }
+    else:
+        return {
+            "status": "Deficit Risk",
+            "ratio": round(ratio, 2),
+            "color": "danger",
+            "advice": "Spending exceeds income. Immediate cuts recommended.",
+        }
 
 
-# ============================================================
-# AI PRESCRIPTIVE (Option 1): LP Multi-Objective + Constraints
-# - SAFE: does not replace legacy; you call it explicitly.
-# - Falls back to legacy if solver unavailable or errors.
-# ============================================================
+# ==========================================
+# 4. PROJECTED EXPENSES
+# ==========================================
+def _start_of_month(value):
+    """Return the first day of the month for a date object."""
+    return value.replace(day=1)
 
-def optimize_budget_distribution_lp(
-    total_funds,
-    ministries_data,
-    *,
-    reserve_ratio=0.0,         # e.g. 0.10 keeps 10% unallocated
-    w_priority=1.0,            # reward higher priority allocations
-    w_fairness=0.15,           # penalize inequality range (max-min)
-    w_stability=0.0,           # penalize deviation vs last allocations (optional)
-    last_allocations=None,
-    shortage_priority_boost=1.0,
-):
+
+def _add_months(value, months):
     """
-    LP-based prescriptive optimizer (multi-objective via weighted sum).
+    Add or subtract months without requiring python-dateutil.
 
-    Variables:
-      x_i = allocation for ministry i
+    Example:
+      _add_months(date(2026, 1, 1), -1) -> date(2025, 12, 1)
+    """
+    month_index = (value.year * 12) + (value.month - 1) + int(months)
+    year = month_index // 12
+    month = (month_index % 12) + 1
+    return value.replace(year=year, month=month, day=1)
 
-    Constraints:
-      sum(x_i) <= pool_after_reserve
-      x_i >= min_req_i (if active)
-      x_i <= max_cap_i (if cap > 0)
-      inactive (priority<=0) -> x_i = 0
 
-    Objective (maximize):
-      + w_priority * Σ(priority_i * x_i)
-      - w_fairness * (max_x - min_x)
-      - w_stability * Σ|x_i - last_i|   (if provided)
+def _last_n_month_keys(as_of_date, months=12):
+    """
+    Return chronological (year, month) keys for the last N calendar months,
+    including the current month.
+    """
+    current_month = _start_of_month(as_of_date)
+    first_month = _add_months(current_month, -(months - 1))
+
+    keys = []
+    for i in range(months):
+        d = _add_months(first_month, i)
+        keys.append((d.year, d.month))
+    return keys
+
+
+def _valid_expenses_qs_since(church_id, start_date):
+    """
+    Base queryset for valid expenses from a given date.
+
+    Excludes:
+      - Declined / Rejected expenses
+      - system categories
+      - transfer categories
+      - expenses linked to cash/bank transfer movements
+        (CASH_TO_BANK, BANK_TO_CASH)
+
+    This is used by the adjusted projection logic so that one emergency
+    month does not automatically distort the projected monthly bills.
+    """
+    Expense = get_model_safe("Expense")
+    CashBankMovement = get_model_safe("CashBankMovement")
+
+    if not Expense:
+        return None
+
+    qs = (
+        Expense.objects.filter(
+            church_id=church_id,
+            expense_date__gte=start_date,
+        )
+        .exclude(status__in=["Declined", "Rejected"])
+        .exclude(category__is_system=True)
+        .exclude(category__is_transfer=True)
+    )
+
+    # Exclude expenses tied to cash/bank transfer movement records.
+    if CashBankMovement:
+        transfer_link = CashBankMovement.objects.filter(
+            church_id=church_id,
+            source_type="EXPENSE",
+            source_id=OuterRef("pk"),
+            direction__in=["CASH_TO_BANK", "BANK_TO_CASH"],
+        )
+
+        qs = qs.annotate(
+            has_cashbank_transfer=Exists(transfer_link)
+        ).filter(
+            has_cashbank_transfer=False
+        )
+
+    return qs
+
+
+def _recent_valid_expenses_qs(church_id):
+    """
+    Backward-compatible helper for old 90-day computations.
+
+    NOTE:
+    The AI budget optimizer should use get_projected_expenses_unrestricted(),
+    which now uses adjusted 12-month behavior-based projection instead of
+    a plain 90-day average.
+    """
+    today = timezone.now().date()
+    ninety_days_ago = today - timedelta(days=90)
+    return _valid_expenses_qs_since(church_id, ninety_days_ago)
+
+
+def _median_decimal(values):
+    """
+    Median helper for Decimal values.
+
+    Median is safer than a simple average because one emergency month will
+    not automatically pull the monthly projection upward.
+    """
+    cleaned = sorted([
+        _to_decimal(v, "0.00")
+        for v in values
+        if _to_decimal(v, "0.00") > 0
+    ])
+
+    if not cleaned:
+        return Decimal("0.00")
+
+    n = len(cleaned)
+    mid = n // 2
+
+    if n % 2 == 1:
+        return cleaned[mid].quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+    return ((cleaned[mid - 1] + cleaned[mid]) / Decimal("2")).quantize(
+        Decimal("0.01"),
+        rounding=ROUND_HALF_UP,
+    )
+
+
+def _classify_monthly_spending_pattern(monthly_totals):
+    """
+    Classify spending behavior and return an adjusted monthly need.
+
+    Why this exists:
+      A plain average can be misleading when:
+        1. one month has a large emergency expense, or
+        2. the church spends for a ministry/event only once per year.
+
+    Behavior rules:
+      - no_history:
+          no spending history found.
+      - annual_or_event_based:
+          1 to 2 active months only. Treat as annual/event reserve.
+      - seasonal:
+          3 to 5 active months. Spread as monthly reserve.
+      - emergency_spike_adjusted:
+          regular spending exists, but one month is more than 3x the median.
+          Use the median as regular baseline and exclude the spike excess.
+      - recurring:
+          normal recurring spending. Use median monthly spending.
+    """
+    monthly = [_to_decimal(x, "0.00") for x in monthly_totals]
+    total = sum(monthly, Decimal("0.00")).quantize(
+        Decimal("0.01"),
+        rounding=ROUND_HALF_UP,
+    )
+
+    nonzero = [x for x in monthly if x > 0]
+    active_months = len(nonzero)
+
+    if total <= 0 or active_months == 0:
+        return {
+            "behavior": "no_history",
+            "raw_avg_monthly": Decimal("0.00"),
+            "adjusted_need_monthly": Decimal("0.00"),
+            "annual_reserve_monthly": Decimal("0.00"),
+            "emergency_excluded_amount": Decimal("0.00"),
+            "active_months": 0,
+            "total_last_12_months": Decimal("0.00"),
+        }
+
+    raw_avg_monthly = (total / Decimal("12")).quantize(
+        Decimal("0.01"),
+        rounding=ROUND_HALF_UP,
+    )
+    median_nonzero = _median_decimal(nonzero)
+    max_month = max(nonzero)
+
+    # Rare or once-a-year spending: treat as planned reserve.
+    # Example: annual church anniversary, yearly equipment maintenance.
+    if active_months <= 2:
+        return {
+            "behavior": "annual_or_event_based",
+            "raw_avg_monthly": raw_avg_monthly,
+            "adjusted_need_monthly": raw_avg_monthly,
+            "annual_reserve_monthly": raw_avg_monthly,
+            "emergency_excluded_amount": Decimal("0.00"),
+            "active_months": active_months,
+            "total_last_12_months": total,
+        }
+
+    # Seasonal spending: spread the annual/seasonal amount across 12 months.
+    # Example: vacation bible school, yearly outreach season, December programs.
+    if 3 <= active_months <= 5:
+        return {
+            "behavior": "seasonal",
+            "raw_avg_monthly": raw_avg_monthly,
+            "adjusted_need_monthly": raw_avg_monthly,
+            "annual_reserve_monthly": raw_avg_monthly,
+            "emergency_excluded_amount": Decimal("0.00"),
+            "active_months": active_months,
+            "total_last_12_months": total,
+        }
+
+    # Recurring spending with one abnormal spike.
+    # Example: normal monthly bills are around 5k, but one emergency repair is 50k.
+    spike_threshold = median_nonzero * Decimal("3.00")
+    if median_nonzero > 0 and max_month > spike_threshold:
+        emergency_excess = (max_month - median_nonzero).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP,
+        )
+
+        return {
+            "behavior": "emergency_spike_adjusted",
+            "raw_avg_monthly": raw_avg_monthly,
+            "adjusted_need_monthly": median_nonzero,
+            "annual_reserve_monthly": Decimal("0.00"),
+            "emergency_excluded_amount": emergency_excess,
+            "active_months": active_months,
+            "total_last_12_months": total,
+        }
+
+    # Normal recurring spending: use median, not simple average.
+    return {
+        "behavior": "recurring",
+        "raw_avg_monthly": raw_avg_monthly,
+        "adjusted_need_monthly": median_nonzero,
+        "annual_reserve_monthly": Decimal("0.00"),
+        "emergency_excluded_amount": Decimal("0.00"),
+        "active_months": active_months,
+        "total_last_12_months": total,
+    }
+
+
+def _monthly_totals_from_expense_qs(qs, as_of_date=None, months=12):
+    """
+    Convert an Expense queryset into a chronological list of monthly totals.
+
+    The list always has `months` entries. Missing months are represented as 0.
+    """
+    as_of_date = as_of_date or timezone.now().date()
+    month_keys = _last_n_month_keys(as_of_date, months=months)
+
+    monthly_map = {key: Decimal("0.00") for key in month_keys}
+
+    rows = (
+        qs.values("expense_date__year", "expense_date__month")
+        .annotate(total_amt=Coalesce(Sum("amount"), Decimal("0.00")))
+        .order_by("expense_date__year", "expense_date__month")
+    )
+
+    for row in rows:
+        try:
+            key = (
+                int(row["expense_date__year"]),
+                int(row["expense_date__month"]),
+            )
+        except (TypeError, ValueError, KeyError):
+            continue
+
+        if key in monthly_map:
+            monthly_map[key] = _to_decimal(row.get("total_amt"), "0.00")
+
+    return [monthly_map[key] for key in month_keys]
+
+
+def _projected_expenses_details(church_id, *, scope="all"):
+    """
+    Shared adjusted projection helper.
+
+    scope values:
+      - all
+      - unrestricted
+      - restricted
+
+    Returns a dictionary so views can display/audit the behavior if needed.
+    """
+    today = timezone.now().date()
+    first_month = _add_months(_start_of_month(today), -11)
+
+    qs = _valid_expenses_qs_since(church_id, first_month)
+    if qs is None:
+        return {
+            "projected_monthly": Decimal("0.00"),
+            "behavior": "no_expense_model",
+            "raw_avg_monthly": Decimal("0.00"),
+            "annual_reserve_monthly": Decimal("0.00"),
+            "emergency_excluded_amount": Decimal("0.00"),
+            "active_months": 0,
+            "total_last_12_months": Decimal("0.00"),
+            "monthly_totals": [Decimal("0.00")] * 12,
+        }
+
+    if scope == "unrestricted":
+        qs = qs.exclude(category__is_restricted=True)
+    elif scope == "restricted":
+        qs = qs.filter(category__is_restricted=True)
+
+    monthly_totals = _monthly_totals_from_expense_qs(qs, as_of_date=today, months=12)
+    pattern = _classify_monthly_spending_pattern(monthly_totals)
+
+    return {
+        "projected_monthly": _to_decimal(pattern["adjusted_need_monthly"], "0.00").quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP,
+        ),
+        "behavior": pattern["behavior"],
+        "raw_avg_monthly": pattern["raw_avg_monthly"],
+        "annual_reserve_monthly": pattern["annual_reserve_monthly"],
+        "emergency_excluded_amount": pattern["emergency_excluded_amount"],
+        "active_months": pattern["active_months"],
+        "total_last_12_months": pattern["total_last_12_months"],
+        "monthly_totals": monthly_totals,
+    }
+
+
+def get_projected_expenses_all(church_id):
+    """
+    Adjusted projected monthly bills for all valid expenses.
+
+    This replaces plain last-90-days / 3 averaging with behavior-based
+    classification using the last 12 calendar months.
+    """
+    details = _projected_expenses_details(church_id, scope="all")
+    return float(details["projected_monthly"])
+
+
+def get_projected_expenses_unrestricted(church_id):
+    """
+    Adjusted projected monthly unrestricted bills.
+
+    This is the function the OpenAI budget optimizer should use.
+    It prevents one-time emergency spending from inflating the normal
+    monthly reserve while still converting annual/event spending into
+    a monthly reserve amount.
+    """
+    details = _projected_expenses_details(church_id, scope="unrestricted")
+    return float(details["projected_monthly"])
+
+
+def get_projected_expenses_unrestricted_details(church_id):
+    """
+    Optional audit/debug version for the UI or logs.
+
+    Useful fields:
+      - behavior
+      - raw_avg_monthly
+      - projected_monthly
+      - annual_reserve_monthly
+      - emergency_excluded_amount
+      - monthly_totals
+    """
+    details = _projected_expenses_details(church_id, scope="unrestricted")
+    return {
+        **details,
+        "projected_monthly": float(details["projected_monthly"]),
+        "raw_avg_monthly": float(details["raw_avg_monthly"]),
+        "annual_reserve_monthly": float(details["annual_reserve_monthly"]),
+        "emergency_excluded_amount": float(details["emergency_excluded_amount"]),
+        "total_last_12_months": float(details["total_last_12_months"]),
+        "monthly_totals": [float(_to_decimal(x, "0.00")) for x in details["monthly_totals"]],
+    }
+
+
+def get_projected_expenses_restricted(church_id):
+    """
+    Adjusted projected monthly restricted bills.
+    """
+    details = _projected_expenses_details(church_id, scope="restricted")
+    return float(details["projected_monthly"])
+
+
+# Default projected expenses for the optimizer page = unrestricted-aware
+def get_projected_expenses(church_id):
+    return get_projected_expenses_unrestricted(church_id)
+
+
+# ==========================================
+# 5. MINISTRY PERFORMANCE
+# ==========================================
+def analyze_ministry_performance(church_id, year=None):
+    """
+    Calculates Allocated vs Spent for a specific year.
 
     IMPORTANT:
-      If usable_pool is below total minimums, the function does not
-      run LP. Instead, it applies weighted shortage sharing using
-      minimum requirements and priority.
-
-    Returns:
-      {
-        "allocations": dict[str(ministry_id)] = allocation (float, 2dp),
-        "optimizer_source": "lp_solver" | "legacy_fallback",
-        "optimizer_status": str
-      }
+    If your related expense date field is not `date_incurred`,
+    replace it below with the correct field.
     """
-    total_funds = _to_float(total_funds, 0.0)
-    if total_funds <= 0 or not ministries_data:
-        return _build_optimizer_result(
-            _zero_allocations_from_input(ministries_data),
-            "lp_solver",
-            "zero_or_empty_input",
-        )
+    Ministry = get_model_safe("Ministry")
+    MinistryBudget = get_model_safe("MinistryBudget")
 
-    reserve_ratio = max(0.0, min(1.0, _to_float(reserve_ratio, 0.0)))
-    reserve = total_funds * reserve_ratio
-    usable_pool = total_funds - reserve
+    if not Ministry or not MinistryBudget:
+        return {}
 
-    if usable_pool <= 1e-9:
-        return _build_optimizer_result(
-            _zero_allocations_from_input(ministries_data),
-            "lp_solver",
-            "reserve_consumed_pool",
-        )
+    target_year = int(year) if year else timezone.now().year
+    ministries = Ministry.objects.filter(church_id=church_id, is_active=True)
 
-    rows, all_ids = _normalize_ministries(ministries_data)
-    if not rows:
-        return _build_optimizer_result({}, "lp_solver", "no_rows")
-
-    active = [r for r in rows if r["priority"] > 0]
-    if not active:
-        return _build_optimizer_result(
-            {mid: 0.0 for mid in all_ids},
-            "lp_solver",
-            "no_active_ministries",
-        )
-
-    # If minimums exceed pool, do weighted shortage sharing.
-    total_min = sum(r["min_req"] for r in active)
-    if total_min > usable_pool + 1e-9:
-        out = {mid: 0.0 for mid in all_ids}
-        shortage_alloc = _weighted_shortage_allocation(
-            active,
-            usable_pool,
-            priority_boost=shortage_priority_boost,
-        )
-        for mid, amt in shortage_alloc.items():
-            out[mid] = amt
-
-        return _build_optimizer_result(
-            out,
-            "lp_solver",
-            "weighted_prorated_minimums",
-        )
-
-    try:
-        from ortools.linear_solver import pywraplp
-    except Exception as e:
-        logger.warning("OR-Tools not available, fallback to legacy. %s", e)
-        return _build_optimizer_result(
-            optimize_budget_distribution(
-                total_funds,
-                ministries_data,
-                shortage_priority_boost=shortage_priority_boost,
+    budget_stats = (
+        MinistryBudget.objects
+        .filter(church_id=church_id, year=target_year)
+        .values("ministry_id")
+        .annotate(
+            total_allocated=Coalesce(
+                Sum("amount_allocated"),
+                Decimal("0.00"),
+                output_field=DecimalField()
             ),
-            "legacy_fallback",
-            "ortools_missing",
+            total_spent=Coalesce(
+                Sum(
+                    "released_budgets__expenses__amount",
+                    filter=Q(released_budgets__expenses__date_incurred__year=target_year)
+                ),
+                Decimal("0.00"),
+                output_field=DecimalField()
+            )
         )
+    )
 
-    solver = pywraplp.Solver.CreateSolver("GLOP")
-    if not solver:
-        logger.warning("LP solver creation failed; fallback to legacy.")
-        return _build_optimizer_result(
-            optimize_budget_distribution(
-                total_funds,
-                ministries_data,
-                shortage_priority_boost=shortage_priority_boost,
-            ),
-            "legacy_fallback",
-            "solver_creation_failed",
-        )
+    stats_map = {
+        item["ministry_id"]: {
+            "alloc": float(item["total_allocated"] or 0),
+            "spent": float(item["total_spent"] or 0),
+        }
+        for item in budget_stats
+    }
 
-    # Variables x_i
-    x = {}
-    for r in rows:
-        if r["priority"] <= 0:
-            x[r["id"]] = solver.NumVar(0.0, 0.0, f"x_{r['id']}")
-            continue
+    grand_total_spent = sum(item["spent"] for item in stats_map.values())
+    performance_data = {}
 
-        lb = float(r["min_req"])
-        ub = solver.infinity() if r["cap"] <= 0 else float(r["cap"])
-        x[r["id"]] = solver.NumVar(lb, ub, f"x_{r['id']}")
+    for m in ministries:
+        data = stats_map.get(m.id, {"alloc": 0.0, "spent": 0.0})
 
-    # Pool constraint
-    solver.Add(sum(x[r["id"]] for r in rows) <= float(usable_pool))
+        allocated = float(data["alloc"] or 0.0)
+        if allocated <= 0:
+            min_monthly = float(getattr(m, "min_monthly_budget", 0) or 0)
+            allocated = min_monthly * 12
 
-    # Fairness range vars over ACTIVE only
-    max_x = solver.NumVar(0.0, solver.infinity(), "max_x")
-    min_x = solver.NumVar(0.0, solver.infinity(), "min_x")
-    for r in active:
-        solver.Add(x[r["id"]] <= max_x)
-        solver.Add(x[r["id"]] >= min_x)
+        spent = float(data["spent"] or 0.0)
 
-    # Stability |x_i - last_i|
-    abs_dev = {}
-    last_allocations = last_allocations or {}
-    use_stability = _to_float(w_stability, 0.0) > 0.0 and isinstance(last_allocations, dict)
+        utilization = (spent / allocated) * 100 if allocated > 0 else (100.0 if spent > 0 else 0.0)
+        share_percentage = (spent / grand_total_spent) * 100 if grand_total_spent > 0 else 0.0
 
-    if use_stability:
-        for r in active:
-            last = _to_float(last_allocations.get(r["id"], 0.0), 0.0)
-            d = solver.NumVar(0.0, solver.infinity(), f"dev_{r['id']}")
-            abs_dev[r["id"]] = d
-            solver.Add(d >= x[r["id"]] - last)
-            solver.Add(d >= last - x[r["id"]])
+        if share_percentage >= 20:
+            suggested = 9
+        elif share_percentage >= 15:
+            suggested = 8
+        elif share_percentage >= 10:
+            suggested = 7
+        elif share_percentage >= 5:
+            suggested = 5
+        else:
+            suggested = 3
 
-    # Objective: maximize priority reward - fairness penalty - stability penalty
-    obj = solver.Objective()
-    w_priority = _to_float(w_priority, 1.0)
-    w_fairness = _to_float(w_fairness, 0.0)
-    w_stability = _to_float(w_stability, 0.0)
+        performance_data[m.id] = {
+            "allocated": round(allocated, 2),
+            "spent": round(spent, 2),
+            "utilization": round(utilization, 1),
+            "share_percentage": round(share_percentage, 1),
+            "suggested_score": suggested,
+        }
 
-    for r in active:
-        obj.SetCoefficient(x[r["id"]], w_priority * float(r["priority"]))
+    return performance_data
 
-    # -(max-min) = -max + min
-    obj.SetCoefficient(max_x, -w_fairness)
-    obj.SetCoefficient(min_x, +w_fairness)
+def get_trailing_3_month_unrestricted_operating_avg(church_id):
+    qs = _recent_valid_expenses_qs(church_id)
+    if qs is None:
+        return 0.0
 
-    for _, d in abs_dev.items():
-        obj.SetCoefficient(d, -w_stability)
+    total = (
+        qs.exclude(category__is_restricted=True)
+        .aggregate(t=Coalesce(Sum("amount"), Decimal("0.00")))["t"]
+    )
 
-    obj.SetMaximization()
-
-    status = solver.Solve()
-    if status != pywraplp.Solver.OPTIMAL:
-        logger.warning("LP not optimal (status=%s), fallback to legacy.", status)
-        return _build_optimizer_result(
-            optimize_budget_distribution(
-                total_funds,
-                ministries_data,
-                shortage_priority_boost=shortage_priority_boost,
-            ),
-            "legacy_fallback",
-            f"lp_status_{status}",
-        )
-
-    out = {}
-    for mid in all_ids:
-        val = max(0.0, x[mid].solution_value())
-        if val < 1e-9:
-            val = 0.0
-        out[mid] = round(val, 2)
-
-    return _build_optimizer_result(out, "lp_solver", "optimal")
-
-
-def optimize_budget_distribution_ai(total_funds, ministries_data, **kwargs):
-    """
-    Safe wrapper:
-      - Prefer AI LP optimizer
-      - Always fall back to legacy allocator
-
-    Returns:
-      {
-        "allocations": dict,
-        "optimizer_source": str,
-        "optimizer_status": str,
-      }
-    """
-    try:
-        return optimize_budget_distribution_lp(total_funds, ministries_data, **kwargs)
-    except Exception as e:
-        logger.exception("AI optimizer failed; using legacy allocator. %s", e)
-        return _build_optimizer_result(
-            optimize_budget_distribution(
-                total_funds,
-                ministries_data,
-                shortage_priority_boost=kwargs.get("shortage_priority_boost", 1.0),
-            ),
-            "legacy_fallback",
-            "exception_fallback",
-        )
+    total = _to_decimal(total)
+    return float((total / Decimal("3")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
